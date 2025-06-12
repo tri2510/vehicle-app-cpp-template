@@ -27,16 +27,10 @@
 namespace example {
 
 /**
- * @brief Sample skeleton vehicle app.
- * @details The skeleton subscribes to a getSpeed MQTT topic
- *      to listen for incoming requests to get
- *      the current vehicle speed and publishes it to
- *      a response topic.
- *
- *      It also subcribes to the VehicleDataBroker
- *      directly for updates of the
- *      Vehicle.Speed signal and publishes this
- *      information via another specific MQTT topic
+ * @brief Speed Monitor vehicle app.
+ * @details Monitors vehicle speed and sends alerts when speed exceeds 80 km/h.
+ *      Subscribes to Vehicle.Speed from VehicleDataBroker and publishes
+ *      speed alerts via MQTT topics.
  */
 class SampleApp : public velocitas::VehicleApp {
 public:

@@ -1,6 +1,6 @@
 {
     "manifestVersion": "v3",
-    "name": "SampleApp",
+    "name": "SpeedMonitorApp",
     "interfaces": [
         {
             "type": "vehicle-signal-interface",
@@ -21,10 +21,11 @@
         {
             "type": "pubsub",
             "config": {
-                "reads": [ "sampleapp/getSpeed" ],
+                "reads": [ "speedmonitor/getSpeed" ],
                 "writes": [
-                    "sampleapp/getSpeed/response",
-                    "sampleapp/currentSpeed"
+                    "speedmonitor/getSpeed/response",
+                    "speedmonitor/currentSpeed",
+                    "speedmonitor/alert"
                 ]
             }
         }

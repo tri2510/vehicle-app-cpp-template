@@ -23,16 +23,19 @@
 #include <fmt/core.h>
 #include <nlohmann/json.hpp>
 #include <utility>
+#include <ctime>
 
 namespace example {
 
-const auto GET_SPEED_REQUEST_TOPIC       = "sampleapp/getSpeed";
-const auto GET_SPEED_RESPONSE_TOPIC      = "sampleapp/getSpeed/response";
-const auto DATABROKER_SUBSCRIPTION_TOPIC = "sampleapp/currentSpeed";
+const auto GET_SPEED_REQUEST_TOPIC       = "speedmonitor/getSpeed";
+const auto GET_SPEED_RESPONSE_TOPIC      = "speedmonitor/getSpeed/response";
+const auto DATABROKER_SUBSCRIPTION_TOPIC = "speedmonitor/currentSpeed";
+const auto SPEED_ALERT_TOPIC             = "speedmonitor/alert";
+const float SPEED_LIMIT_KMH              = 80.0f;
 
 SampleApp::SampleApp()
     : VehicleApp(velocitas::IVehicleDataBrokerClient::createInstance("vehicledatabroker"),
-                 velocitas::IPubSubClient::createInstance("SampleApp")) {}
+                 velocitas::IPubSubClient::createInstance("SpeedMonitorApp")) {}
 
 void SampleApp::onStart() {
     // This method will be called by the SDK when the connection to the
@@ -51,15 +54,28 @@ void SampleApp::onStart() {
 
 void SampleApp::onSpeedChanged(const velocitas::DataPointReply& reply) {
     // Get the current vehicle speed value from the received DatapointReply.
-    // The DatapointReply containes the values of all subscribed DataPoints of
-    // the same callback.
     auto vehicleSpeed = reply.get(Vehicle.Speed)->value();
 
-    // Do anything with the received value.
-    // Example:
-    // - Publish the current speed to MQTT Topic (i.e. DATABROKER_SUBSCRIPTION_TOPIC).
-    nlohmann::json json({{"speed", vehicleSpeed}});
-    publishToTopic(DATABROKER_SUBSCRIPTION_TOPIC, json.dump());
+    // Log current speed
+    velocitas::logger().info("Current vehicle speed: {:.1f} km/h", vehicleSpeed);
+
+    // Publish current speed data
+    nlohmann::json speedJson({{"speed", vehicleSpeed}, {"timestamp", std::time(nullptr)}});
+    publishToTopic(DATABROKER_SUBSCRIPTION_TOPIC, speedJson.dump());
+
+    // Check if speed exceeds limit and send alert
+    if (vehicleSpeed > SPEED_LIMIT_KMH) {
+        velocitas::logger().warn("SPEED ALERT: Vehicle speed ({:.1f} km/h) exceeds limit ({:.1f} km/h)!", 
+                                vehicleSpeed, SPEED_LIMIT_KMH);
+        
+        nlohmann::json alertJson({
+            {"alert", "SPEED_LIMIT_EXCEEDED"},
+            {"current_speed", vehicleSpeed},
+            {"speed_limit", SPEED_LIMIT_KMH},
+            {"timestamp", std::time(nullptr)}
+        });
+        publishToTopic(SPEED_ALERT_TOPIC, alertJson.dump());
+    }
 }
 
 void SampleApp::onGetSpeedRequestReceived(const std::string& data) {
