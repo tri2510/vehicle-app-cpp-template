@@ -14,8 +14,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef VEHICLE_APP_SDK_SEATADJUSTER_EXAMPLE_H
-#define VEHICLE_APP_SDK_SEATADJUSTER_EXAMPLE_H
+#ifndef VEHICLE_APP_SDK_TESTAPP_EXAMPLE_H
+#define VEHICLE_APP_SDK_TESTAPP_EXAMPLE_H
 
 #include "sdk/Status.h"
 #include "sdk/VehicleApp.h"
@@ -27,14 +27,14 @@
 namespace example {
 
 /**
- * @brief Speed Monitor vehicle app.
- * @details Monitors vehicle speed and sends alerts when speed exceeds 80 km/h.
- *      Subscribes to Vehicle.Speed from VehicleDataBroker and publishes
- *      speed alerts via MQTT topics.
+ * @brief Vehicle Control Test App.
+ * @details Controls vehicle components (doors, seats, trunk) in sequence.
+ *      Equivalent to Python TestApp that resets vehicle state and 
+ *      performs automated door/seat operations.
  */
-class SampleApp : public velocitas::VehicleApp {
+class TestApp : public velocitas::VehicleApp {
 public:
-    SampleApp();
+    TestApp();
 
     /**
      * @brief Run when the vehicle app starts
@@ -43,18 +43,30 @@ public:
     void onStart() override;
 
     /**
-     * @brief Handle speed changed events from the VDB.
+     * @brief Reset all vehicle components to default state
      *
-     * @param dataPoints  The affected data points.
      */
-    void onSpeedChanged(const velocitas::DataPointReply& reply);
+    void resetAll();
 
     /**
-     * @brief Handle set position request from PubSub topic
+     * @brief Execute the vehicle control sequence
+     *
+     */
+    void executeSequence();
+
+    /**
+     * @brief Handle reset request from PubSub topic
      *
      * @param data  The JSON string received from PubSub topic.
      */
-    void onGetSpeedRequestReceived(const std::string& data);
+    void onResetRequestReceived(const std::string& data);
+
+    /**
+     * @brief Handle status request from PubSub topic
+     *
+     * @param data  The JSON string received from PubSub topic.
+     */
+    void onStatusRequestReceived(const std::string& data);
 
     /**
      * @brief Handle errors which occurred during async invocation.
@@ -69,4 +81,4 @@ private:
 
 } // namespace example
 
-#endif // VEHICLE_APP_SDK_SEATADJUSTER_EXAMPLE_H
+#endif // VEHICLE_APP_SDK_TESTAPP_EXAMPLE_H

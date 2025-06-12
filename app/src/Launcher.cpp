@@ -20,7 +20,7 @@
 #include <csignal>
 #include <memory>
 
-std::unique_ptr<example::SampleApp> myApp;
+std::unique_ptr<example::TestApp> myApp;
 
 void signal_handler(int sig) {
     velocitas::logger().info("App terminated due to: Signal {}", sig);
@@ -30,7 +30,7 @@ void signal_handler(int sig) {
 int main(int argc, char** argv) {
     signal(SIGINT, signal_handler);
 
-    myApp = std::make_unique<example::SampleApp>();
+    myApp = std::make_unique<example::TestApp>();
     try {
         myApp->run();
     } catch (const std::exception& e) {

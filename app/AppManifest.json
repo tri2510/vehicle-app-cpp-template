@@ -1,6 +1,6 @@
 {
     "manifestVersion": "v3",
-    "name": "SpeedMonitorApp",
+    "name": "VehicleControlApp",
     "interfaces": [
         {
             "type": "vehicle-signal-interface",
@@ -10,9 +10,29 @@
                 {
                     "required": [
                         {
-                            "path": "Vehicle.Speed",
+                            "path": "Vehicle.Cabin.Door.Row1.DriverSide.IsOpen",
                             "required": "true",
-                            "access": "read"
+                            "access": "readwrite"
+                        },
+                        {
+                            "path": "Vehicle.Cabin.Door.Row1.PassengerSide.IsOpen",
+                            "required": "true",
+                            "access": "readwrite"
+                        },
+                        {
+                            "path": "Vehicle.Cabin.Seat.Row1.DriverSide.Position",
+                            "required": "true",
+                            "access": "readwrite"
+                        },
+                        {
+                            "path": "Vehicle.Cabin.Seat.Row1.PassengerSide.Position",
+                            "required": "true",
+                            "access": "readwrite"
+                        },
+                        {
+                            "path": "Vehicle.Body.Trunk.Rear.IsOpen",
+                            "required": "true",
+                            "access": "readwrite"
                         }
                     ]
                 }
@@ -21,11 +41,12 @@
         {
             "type": "pubsub",
             "config": {
-                "reads": [ "speedmonitor/getSpeed" ],
+                "reads": [ "vehiclecontrol/reset", "vehiclecontrol/status" ],
                 "writes": [
-                    "speedmonitor/getSpeed/response",
-                    "speedmonitor/currentSpeed",
-                    "speedmonitor/alert"
+                    "vehiclecontrol/reset/response",
+                    "vehiclecontrol/status/response",
+                    "vehiclecontrol/sequence/started",
+                    "vehiclecontrol/sequence/completed"
                 ]
             }
         }
