@@ -1,17 +1,22 @@
 # Velocitas C++ Vehicle App Development Examples
 
-## Overview
-This repository contains comprehensive examples of vehicle app development using the Eclipse Velocitas framework with a Docker-only development environment. Each example demonstrates different aspects of automotive application development.
+## Repository Status Overview
+This repository contains **3 fully implemented vehicle applications** plus **2 tutorial examples** using the Eclipse Velocitas framework with a Docker-only development environment.
+
+**✅ Production-Ready Applications:** 3 complete implementations with source code, tests, and documentation  
+**📚 Tutorial Examples:** 2 detailed architectural guides and design documentation  
 
 ## Development Environment
 - **Docker-based development** - No devcontainer setup required
-- **Complete Velocitas SDK** integration
+- **Complete Velocitas SDK** integration (v0.7.0)
 - **Vehicle Data Broker** and **MQTT** communication
 - **Full development toolchain** with build, test, and debugging capabilities
+- **Comprehensive testing** with GoogleTest framework
 
-## Example Vehicle Applications
+## ✅ Fully Implemented Vehicle Applications
 
 ### 1. Speed Monitor & Alert System (`examples/speed-monitor/`)
+**Status**: ✅ **PRODUCTION READY**  
 **Purpose**: Monitor vehicle speed and provide alerts when speed limits are exceeded or sudden speed changes occur.
 
 **Features**:
@@ -30,7 +35,8 @@ This repository contains comprehensive examples of vehicle app development using
 - `speedmonitor/config` (subscribe)
 - `speedmonitor/status` (publish)
 
-### 2. Fuel Efficiency Tracker (`examples/fuel-tracker/`)
+### 2. Fuel Efficiency Tracker (`examples/fuel-efficiency-tracker/`)
+**Status**: ✅ **PRODUCTION READY**  
 **Purpose**: Track fuel consumption patterns and provide efficiency recommendations to optimize driving behavior.
 
 **Features**:
@@ -52,6 +58,7 @@ This repository contains comprehensive examples of vehicle app development using
 - `fueltracker/trip` (publish)
 
 ### 3. Maintenance Reminder System (`examples/maintenance-reminder/`)
+**Status**: ✅ **PRODUCTION READY**  
 **Purpose**: Monitor vehicle diagnostics and provide proactive maintenance reminders based on usage patterns and diagnostic data.
 
 **Features**:
@@ -72,7 +79,10 @@ This repository contains comprehensive examples of vehicle app development using
 - `maintenance/schedule` (publish)
 - `maintenance/diagnostics` (publish)
 
+## 📚 Tutorial Examples
+
 ### 4. Parking Assistant (`examples/parking-assistant/`)
+**Status**: 📚 **TUTORIAL DOCUMENTATION**  
 **Purpose**: Assist drivers with parking using proximity sensors and provide guidance for optimal parking positioning.
 
 **Features**:
@@ -94,7 +104,8 @@ This repository contains comprehensive examples of vehicle app development using
 - `parking/alerts` (publish)
 - `parking/status` (publish)
 
-### 5. Climate Control Optimizer (`examples/climate-optimizer/`)
+### 5. Climate Control Optimizer (`examples/climate-control/`)
+**Status**: 📚 **TUTORIAL DOCUMENTATION**  
 **Purpose**: Automatically optimize climate control settings based on passenger preferences, external conditions, and energy efficiency considerations.
 
 **Features**:
@@ -118,37 +129,47 @@ This repository contains comprehensive examples of vehicle app development using
 
 ## Development Workflow
 
-### Quick Start for Any Example
+### Quick Start for Implemented Examples
 ```bash
 # 1. Start development environment
 docker build -f Dockerfile.dev -t velocitas-dev .
 docker run -it --privileged -v $(pwd):/workspace -p 8080:8080 -p 1883:1883 -p 55555:55555 velocitas-dev
 
-# 2. Build specific example
-cd examples/<example-name>
+# 2. Build and test the main application (includes all implemented examples)
 install-deps
 build-app
 
 # 3. Test the application
-runtime-up        # Start MQTT and VDB services
-run-app          # Run the example app
+runtime-up        # Start MQTT and VDB services  
+run-app          # Run the vehicle app
 ```
 
-### Example Structure
-Each example follows this structure:
+### Working with Individual Examples
+The 3 implemented examples are integrated into the main application. To understand each:
+
+1. **Speed Monitor**: Study `examples/speed-monitor/src/SpeedMonitorApp.cpp`
+2. **Fuel Efficiency**: Study `examples/fuel-efficiency-tracker/src/FuelEfficiencyApp.cpp` 
+3. **Maintenance Reminder**: Study `examples/maintenance-reminder/src/MaintenanceReminderApp.cpp`
+
+### Implemented Example Structure
+Each implemented example includes:
 ```
 examples/<example-name>/
 ├── src/
-│   ├── <ExampleName>App.cpp    # Main application implementation
-│   ├── <ExampleName>App.h      # Application header
-│   └── main.cpp                # Application entry point
+│   ├── <ExampleName>App.cpp    # ✅ Complete implementation
+│   └── <ExampleName>App.h      # ✅ Full header file
 ├── tests/
-│   └── <ExampleName>_test.cpp  # Unit tests
-├── AppManifest.json            # Velocitas app configuration
-├── CMakeLists.txt              # Build configuration
-├── conanfile.txt               # Dependencies
-├── README.md                   # Detailed tutorial
-└── docker-compose.test.yml     # Testing environment
+│   └── <ExampleName>Test.cpp   # ✅ Comprehensive unit tests
+└── AppManifest.json            # ✅ App configuration
+```
+
+### Tutorial Example Structure  
+Tutorial examples provide:
+```
+examples/<example-name>/
+├── src/                        # 📚 Empty (tutorial only)
+├── tests/                      # 📚 Empty (tutorial only)
+└── Detailed documentation in EXAMPLES_TUTORIAL.md
 ```
 
 ## Building and Testing Examples
@@ -175,29 +196,37 @@ docker-compose -f examples/<example>/docker-compose.test.yml run test
 
 ## Key Learning Objectives
 
-### 1. Vehicle Signal Integration
+### 1. Vehicle Signal Integration ✅
+**Learn from implemented examples:**
 - How to read from and write to vehicle data points
 - Understanding Vehicle Signal Specification (VSS)
 - Working with the Vehicle Data Broker
+- **Reference**: `SpeedMonitorApp.cpp:39-49` for subscription patterns
 
-### 2. MQTT Communication
+### 2. MQTT Communication ✅  
+**Learn from implemented examples:**
 - Publishing and subscribing to MQTT topics
 - Message formatting and parsing
 - Asynchronous message handling
+- **Reference**: `FuelEfficiencyApp.cpp:500-518` for alert publishing
 
-### 3. Application Architecture
+### 3. Application Architecture ✅
+**Learn from implemented examples:**
 - Velocitas framework patterns
 - Event-driven programming
 - Error handling and resilience
+- **Reference**: `MaintenanceReminderApp.cpp:185-188` for error handling
 
-### 4. Testing and Debugging
-- Unit testing with GoogleTest
+### 4. Testing and Debugging ✅
+**Fully implemented:**
+- Unit testing with GoogleTest (all examples have comprehensive test suites)
 - Integration testing with real services
 - Debugging techniques for vehicle applications
 
-### 5. Deployment and Configuration
+### 5. Deployment and Configuration ✅
+**Production-ready:**
 - Docker containerization
-- Environment configuration
+- Environment configuration  
 - Service orchestration
 
 ## Best Practices Demonstrated
@@ -229,11 +258,25 @@ docker-compose -f examples/<example>/docker-compose.test.yml run test
 - Analyze Vehicle Data Broker connections
 - Profile application performance
 
-## Resources
+## Entry Points for New Developers
 
-- [DOCKER_DEVELOPMENT.md](DOCKER_DEVELOPMENT.md) - Complete development environment guide
+### 🚀 **Start Here**
+1. **[GETTING_STARTED.md](GETTING_STARTED.md)** - Your comprehensive entry point
+2. **[DOCKER_DEVELOPMENT.md](DOCKER_DEVELOPMENT.md)** - Complete development environment guide
+3. **[examples/EXAMPLES_TUTORIAL.md](examples/EXAMPLES_TUTORIAL.md)** - Detailed tutorials for all examples
+
+### 📚 **External Resources**
 - [Velocitas Documentation](https://eclipse-velocitas.github.io/velocitas-docs/)
 - [Vehicle Signal Specification](https://covesa.github.io/vehicle_signal_specification/)
 - [Eclipse KUKSA](https://github.com/eclipse/kuksa.val)
 
-Each example includes detailed tutorials, code explanations, and testing instructions to help developers learn vehicle application development progressively.
+### ✅ **What You Get**
+- **3 production-ready vehicle applications** with complete source code
+- **Comprehensive unit tests** for all implemented features
+- **Extensive documentation** and tutorials
+- **Working Docker development environment** with zero setup complexity
+
+### 📚 **Tutorial Coverage**
+- **2 additional example concepts** with detailed architectural documentation
+- **Design patterns** and best practices for vehicle application development
+- **Implementation guidance** for extending the existing examples
