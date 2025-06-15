@@ -1,0 +1,53 @@
+{
+  "manifestVersion": "v3",
+  "name": "MaintenanceReminder",
+  "interfaces": [
+    {
+      "type": "vehicle-signal-interface",
+      "config": {
+        "src": "https://github.com/COVESA/vehicle_signal_specification/releases/download/v4.0/vss_rel_4.0.json",
+        "datapoints": {
+          "required": [
+            {
+              "path": "Vehicle.TraveledDistance",
+              "optional": false,
+              "access": "read"
+            },
+            {
+              "path": "Vehicle.Powertrain.CombustionEngine.EngineHours",
+              "optional": true,
+              "access": "read"
+            },
+            {
+              "path": "Vehicle.Service.DistanceToService",
+              "optional": true,
+              "access": "read"
+            },
+            {
+              "path": "Vehicle.Service.TimeToService",
+              "optional": true,
+              "access": "read"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "pubsub",
+      "config": {
+        "reads": [
+          "maintenance/config",
+          "maintenance/service/completed",
+          "maintenance/service/scheduled",
+          "maintenance/reset"
+        ],
+        "writes": [
+          "maintenance/status",
+          "maintenance/reminders",
+          "maintenance/alerts",
+          "maintenance/schedule"
+        ]
+      }
+    }
+  ]
+}
