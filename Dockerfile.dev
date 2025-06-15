@@ -1,0 +1,78 @@
+FROM ghcr.io/eclipse-velocitas/devcontainer-base-images/cpp:v0.4
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV GITHUB_API_TOKEN=""
+ENV SDV_MIDDLEWARE_TYPE=native
+ENV SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555
+ENV SDV_MQTT_ADDRESS=127.0.0.1:1883
+
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+RUN groupadd --gid $USER_GID $USERNAME || true && \
+    useradd --uid $USER_UID --gid $USER_GID -m $USERNAME || true
+
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    sudo \
+    build-essential \
+    cmake \
+    ninja-build \
+    ccache \
+    pkg-config \
+    clang-format-14 \
+    clang-tidy-14 \
+    cppcheck \
+    gdb \
+    valgrind \
+    doxygen \
+    graphviz \
+    python3 \
+    python3-pip \
+    python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
+
+USER $USERNAME
+
+COPY requirements.txt /tmp/requirements.txt
+RUN python3 -m pip install --user --upgrade pip && \
+    python3 -m pip install --user -r /tmp/requirements.txt
+
+WORKDIR /workspace
+
+COPY --chown=$USERNAME:$USERNAME . /workspace
+
+RUN pip install --user -r requirements.txt && \
+    export PATH="$HOME/.local/bin:$PATH" && \
+    velocitas init -f -v && \
+    ./install_dependencies.sh
+
+USER root
+
+RUN echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\nvelocitas exec runtime-local up' > /usr/local/bin/runtime-up && \
+    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\nvelocitas exec runtime-local down' > /usr/local/bin/runtime-down && \
+    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\nvelocitas exec runtime-local run-vehicle-app /workspace/build/bin/app' > /usr/local/bin/run-app && \
+    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\nvelocitas exec runtime-local run-vehicledatabroker-cli' > /usr/local/bin/vdb-cli && \
+    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\nvelocitas exec build-system build "$@"' > /usr/local/bin/build-app && \
+    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\nvelocitas exec build-system install "$@"' > /usr/local/bin/install-deps && \
+    echo '#!/bin/bash\npre-commit run --show-diff-on-failure --color=always --all-files' > /usr/local/bin/check-code && \
+    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\nvelocitas exec vehicle-signal-interface download-vspec && velocitas exec vehicle-signal-interface generate-model' > /usr/local/bin/gen-model && \
+    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\nvelocitas exec grpc-interface-support generate-sdk' > /usr/local/bin/gen-grpc && \
+    echo '#!/bin/bash\nset -e\n\nif [ "$START_RUNTIME" == "true" ]; then\n    echo "Starting local runtime services..."\n    runtime-up &\n    sleep 5\nfi\n\nexec "$@"' > /usr/local/bin/entrypoint.sh && \
+    chmod +x /usr/local/bin/runtime-* /usr/local/bin/run-app /usr/local/bin/vdb-cli /usr/local/bin/build-app /usr/local/bin/install-deps /usr/local/bin/check-code /usr/local/bin/gen-* /usr/local/bin/entrypoint.sh
+
+USER $USERNAME
+
+ENV PATH="/home/$USERNAME/.local/bin:$PATH"
+
+EXPOSE 1883 5555 30555 55555 8080
+
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["/bin/bash"]

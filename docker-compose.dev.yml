@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        USERNAME: vscode
+        USER_UID: 1000
+        USER_GID: 1000
+    container_name: velocitas-cpp-dev
+    hostname: velocitas-dev
+    privileged: true
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+    init: true
+    volumes:
+      - .:/workspace:cached
+      - velocitas-build:/workspace/build-linux-x86_64
+      - velocitas-conan:/home/vscode/.conan2
+      - velocitas-cache:/home/vscode/.cache
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - GITHUB_API_TOKEN=${GITHUB_API_TOKEN:-}
+      - SDV_MIDDLEWARE_TYPE=native
+      - SDV_VEHICLEDATABROKER_ADDRESS=vehicledatabroker:55555
+      - SDV_MQTT_ADDRESS=mosquitto:1883
+      - START_RUNTIME=false
+    ports:
+      - "8080:8080"
+      - "30555:30555"
+      - "55555:55555"
+      - "1883:1883"
+    networks:
+      - velocitas-network
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: velocitas-mosquitto
+    hostname: mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-logs:/mosquitto/log
+      - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    networks:
+      - velocitas-network
+    restart: unless-stopped
+
+  vehicledatabroker:
+    image: ghcr.io/eclipse/kuksa.val/databroker:0.4.3
+    container_name: velocitas-vdb
+    hostname: vehicledatabroker
+    ports:
+      - "55555:55555"
+    environment:
+      - KUKSA_DATA_BROKER_ADDR=0.0.0.0
+      - KUKSA_DATA_BROKER_PORT=55555
+    networks:
+      - velocitas-network
+    restart: unless-stopped
+
+  runtime-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: velocitas-runtime-test
+    environment:
+      - SDV_MIDDLEWARE_TYPE=native
+      - SDV_VEHICLEDATABROKER_ADDRESS=vehicledatabroker:55555
+      - SDV_MQTT_ADDRESS=mosquitto:1883
+      - START_RUNTIME=true
+    volumes:
+      - .:/workspace:cached
+      - velocitas-build:/workspace/build-linux-x86_64
+    networks:
+      - velocitas-network
+    depends_on:
+      - mosquitto
+      - vehicledatabroker
+    profiles:
+      - testing
+    command: ["build-app", "-r"]
+
+volumes:
+  velocitas-build:
+    driver: local
+  velocitas-conan:
+    driver: local
+  velocitas-cache:
+    driver: local
+  mosquitto-data:
+    driver: local
+  mosquitto-logs:
+    driver: local
+
+networks:
+  velocitas-network:
+    driver: bridge
+    name: velocitas-network
