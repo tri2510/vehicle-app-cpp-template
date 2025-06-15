@@ -1,154 +1,349 @@
-# Vehicle App C++ Template
+# Vehicle App C++ Template - Docker Development Environment
 
-![Template CI Workflow](https://github.com/eclipse-velocitas/vehicle-app-cpp-template/actions/workflows/ci.yml/badge.svg)
 [![License: Apache](https://img.shields.io/badge/License-Apache-yellow.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+[![Docker](https://img.shields.io/badge/Docker-Enabled-blue.svg)](https://docker.com)
+[![Velocitas](https://img.shields.io/badge/Velocitas-C++-green.svg)](https://github.com/eclipse-velocitas/velocitas-docs)
 
-The Vehicle App Template for C++ allows to create `Vehicle Apps` from the [Velocitas](https://github.com/eclipse-velocitas/velocitas-docs) development model in the C++ programming language.
+A modern, Docker-only development environment for creating [Velocitas](https://github.com/eclipse-velocitas/velocitas-docs) Vehicle Apps in C++. No devcontainer setup required - just Docker!
 
-> [!IMPORTANT]
-> We successfully migrated our C++ repositories to use version 2 of the [Conan package manager](https://conan.io/).
-> Unfortunately, those changes are not backwards compatible. So, please be aware that recent versions of this C++ app template repository
-> (everything since the `conan2` tag) require usage of the [Velocitas C++ SDK](https://github.com/eclipse-velocitas/vehicle-app-cpp-sdk) >= 0.7.0,
-> packages [devcontainer-setup](https://github.com/eclipse-velocitas/devenv-devcontainer-setup) >= v3 and
-> [github-workflows](https://github.com/eclipse-velocitas/devenv-github-workflows) >= v7, and
-> [base images](https://github.com/eclipse-velocitas/devcontainer-base-images) >= v0.4.
->
-> If you like to migrate older app repositories created from this template before Conan 2,
-> please have a look at the [Conan 2 migration guide](#migrate-older-app-repositories-to-conan-2) below.
+## 🚀 Quick Start
 
-## Folder structure
+### Prerequisites
+- [Docker](https://docker.com) installed and running
+- Git for version control
 
-* 📁 `app` - base directory for a vehicle app
-    * 📁 `src` - source code of the vehicle app
-    * 📁 `tests` - tests for the vehicle app
-
-## Building
-
-### Building the App
-To build the App, run the build script:
+### Get Started in 3 Steps
 ```bash
-./build.sh
+# 1. Clone the repository
+git clone https://github.com/tri2510/vehicle-app-cpp-template.git
+cd vehicle-app-cpp-template
+
+# 2. Build development environment
+docker build -f Dockerfile.dev -t velocitas-dev .
+
+# 3. Start developing
+docker run -it --privileged -v $(pwd):/workspace \
+  -p 8080:8080 -p 1883:1883 -p 55555:55555 velocitas-dev
 ```
 
-## Starting the runtime
-
-Open the `Run Task` view in VSCode and select `Local Runtime - Up`.
-
-## Launching the example
-With the runtime running in the background, you can run the app.
-The app must have been build before (see above).
-
-### Without debugging
-
-Open the `Run Task` view in VSCode and select `Local Runtime - Run VehicleApp`.
-
-### With debugging
-You can simply launch the example in the Debugging Tab. Make sure the `VehicleApp - Debug (Native)` is selected at the top. After the selection is done, you can also simply hit `F5`, to start the debugging session.
-
-*Note: This launch task will also make sure to re-build the app if it has been modified!*
-
-### Run App as Docker container
+### Inside the Container
 ```bash
-docker run --rm -it --net="host" -e SDV_MIDDLEWARE_TYPE="native" -e SDV_MQTT_ADDRESS="localhost:1883" -e SDV_VEHICLEDATABROKER_ADDRESS="localhost:55555" localhost:12345/vehicleapp:local
+# Install dependencies and build
+install-deps && build-app
+
+# Run your vehicle app
+run-app
+
+# Start development services
+runtime-up
 ```
 
-## Running in GitHub Codespaces
-GitHub Codespaces currently restrict the token that is used within the Codespace to just the current repository. Working on cloned repositories or
-submodules will not be possible without further setup. To work on other repos, you need to create a personal access token (PAT) [here](https://github.com/settings/tokens/new) which has full "repo" access. Copy the contents of the PAT and create a Codespace secret called `MY_GH_TOKEN` and paste the content of your PAT. Finally you need to give the Codespace secret access to the repository of the Codespace, in this case `vehicle-app-cpp-template`.
+**That's it! 🎉 You're ready to develop vehicle applications.**
 
-## Documentation
-* [Velocitas Development Model](https://eclipse.dev/velocitas/docs/concepts/development_model/)
-* [Vehicle App SDK Overview](https://eclipse.dev/velocitas/docs/concepts/development_model/vehicle_app_sdk/)
+## 🏗️ Docker Architecture
 
-## Quickstart Tutorials
-1. [Setup and Explore Development Environment](https://eclipse.dev/velocitas/docs/tutorials/quickstart/)
-1. [Develop your own Vehicle Model](https://eclipse.dev/velocitas/docs/tutorials/vehicle_model_creation/)
-1. [Develop your own Vehicle App](https://eclipse.dev/velocitas/docs/tutorials/vehicle_app_development/)
+### Development Environment Components
 
-## Contribution
-- [GitHub Issues](https://github.com/eclipse-velocitas/vehicle-app-cpp-template/issues)
-- [Mailing List](https://accounts.eclipse.org/mailing-list/velocitas-dev)
-- [Contribution](CONTRIBUTING.md)
+| Component | Purpose | Port |
+|-----------|---------|------|
+| **Development Container** | Complete C++ toolchain with Velocitas SDK | - |
+| **MQTT Broker** | Message communication (Eclipse Mosquitto) | 1883, 9001 |
+| **Vehicle Data Broker** | Vehicle signal management (KUKSA.val) | 55555 |
+| **Development Tools** | Build, test, lint, format, debug tools | - |
 
-## Troubleshooting
+### Docker Files
 
-### Manually installing dependencies
-All dependencies of the application should be downloaded and installed automatically once the VSCode DevContainer is created. Should this process fail for whatever reason, you can trigger the manual installation this command:
+- **`Dockerfile.dev`** - Complete development environment
+- **`docker-compose.dev.yml`** - Full development stack with services
+- **`config/mosquitto.conf`** - MQTT broker configuration
+
+## 🛠️ Development Commands
+
+The Docker environment provides convenient commands for all development tasks:
+
+### Build & Dependencies
 ```bash
-./install_dependencies.sh
+install-deps       # Install C++ dependencies via Conan
+build-app         # Build the vehicle application  
+build-app -r      # Build in Release mode
 ```
 
-### Migrate older app repositories to Conan 2
-If you have app repositories created from this template basing on Conan 1 and you like to migrate them to the
-latest state/Conan 2, here are some hints how to achieve that:
+### Runtime Services
+```bash
+runtime-up        # Start MQTT broker and Vehicle Data Broker
+runtime-down      # Stop runtime services
+run-app           # Run the vehicle app with services
+```
 
-1. You should run `velocitas upgrade --ignore-bounds` and upgrade packages
-   * `devenv-github-workflows` to a version >= v7.0.0 and
-   * `devenv-devcontainer-setup` to a version >= v3.0.0.
+### Code Quality & Testing
+```bash
+check-code        # Run linting, formatting, and static analysis
+./build/bin/app_utests  # Run unit tests
+```
 
-   This will migrate the base image and required Velocitas components to Conan 2.
-2. Run `velocitas sync` to automatically update some local files.
-3. You should make sure to update the cli-version to something recent (>= 13.2).
-   Set the version in `.velocitas.json`.
+### Development Tools
+```bash
+gen-model         # Generate vehicle model from VSS
+gen-grpc          # Generate gRPC SDKs
+vdb-cli           # Access Vehicle Data Broker CLI
+```
 
-Now some local files need to be updated manually:
-1. `conanfile.txt`:
+## 📁 Project Structure
 
-   In the `[requires]` section:
-   * Make sure you are referencing all packages used by the app directly.
-     Don't rely on indirect requirements provide by e.g. the C++ SDK:
-     ```diff
-     [requires]
-     +fmt/11.1.1
-     +nlohmann_json/3.11.3
-     ```
-     Update the SDK to a version >= 0.7.0:
-     ```diff
-     vehicle-app-sdk/0.7.0
-     ```
-     In the `[generators]` section replace `cmake` as follows:
-     ```diff
-     [generators]
-     -cmake
-     +CMakeDeps
-     +CMakeToolchain
-     ```
-2. Python `requirements.in`: Upgrade Conan to version 2
-   ```diff
-   -conan==1.x.y
-   +conan>=2,<3
-   ```
-   Update `requirements.txt` using `pip-compile requirements.in`
-3. `.pre-commit-config.yaml`: You should modify the suppression for the build folder:
-   ```diff
-   -"--suppress=*:build/*",
-   +"--suppress=*:build*/*",
-   ```
-4. `.gitignore`: Add an entry to ignore `CMakeUserPresets.json` files
-   ```diff
-   +CMakeUserPresets.json
-   ```
-5. `app/Dockerfile` - if you are using containerized apps:
-   * Update the base-image:
-     ```diff
-     -FROM ghcr.io/eclipse-velocitas/devcontainer-base-images/cpp:v0.3 as builder
-     +FROM ghcr.io/eclipse-velocitas/devcontainer-base-images/cpp:v0.4 AS builder
-     ```
-     You can remove the Conan 1 environment variable (no replacement needed):
-     ```diff
-     -ENV CONAN_USER_HOME /home/vscode/
-     -
-     ```
-6. Now comes the - potentially - tricky part: Update the `CMakelist.txt` files.
-   Instead of referencing all packages pulled in via Conan using the cmake variable
-   `CONAN_LIBS` the dependent package now need to be found one by one via `find_package`.
-   For migration it's best if you compare the changes in the `CMakeLists.txt` files of
-   this repository between the commit tagged with `conan2` and the commit before that
-   and take over the required changes.
+```
+vehicle-app-cpp-template/
+├── 🐳 Docker Development Environment
+│   ├── Dockerfile.dev              # Development container
+│   ├── docker-compose.dev.yml      # Full development stack
+│   └── config/mosquitto.conf       # MQTT configuration
+├── 📱 Vehicle Application
+│   ├── app/src/                     # C++ source code
+│   ├── app/tests/                   # Unit tests
+│   ├── AppManifest.json            # App configuration
+│   └── CMakeLists.txt               # Build configuration
+├── 🔧 Development Configuration
+│   ├── conanfile.txt               # C++ dependencies
+│   ├── requirements.txt            # Python dependencies
+│   └── .velocitas.json             # Velocitas configuration
+├── 📖 Example Applications
+│   └── examples/                   # Example vehicle apps
+└── 📚 Documentation
+    ├── DOCKER_DEVELOPMENT.md      # Complete development guide
+    └── README.md                   # This file
+```
 
-> [!NOTE]
->
-> If you are using a `conanfile.py` instead of the `conanfile.txt` variant, here are some hints:
-> * The Python file variant is not supported by the Velcitas tooling (especially the gPRC interface tools)!
-> * Make sure you don't configure `cmake_layout` in the layout section:
->   This will conflict with the build script provieded by component `build-system`.
+## 🚗 Example Vehicle Applications
+
+This repository includes comprehensive examples demonstrating different aspects of vehicle app development:
+
+### 1. Speed Monitor & Alert System
+- Real-time speed monitoring with configurable alerts
+- Speed limit violation detection  
+- Hard braking and rapid acceleration detection
+- MQTT-based configuration and alerting
+
+### 2. Coming Soon
+- Fuel Efficiency Tracker
+- Maintenance Reminder System
+- Parking Assistant
+- Climate Control Optimizer
+
+Each example includes complete source code, tests, and detailed tutorials.
+
+## 🔧 Development Workflow
+
+### Option 1: Quick Development (Recommended)
+```bash
+# Single container with all tools
+docker run -it --privileged -v $(pwd):/workspace \
+  -p 8080:8080 -p 1883:1883 -p 55555:55555 velocitas-dev
+
+# Inside container
+install-deps && build-app && run-app
+```
+
+### Option 2: Full Development Stack
+```bash
+# Complete environment with all services
+docker-compose -f docker-compose.dev.yml up -d
+
+# Access development container
+docker-compose -f docker-compose.dev.yml exec dev bash
+```
+
+### Option 3: Custom Development
+```bash
+# Build custom image with your modifications
+docker build -f Dockerfile.dev -t my-velocitas-dev .
+
+# Run with custom configuration
+docker run -it --privileged -v $(pwd):/workspace \
+  -e SDV_MQTT_ADDRESS=my-broker:1883 \
+  my-velocitas-dev
+```
+
+## 🧪 Testing Your Vehicle App
+
+### Unit Testing
+```bash
+# Build and run tests
+build-app
+./build/bin/app_utests
+```
+
+### Integration Testing
+```bash
+# Start services
+runtime-up
+
+# Test with real services
+run-app
+
+# Send test MQTT messages
+docker run --rm --network host eclipse-mosquitto:2.0 mosquitto_pub \
+  -h localhost -t "sampleapp/getSpeed" -m '{"requestId": "test"}'
+```
+
+### Code Quality
+```bash
+# Run all quality checks
+check-code
+
+# Individual tools available:
+# - clang-format (formatting)
+# - clang-tidy (static analysis)  
+# - cpplint (style checking)
+# - cppcheck (error detection)
+```
+
+## 🎯 Key Features
+
+### ✅ Zero Setup Complexity
+- No devcontainer configuration required
+- No VS Code dependencies
+- No complex installation procedures
+- Works with any IDE or editor
+
+### ✅ Complete Development Environment
+- Full C++ toolchain (GCC, CMake, Ninja)
+- Velocitas SDK >= 0.7.0 integrated
+- Conan 2.x package management
+- All development tools included
+
+### ✅ Vehicle-Specific Tools
+- Vehicle Data Broker (KUKSA.val) integration
+- MQTT communication (Eclipse Mosquitto)
+- Vehicle Signal Specification (VSS) support
+- gRPC SDK generation
+
+### ✅ Production Ready
+- Multi-stage Docker builds
+- Optimized container images
+- Environment configuration support
+- Deployment-ready containers
+
+## 🚀 Deployment
+
+### Building Production Images
+```bash
+# Build your app first
+build-app
+
+# Create production container
+docker build -f app/Dockerfile -t my-vehicle-app .
+
+# Run in production
+docker run -d --name vehicle-app \
+  -e SDV_MQTT_ADDRESS=production-mqtt:1883 \
+  -e SDV_VEHICLEDATABROKER_ADDRESS=production-vdb:55555 \
+  my-vehicle-app
+```
+
+## 📖 Documentation
+
+- **[DOCKER_DEVELOPMENT.md](DOCKER_DEVELOPMENT.md)** - Complete development guide
+- **[Velocitas Documentation](https://eclipse-velocitas.github.io/velocitas-docs/)** - Framework documentation
+- **[Vehicle Signal Specification](https://covesa.github.io/vehicle_signal_specification/)** - VSS reference
+- **[KUKSA.val](https://github.com/eclipse/kuksa.val)** - Vehicle Data Broker
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes in the Docker environment
+4. Test thoroughly: `check-code && build-app && ./build/bin/app_utests`
+5. Commit your changes: `git commit -m 'Add amazing feature'`
+6. Push to the branch: `git push origin feature/amazing-feature`
+7. Open a Pull Request
+
+## 🆚 Migration from DevContainer
+
+This repository has been migrated from a devcontainer-based setup to a pure Docker development environment. Benefits include:
+
+### Before (DevContainer)
+- ❌ VS Code dependency
+- ❌ Complex devcontainer configuration
+- ❌ IDE-specific setup
+- ❌ Limited development flexibility
+
+### After (Docker-Only)
+- ✅ IDE/Editor agnostic
+- ✅ Simple Docker workflow
+- ✅ Faster setup and build
+- ✅ Better portability
+- ✅ Cleaner repository structure
+
+### Migration Guide
+If you have an existing devcontainer-based setup:
+
+1. **Remove devcontainer files** (already done in this repo)
+2. **Switch to Docker workflow**: Use `Dockerfile.dev` instead of devcontainer
+3. **Update documentation**: Follow this README instead of devcontainer docs
+4. **Rebuild environment**: `docker build -f Dockerfile.dev -t velocitas-dev .`
+
+## 📋 Requirements
+
+### System Requirements
+- **Docker**: Version 20.10+ recommended
+- **Operating System**: Linux, macOS, or Windows with WSL2
+- **Memory**: 4GB+ RAM recommended for development
+- **Storage**: 2GB+ free space for Docker images
+
+### Velocitas Requirements
+- **Velocitas C++ SDK**: >= 0.7.0 (included)
+- **Conan**: 2.x (included) 
+- **Vehicle Signals**: VSS 4.0 compatible (included)
+- **Communication**: MQTT and gRPC support (included)
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Docker build fails**
+```bash
+# Clean Docker cache and rebuild
+docker system prune -f
+docker build --no-cache -f Dockerfile.dev -t velocitas-dev .
+```
+
+**Permission errors**
+```bash
+# Fix file permissions inside container
+docker run --rm -v $(pwd):/workspace --privileged velocitas-dev \
+  bash -c "chown -R vscode:vscode /workspace"
+```
+
+**Port conflicts**
+```bash
+# Check for conflicting services
+docker ps
+netstat -tulpn | grep -E '(1883|55555|8080)'
+
+# Use different ports
+docker run -it --privileged -v $(pwd):/workspace \
+  -p 8081:8080 -p 1884:1883 -p 55556:55555 velocitas-dev
+```
+
+**Build errors**
+```bash
+# Clean and rebuild
+rm -rf build-linux-x86_64
+install-deps && build-app
+```
+
+## 📄 License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+## 🏷️ Version Information
+
+- **Template Version**: Docker-enabled v1.0
+- **Velocitas SDK**: >= 0.7.0  
+- **Conan**: 2.15.1+
+- **Base Image**: eclipse-velocitas/devcontainer-base-images/cpp:v0.4
+
+---
+
+**Happy Vehicle App Development! 🚗💨**
+
+For detailed development instructions, see [DOCKER_DEVELOPMENT.md](DOCKER_DEVELOPMENT.md).
