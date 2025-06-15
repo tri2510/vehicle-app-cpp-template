@@ -114,21 +114,42 @@ vehicle-app-cpp-template/
 
 ## 🚗 Example Vehicle Applications
 
-This repository includes comprehensive examples demonstrating different aspects of vehicle app development:
+This repository includes **3 fully implemented vehicle applications** plus **2 tutorial examples**:
+
+### ✅ Fully Implemented Examples
 
 ### 1. Speed Monitor & Alert System
 - Real-time speed monitoring with configurable alerts
 - Speed limit violation detection  
 - Hard braking and rapid acceleration detection
 - MQTT-based configuration and alerting
+- **Status:** Complete with source code, tests, and documentation
 
-### 2. Coming Soon
-- Fuel Efficiency Tracker
-- Maintenance Reminder System
-- Parking Assistant
-- Climate Control Optimizer
+### 2. Fuel Efficiency Tracker
+- Real-time fuel efficiency calculation (km/L and L/100km)
+- Trip-based fuel tracking with start/stop commands
+- Rolling efficiency averages and eco-driving tips
+- **Status:** Complete with source code, tests, and documentation
 
-Each example includes complete source code, tests, and detailed tutorials.
+### 3. Maintenance Reminder System
+- Multiple service interval tracking (distance, time, engine hours)
+- Proactive maintenance reminders with priority levels
+- Service history and cost tracking
+- **Status:** Complete with source code, tests, and documentation
+
+### 📚 Tutorial Examples
+
+### 4. Parking Assistant
+- Multi-sensor distance monitoring concepts
+- Progressive alert algorithms and collision warnings
+- **Status:** Detailed tutorial and design documentation
+
+### 5. Climate Control Optimizer  
+- Automatic temperature optimization concepts
+- Energy-efficient climate control algorithms
+- **Status:** Detailed tutorial and design documentation
+
+All implemented examples include complete source code, comprehensive unit tests, and detailed tutorials.
 
 ## 🔧 Development Workflow
 
