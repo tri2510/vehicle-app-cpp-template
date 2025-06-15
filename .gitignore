@@ -57,8 +57,18 @@ CMakeUserPresets.json
 
 # Downloaded assets
 Assets
-.vscode/scripts/assets/
 get_helm.sh
+
+# Docker development
+.dockerignore.local
+docker-compose.override.yml
+.env.local
+
+# Development tools (developers can create their own)
+.vscode/
+.idea/
+*.swp
+*.swo
 
 # conan licenses
 licenses
