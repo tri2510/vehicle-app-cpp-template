@@ -48,7 +48,8 @@ WORKDIR /workspace
 
 COPY --chown=$USERNAME:$USERNAME . /workspace
 
-RUN pip install --user -r requirements.txt && \
+RUN sudo chown -R $USERNAME:$USERNAME /workspace && \
+    pip install --user -r requirements.txt && \
     export PATH="$HOME/.local/bin:$PATH" && \
     velocitas init -f -v && \
     ./install_dependencies.sh
