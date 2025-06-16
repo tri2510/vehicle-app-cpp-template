@@ -15,8 +15,7 @@
 set(TARGET_NAME "app")
 
 add_executable(${TARGET_NAME}
-    SpeedMonitorApp.cpp
-    Launcher.cpp
+    VehicleApp.cpp
 )
 
 target_include_directories(${TARGET_NAME}

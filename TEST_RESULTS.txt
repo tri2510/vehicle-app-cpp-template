@@ -1,0 +1,132 @@
+=== COMPLETE SIGNAL RECEPTION TEST ===
+Test Date: Mon Jun 16 10:48:24 PM +07 2025
+
+=== STEP 1: Verify Services Running ===
+Command: docker ps --filter "name=velocitas-"
+CONTAINER ID   IMAGE                                        COMMAND                  CREATED          STATUS          PORTS                                                                                  NAMES
+aa5955b31a1f   ghcr.io/eclipse/kuksa.val/databroker:0.4.3   "/app/databroker"        13 minutes ago   Up 13 minutes   0.0.0.0:55555->55555/tcp, :::55555->55555/tcp                                          velocitas-vdb
+70a75ba0622b   eclipse-mosquitto:2.0                        "/docker-entrypoint.…"   13 minutes ago   Up 13 minutes   0.0.0.0:1883->1883/tcp, :::1883->1883/tcp, 0.0.0.0:9001->9001/tcp, :::9001->9001/tcp   velocitas-mosquitto
+
+=== STEP 2: Start Vehicle App in Background ===
+Command: docker run --rm --privileged -v $(pwd):/workspace --network=host velocitas-dev run-app
+Starting app...
+App PID: $!
+App started, ready for signals
+=== STEP 3: Send Vehicle Signals ===
+Signal 1: Vehicle.Speed = 12.5 m/s
+Signal 2: Vehicle.Speed = 28.0 m/s (should trigger warning)
+Signal 3: Vehicle.Speed = 8.0 m/s
+Signal 4: Vehicle.Speed = 0.0 m/s (stopped)
+All signals sent, stopping app...
+
+=== STEP 4: Application Signal Processing Results ===
+App Logs:
+[38;2;255;255;255m2025-06-16 15:48:44.144851635, INFO  : 🚀 Starting Vehicle App Template...
+[0m[38;2;255;255;255m2025-06-16 15:48:44.144910055, INFO  : Using Kuksa Databroker sdv.databroker.v1 API
+[0m[38;2;255;255;255m2025-06-16 15:48:44.144922879, INFO  : Connecting to data broker service 'vehicledatabroker' via '127.0.0.1:55555'
+[0m[38;2;255;255;255m2025-06-16 15:48:44.145428325, INFO  : 🚗 Vehicle App Template starting...
+[0m[38;2;255;255;255m2025-06-16 15:48:44.145441310, INFO  : Starting app ...
+[0m[38;2;255;255;255m2025-06-16 15:48:44.145443784, INFO  : 🔧 Vehicle App Template ready - setting up signal subscriptions
+[0m[38;2;255;255;255m2025-06-16 15:48:44.149996441, INFO  : ✅ Signal subscription completed
+[0m[38;2;255;255;255m2025-06-16 15:48:44.150008814, INFO  : App is running.
+[0m[38;2;255;255;255m2025-06-16 15:48:44.151628999, INFO  : 📊 Received signal: Vehicle.Speed = 35.00 m/s (126.0 km/h)
+[0m[38;2;255;255;000m2025-06-16 15:48:44.151636723, WARN  : ⚠️  High speed detected: 35.00 m/s
+[0m[38;2;255;255;255m2025-06-16 15:48:44.151639007, INFO  : 🛣️  High speed: highway driving
+[0m[38;2;255;255;255m2025-06-16 15:48:50.484954354, INFO  : 📊 Received signal: Vehicle.Speed = 12.50 m/s (45.0 km/h)
+[0m[38;2;255;255;255m2025-06-16 15:48:50.484985532, INFO  : 🏘️  Medium speed: suburban driving
+[0m[38;2;255;255;255m2025-06-16 15:48:55.138504639, INFO  : 📊 Received signal: Vehicle.Speed = 28.00 m/s (100.8 km/h)
+[0m[38;2;255;255;000m2025-06-16 15:48:55.138527953, WARN  : ⚠️  High speed detected: 28.00 m/s
+[0m[38;2;255;255;255m2025-06-16 15:48:55.138533173, INFO  : 🛣️  High speed: highway driving
+[0m[38;2;255;255;255m2025-06-16 15:48:59.787890893, INFO  : 📊 Received signal: Vehicle.Speed = 8.00 m/s (28.8 km/h)
+[0m[38;2;255;255;255m2025-06-16 15:48:59.787912483, INFO  : 🏘️  Medium speed: suburban driving
+[0m[38;2;255;255;255m2025-06-16 15:49:04.435803571, INFO  : 📊 Received signal: Vehicle.Speed = 0.00 m/s (0.0 km/h)
+[0m[38;2;255;255;255m2025-06-16 15:49:04.435821975, INFO  : 🛑 Vehicle stopped
+[0m
+=== STEP 5: Signal Sending Logs ===
+Signal 1 Send Log:
+2025-06-16 15:48:49,470 INFO kuksa_client.grpc: No Root CA present, it will not be possible to use a secure connection!
+2025-06-16 15:48:49,470 INFO kuksa_client.grpc.aio: Establishing insecure channel
+2025-06-16 15:48:49,476 INFO kuksa_client.cli_backend.grpc: gRPC channel connected.
+
+     ⢀⣤⣶⣾⣿⢸⣿⣿⣷⣶⣤⡀
+    ⣴⣿⡿⠋⣿⣿   ⠈⠙⢿⣿⣦
+   ⣾⣿⠋  ⣿⣿  ⣶⣿  ⠙⣿⣷
+  ⣸⣿⠇   ⣿⣿⠠⣾⡿⠃   ⠸⣿⣇  ⣶ ⣠⡶⠂ ⣶  ⢰⡆ ⢰⡆⢀⣴⠖ ⢠⡶⠶⠶⡦   ⣰⣶⡀
+  ⣿⣿    ⠿⢿⣷⣦⡀     ⣿⣿  ⣿⢾⣏   ⣿  ⢸⡇ ⢸⡷⣿⡁  ⠘⠷⠶⠶⣦  ⢠⡟⠘⣷
+  ⢹⣿⡆   ⣿⣶⠈⢻⣿⡆   ⢰⣿⡏  ⠿ ⠙⠷⠄ ⠙⠷⠶⠟⠁ ⠸⠇⠈⠻⠦ ⠐⠷⠶⠶⠟ ⠠⠿⠁ ⠹⠧
+   ⢿⣿⣄  ⣿⣿  ⠿⣿  ⣠⣿⡿
+    ⠻⣿⣷⡄⣿⣿   ⢀⣠⣾⣿⠟    kuksa-client CLI
+     ⠈⠛⠇⢿⣿⣿⣿⣿⡿⠿⠛⠁     0.5.0a2.post4+git.cdf8f821.dirty
+
+
+Connecting to VSS server at localhost port 55555 using KUKSA GRPC protocol.
+TLS will not be used.
+[04m[91mO[39;49;00m[04m[91mK[39;49;00m[37m[39;49;00m
+
+2025-06-16 15:48:50,495 INFO kuksa_client.cli_backend.grpc: gRPC channel disconnected.
+
+Signal 2 Send Log:
+2025-06-16 15:48:54,126 INFO kuksa_client.grpc: No Root CA present, it will not be possible to use a secure connection!
+2025-06-16 15:48:54,127 INFO kuksa_client.grpc.aio: Establishing insecure channel
+2025-06-16 15:48:54,132 INFO kuksa_client.cli_backend.grpc: gRPC channel connected.
+
+     ⢀⣤⣶⣾⣿⢸⣿⣿⣷⣶⣤⡀
+    ⣴⣿⡿⠋⣿⣿   ⠈⠙⢿⣿⣦
+   ⣾⣿⠋  ⣿⣿  ⣶⣿  ⠙⣿⣷
+  ⣸⣿⠇   ⣿⣿⠠⣾⡿⠃   ⠸⣿⣇  ⣶ ⣠⡶⠂ ⣶  ⢰⡆ ⢰⡆⢀⣴⠖ ⢠⡶⠶⠶⡦   ⣰⣶⡀
+  ⣿⣿    ⠿⢿⣷⣦⡀     ⣿⣿  ⣿⢾⣏   ⣿  ⢸⡇ ⢸⡷⣿⡁  ⠘⠷⠶⠶⣦  ⢠⡟⠘⣷
+  ⢹⣿⡆   ⣿⣶⠈⢻⣿⡆   ⢰⣿⡏  ⠿ ⠙⠷⠄ ⠙⠷⠶⠟⠁ ⠸⠇⠈⠻⠦ ⠐⠷⠶⠶⠟ ⠠⠿⠁ ⠹⠧
+   ⢿⣿⣄  ⣿⣿  ⠿⣿  ⣠⣿⡿
+    ⠻⣿⣷⡄⣿⣿   ⢀⣠⣾⣿⠟    kuksa-client CLI
+     ⠈⠛⠇⢿⣿⣿⣿⣿⡿⠿⠛⠁     0.5.0a2.post4+git.cdf8f821.dirty
+
+
+Connecting to VSS server at localhost port 55555 using KUKSA GRPC protocol.
+TLS will not be used.
+[04m[91mO[39;49;00m[04m[91mK[39;49;00m[37m[39;49;00m
+
+2025-06-16 15:48:55,150 INFO kuksa_client.cli_backend.grpc: gRPC channel disconnected.
+
+Signal 3 Send Log:
+2025-06-16 15:48:58,773 INFO kuksa_client.grpc: No Root CA present, it will not be possible to use a secure connection!
+2025-06-16 15:48:58,773 INFO kuksa_client.grpc.aio: Establishing insecure channel
+2025-06-16 15:48:58,781 INFO kuksa_client.cli_backend.grpc: gRPC channel connected.
+
+     ⢀⣤⣶⣾⣿⢸⣿⣿⣷⣶⣤⡀
+    ⣴⣿⡿⠋⣿⣿   ⠈⠙⢿⣿⣦
+   ⣾⣿⠋  ⣿⣿  ⣶⣿  ⠙⣿⣷
+  ⣸⣿⠇   ⣿⣿⠠⣾⡿⠃   ⠸⣿⣇  ⣶ ⣠⡶⠂ ⣶  ⢰⡆ ⢰⡆⢀⣴⠖ ⢠⡶⠶⠶⡦   ⣰⣶⡀
+  ⣿⣿    ⠿⢿⣷⣦⡀     ⣿⣿  ⣿⢾⣏   ⣿  ⢸⡇ ⢸⡷⣿⡁  ⠘⠷⠶⠶⣦  ⢠⡟⠘⣷
+  ⢹⣿⡆   ⣿⣶⠈⢻⣿⡆   ⢰⣿⡏  ⠿ ⠙⠷⠄ ⠙⠷⠶⠟⠁ ⠸⠇⠈⠻⠦ ⠐⠷⠶⠶⠟ ⠠⠿⠁ ⠹⠧
+   ⢿⣿⣄  ⣿⣿  ⠿⣿  ⣠⣿⡿
+    ⠻⣿⣷⡄⣿⣿   ⢀⣠⣾⣿⠟    kuksa-client CLI
+     ⠈⠛⠇⢿⣿⣿⣿⣿⡿⠿⠛⠁     0.5.0a2.post4+git.cdf8f821.dirty
+
+
+Connecting to VSS server at localhost port 55555 using KUKSA GRPC protocol.
+TLS will not be used.
+[04m[91mO[39;49;00m[04m[91mK[39;49;00m[37m[39;49;00m
+
+2025-06-16 15:48:59,799 INFO kuksa_client.cli_backend.grpc: gRPC channel disconnected.
+
+Signal 4 Send Log:
+2025-06-16 15:49:03,423 INFO kuksa_client.grpc: No Root CA present, it will not be possible to use a secure connection!
+2025-06-16 15:49:03,424 INFO kuksa_client.grpc.aio: Establishing insecure channel
+2025-06-16 15:49:03,475 INFO kuksa_client.cli_backend.grpc: gRPC channel connected.
+
+     ⢀⣤⣶⣾⣿⢸⣿⣿⣷⣶⣤⡀
+    ⣴⣿⡿⠋⣿⣿   ⠈⠙⢿⣿⣦
+   ⣾⣿⠋  ⣿⣿  ⣶⣿  ⠙⣿⣷
+  ⣸⣿⠇   ⣿⣿⠠⣾⡿⠃   ⠸⣿⣇  ⣶ ⣠⡶⠂ ⣶  ⢰⡆ ⢰⡆⢀⣴⠖ ⢠⡶⠶⠶⡦   ⣰⣶⡀
+  ⣿⣿    ⠿⢿⣷⣦⡀     ⣿⣿  ⣿⢾⣏   ⣿  ⢸⡇ ⢸⡷⣿⡁  ⠘⠷⠶⠶⣦  ⢠⡟⠘⣷
+  ⢹⣿⡆   ⣿⣶⠈⢻⣿⡆   ⢰⣿⡏  ⠿ ⠙⠷⠄ ⠙⠷⠶⠟⠁ ⠸⠇⠈⠻⠦ ⠐⠷⠶⠶⠟ ⠠⠿⠁ ⠹⠧
+   ⢿⣿⣄  ⣿⣿  ⠿⣿  ⣠⣿⡿
+    ⠻⣿⣷⡄⣿⣿   ⢀⣠⣾⣿⠟    kuksa-client CLI
+     ⠈⠛⠇⢿⣿⣿⣿⣿⡿⠿⠛⠁     0.5.0a2.post4+git.cdf8f821.dirty
+
+
+Connecting to VSS server at localhost port 55555 using KUKSA GRPC protocol.
+TLS will not be used.
+[04m[91mO[39;49;00m[04m[91mK[39;49;00m[37m[39;49;00m
+
+2025-06-16 15:49:04,446 INFO kuksa_client.cli_backend.grpc: gRPC channel disconnected.
