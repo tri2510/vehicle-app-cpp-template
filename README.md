@@ -12,16 +12,18 @@ A modern, Docker-only development environment for creating [Velocitas](https://g
 - [Docker](https://docker.com) installed and running
 - Git for version control
 
-### Get Started in 3 Steps
+### Development Workflow - 4 Simple Steps
+
+#### Step 1: Build Development Environment
 ```bash
-# 1. Clone the repository
+# Clone the repository
 git clone https://github.com/tri2510/vehicle-app-cpp-template.git
 cd vehicle-app-cpp-template
 
-# 2. Build development environment
+# Build development container
 docker build -f Dockerfile.dev -t velocitas-dev .
 
-## 2.1 With proxy:
+# With proxy (if needed):
 docker build -f Dockerfile.dev \
   --build-arg HTTP_PROXY=http://127.0.0.1:3128 \
   --build-arg HTTPS_PROXY=http://127.0.0.1:3128 \
@@ -29,25 +31,55 @@ docker build -f Dockerfile.dev \
   --build-arg https_proxy=http://127.0.0.1:3128 \
   --network=host \
   -t velocitas-dev .
-
-# 3. Start developing
-docker run -it --privileged -v $(pwd):/workspace \
-  -p 8080:8080 -p 1883:1883 -p 55555:55555 velocitas-dev
 ```
 
-### Inside the Container
+#### Step 2: Build Your Vehicle App
 ```bash
-# Install dependencies and build
-install-deps && build-app
+# Enter development container
+docker run -it --privileged -v $(pwd):/workspace \
+  --network=host velocitas-dev
 
-# Run your vehicle app
+# With proxy (if needed):
+docker run -it --privileged -v $(pwd):/workspace \
+  --network=host \
+  -e HTTP_PROXY=http://127.0.0.1:3128 \
+  -e HTTPS_PROXY=http://127.0.0.1:3128 \
+  -e http_proxy=http://127.0.0.1:3128 \
+  -e https_proxy=http://127.0.0.1:3128 \
+  velocitas-dev
+
+# Inside container - build your app
+gen-model      # Generate C++ classes from Vehicle Signal Specification (VSS)
+install-deps   # Install C++ dependencies using Conan package manager
+build-app      # Compile the vehicle application with CMake/Ninja
+```
+
+#### Step 3: Start Runtime Services
+```bash
+# In a separate terminal, start MQTT broker and Vehicle Data Broker
+docker compose -f docker-compose.dev.yml up mosquitto vehicledatabroker -d
+
+# Optional: Start Kuksa client for testing (in another terminal)
+docker compose -f docker-compose.dev.yml up kuksa-client
+
+# Or use the standalone Kuksa client:
+docker run -it --rm \
+  --network host \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main \
+  "grpc://localhost:55555"
+```
+
+#### Step 4: Run and Test Your App
+```bash
+# Back in the development container, run your app
 run-app
 
-# Start development services
-runtime-up
+# Your vehicle app is now running and connected to:
+# - MQTT Broker (localhost:1883)
+# - Vehicle Data Broker (localhost:55555)
 ```
 
-**That's it! 🎉 You're ready to develop vehicle applications.**
+**That's it! 🎉 Your vehicle app is running and ready for development.**
 
 ## 🏗️ Docker Architecture
 
@@ -58,6 +90,7 @@ runtime-up
 | **Development Container** | Complete C++ toolchain with Velocitas SDK | - |
 | **MQTT Broker** | Message communication (Eclipse Mosquitto) | 1883, 9001 |
 | **Vehicle Data Broker** | Vehicle signal management (KUKSA.val) | 55555 |
+| **Kuksa Client** | Interactive vehicle data testing client | - |
 | **Development Tools** | Build, test, lint, format, debug tools | - |
 
 ### Docker Files
@@ -72,29 +105,32 @@ The Docker environment provides convenient commands for all development tasks:
 
 ### Build & Dependencies
 ```bash
-install-deps       # Install C++ dependencies via Conan
-build-app         # Build the vehicle application  
-build-app -r      # Build in Release mode
+gen-model         # Input: VSS spec (JSON) → Output: C++ classes in Vehicle.hpp
+                  # Downloads VSS 4.0 spec and generates Vehicle.Speed, Vehicle.Acceleration classes
+install-deps      # Input: conanfile.txt → Output: Downloaded C++ libraries
+                  # Installs Velocitas SDK, fmt, nlohmann_json, gRPC to ~/.conan2/
+build-app         # Input: C++ source files → Output: Executable in build/bin/app
+build-app -r      # Same as above but optimized Release build
 ```
 
 ### Runtime Services
 ```bash
-runtime-up        # Start MQTT broker and Vehicle Data Broker
-runtime-down      # Stop runtime services
-run-app           # Run the vehicle app with services
+runtime-up        # Input: None → Output: MQTT broker (port 1883) + VDB (port 55555)
+runtime-down      # Input: None → Output: Stops all runtime containers
+run-app           # Input: build/bin/app → Output: Running vehicle app with logs
 ```
 
 ### Code Quality & Testing
 ```bash
-check-code        # Run linting, formatting, and static analysis
-./build/bin/app_utests  # Run unit tests
+check-code        # Input: C++ source files → Output: Lint/format reports and fixes
+./build/bin/app_utests  # Input: Test executable → Output: Test results and coverage
 ```
 
 ### Development Tools
 ```bash
-gen-model         # Generate vehicle model from VSS
-gen-grpc          # Generate gRPC SDKs
-vdb-cli           # Access Vehicle Data Broker CLI
+gen-model         # Input: VSS spec URL → Output: Generated Vehicle.hpp classes
+gen-grpc          # Input: .proto files → Output: Generated gRPC client/server code
+vdb-cli           # Input: Commands → Output: Interactive VDB management console
 ```
 
 ## 📁 Project Structure
@@ -121,97 +157,145 @@ vehicle-app-cpp-template/
     └── README.md                   # This file
 ```
 
-## 🚗 Example Vehicle Applications
+## 🚗 Vehicle Application - Speed Monitor & Alert System
 
-This repository includes **3 fully implemented vehicle applications** plus **2 tutorial examples**:
+This repository contains a **production-ready Speed Monitor & Alert System** that demonstrates real-world vehicle application development using the Eclipse Velocitas framework.
 
-### ✅ Fully Implemented Examples
+### ✅ Speed Monitor & Alert System
+- **Real-time speed monitoring** with configurable speed limits
+- **Speed limit violation detection** with instant MQTT alerts  
+- **Hard braking and rapid acceleration detection** for safety monitoring
+- **MQTT-based configuration** for dynamic threshold updates
+- **Comprehensive statistics** tracking and reporting
+- **Status:** Complete with source code, comprehensive tests, and documentation
 
-### 1. Speed Monitor & Alert System
-- Real-time speed monitoring with configurable alerts
-- Speed limit violation detection  
-- Hard braking and rapid acceleration detection
-- MQTT-based configuration and alerting
-- **Status:** Complete with source code, tests, and documentation
+### 🔧 Features Demonstrated
+- **Vehicle Signal Integration:** Real-time data from Vehicle.Speed and Vehicle.Acceleration.Longitudinal
+- **MQTT Communication:** Bi-directional messaging for alerts and configuration
+- **Event-Driven Architecture:** Asynchronous processing with error handling
+- **Configurable Thresholds:** Dynamic speed limits and alert settings
+- **Alert Cooldown Logic:** Prevents alert spam with intelligent timing
+- **Production-Ready:** Full error handling, logging, and robust design
 
-### 2. Fuel Efficiency Tracker
-- Real-time fuel efficiency calculation (km/L and L/100km)
-- Trip-based fuel tracking with start/stop commands
-- Rolling efficiency averages and eco-driving tips
-- **Status:** Complete with source code, tests, and documentation
+### 📊 MQTT Topics
+- **`speedmonitor/config`** - Receive configuration updates
+- **`speedmonitor/alerts`** - Publish speed violations and safety alerts
+- **`speedmonitor/status`** - Publish current speed and system status
+- **`speedmonitor/statistics`** - Publish performance metrics
 
-### 3. Maintenance Reminder System
-- Multiple service interval tracking (distance, time, engine hours)
-- Proactive maintenance reminders with priority levels
-- Service history and cost tracking
-- **Status:** Complete with source code, tests, and documentation
-
-### 📚 Tutorial Examples
-
-### 4. Parking Assistant
-- Multi-sensor distance monitoring concepts
-- Progressive alert algorithms and collision warnings
-- **Status:** Detailed tutorial and design documentation
-
-### 5. Climate Control Optimizer  
-- Automatic temperature optimization concepts
-- Energy-efficient climate control algorithms
-- **Status:** Detailed tutorial and design documentation
-
-All implemented examples include complete source code, comprehensive unit tests, and detailed tutorials.
+This example provides a complete foundation for building sophisticated vehicle monitoring applications.
 
 ## 🔧 Development Workflow
 
-### Option 1: Quick Development (Recommended)
+### Recommended: Separate Container Workflow
+This is the most reliable approach for vehicle app development:
+
 ```bash
-# Single container with all tools
+# Terminal 1: Start runtime services
+docker compose -f docker-compose.dev.yml up mosquitto vehicledatabroker -d
+
+# Terminal 2: Development container
+docker run -it --privileged -v $(pwd):/workspace \
+  --network=host velocitas-dev
+
+# With proxy (if needed):
+docker run -it --privileged -v $(pwd):/workspace \
+  --network=host \
+  -e HTTP_PROXY=http://127.0.0.1:3128 \
+  -e HTTPS_PROXY=http://127.0.0.1:3128 \
+  -e http_proxy=http://127.0.0.1:3128 \
+  -e https_proxy=http://127.0.0.1:3128 \
+  velocitas-dev
+
+# Inside development container:
+gen-model && install-deps && build-app && run-app
+# 1. Generate vehicle classes from VSS spec
+# 2. Install dependencies (Velocitas SDK, etc.)  
+# 3. Compile the C++ application
+# 4. Run the vehicle app
+```
+
+### Alternative: All-in-One Development
+For quick testing (may have networking issues):
+
+```bash
+# Single container with all services
 docker run -it --privileged -v $(pwd):/workspace \
   -p 8080:8080 -p 1883:1883 -p 55555:55555 velocitas-dev
 
-# Inside container
+# Inside container:
+runtime-up          # Start services
 install-deps && build-app && run-app
 ```
 
-### Option 2: Full Development Stack
+### Using Docker Compose
+For a complete development environment:
+
 ```bash
-# Complete environment with all services
-docker-compose -f docker-compose.dev.yml up -d
+# Start all services including dev container
+docker compose -f docker-compose.dev.yml up -d
 
 # Access development container
-docker-compose -f docker-compose.dev.yml exec dev bash
-```
+docker compose -f docker-compose.dev.yml exec dev bash
 
-### Option 3: Custom Development
-```bash
-# Build custom image with your modifications
-docker build -f Dockerfile.dev -t my-velocitas-dev .
-
-# Run with custom configuration
-docker run -it --privileged -v $(pwd):/workspace \
-  -e SDV_MQTT_ADDRESS=my-broker:1883 \
-  my-velocitas-dev
+# Start Kuksa client for testing (separate terminal)
+docker compose -f docker-compose.dev.yml up kuksa-client --profile testing
 ```
 
 ## 🧪 Testing Your Vehicle App
 
 ### Unit Testing
 ```bash
-# Build and run tests
+# In development container
 build-app
 ./build/bin/app_utests
 ```
 
-### Integration Testing
+### Integration Testing with Real Services
 ```bash
-# Start services
-runtime-up
+# Terminal 1: Start runtime services
+docker compose -f docker-compose.dev.yml up mosquitto vehicledatabroker -d
 
-# Test with real services
-run-app
+# Terminal 2: Development container (with proxy if needed)
+docker run -it --privileged -v $(pwd):/workspace \
+  --network=host \
+  -e HTTP_PROXY=http://127.0.0.1:3128 \
+  -e HTTPS_PROXY=http://127.0.0.1:3128 \
+  -e http_proxy=http://127.0.0.1:3128 \
+  -e https_proxy=http://127.0.0.1:3128 \
+  velocitas-dev
 
-# Send test MQTT messages
+# Inside development container:
+gen-model && install-deps && build-app && run-app
+```
+
+### Testing Vehicle Data with Kuksa Client
+```bash
+# Option 1: Using Docker Compose (recommended)
+docker compose -f docker-compose.dev.yml up kuksa-client
+
+# Option 2: Standalone Kuksa client
+docker run -it --rm \
+  --network host \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main \
+  "grpc://localhost:55555"
+
+# In Kuksa client, send vehicle data:
+setValue Vehicle.Speed 25.0                    # Triggers speed monitoring (25 m/s = 90 km/h)
+setValue Vehicle.Acceleration.Longitudinal -6.0 # Triggers braking alert
+getValue Vehicle.Speed                          # Check current value
+```
+
+### Testing MQTT Communication
+```bash
+# Send MQTT configuration updates
 docker run --rm --network host eclipse-mosquitto:2.0 mosquitto_pub \
-  -h localhost -t "sampleapp/getSpeed" -m '{"requestId": "test"}'
+  -h localhost -t "speedmonitor/config" \
+  -m '{"speed_limit_kmh": 60.0, "enable_speed_limit_alerts": true}'
+
+# Monitor MQTT alerts
+docker run --rm --network host eclipse-mosquitto:2.0 mosquitto_sub \
+  -h localhost -t "speedmonitor/alerts"
 ```
 
 ### Code Quality
