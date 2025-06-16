@@ -115,9 +115,8 @@ build-app -r      # Same as above but optimized Release build
 
 ### Runtime Services
 ```bash
-runtime-up        # Input: None → Output: MQTT broker (port 1883) + VDB (port 55555)
-runtime-down      # Input: None → Output: Stops all runtime containers
 run-app           # Input: build/bin/app → Output: Running vehicle app with logs
+                  # Note: Requires MQTT broker and VDB to be started separately via Docker Compose
 ```
 
 ### Code Quality & Testing
@@ -215,17 +214,17 @@ gen-model && install-deps && build-app && run-app
 # 4. Run the vehicle app
 ```
 
-### Alternative: All-in-One Development
-For quick testing (may have networking issues):
+### Alternative: Single Container Development
+For development without separate services (limited functionality):
 
 ```bash
-# Single container with all services
+# Single container for development only
 docker run -it --privileged -v $(pwd):/workspace \
-  -p 8080:8080 -p 1883:1883 -p 55555:55555 velocitas-dev
+  --network=host velocitas-dev
 
 # Inside container:
-runtime-up          # Start services
-install-deps && build-app && run-app
+gen-model && install-deps && build-app
+# Note: run-app requires separate MQTT broker and VDB via Docker Compose
 ```
 
 ### Using Docker Compose

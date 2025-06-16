@@ -1,28 +1,38 @@
 {
+    // Velocitas Framework Configuration
+    // This file defines the packages, components, and variables used by the Velocitas CLI
+    
+    // Package versions for different development environment features
     "packages": {
-        "devenv-runtimes": "v4.1.0",
-        "devenv-github-workflows": "v7.0.0",
-        "devenv-github-templates": "v1.0.5",
-        "devenv-devcontainer-setup": "v3.0.0"
+        "devenv-runtimes": "v4.1.0",              // Local runtime services (MQTT, VDB)
+        "devenv-github-workflows": "v7.0.0",      // CI/CD workflow templates  
+        "devenv-github-templates": "v1.0.5",      // GitHub issue/PR templates
+        "devenv-devcontainer-setup": "v3.0.0"     // Development container configuration
     },
+    
+    // Components enabled for this vehicle app project
     "components": [
-        "runtime-local",
-        "runtime-kanto",
-        "deployment-kanto",
-        "pantaris-integration",
-        "github-workflows",
-        "github-templates",
-        "devcontainer-setup",
-        "vehicle-signal-interface",
-        "grpc-interface-support",
-        "sdk-installer",
-        "build-system"
+        "runtime-local",            // Local MQTT broker and Vehicle Data Broker
+        "runtime-kanto",           // Eclipse Kanto container runtime (optional)
+        "deployment-kanto",        // Deployment to Kanto environments (optional)
+        "pantaris-integration",    // Pantaris cloud platform integration (optional)
+        "github-workflows",        // CI/CD workflows for GitHub Actions
+        "github-templates",        // Issue and PR templates for GitHub
+        "devcontainer-setup",      // Development container configuration
+        "vehicle-signal-interface",// VSS vehicle signal generation (gen-model command)
+        "grpc-interface-support",  // gRPC SDK generation (gen-grpc command)
+        "sdk-installer",           // Velocitas C++ SDK installation
+        "build-system"             // CMake/Conan build system (build-app, install-deps)
     ],
+    
+    // Project-specific configuration variables
     "variables": {
-        "language": "cpp",
-        "repoType": "app",
-        "appManifestPath": "app/AppManifest.json",
-        "githubRepoId": "eclipse-velocitas/vehicle-app-cpp-template"
+        "language": "cpp",                                    // Programming language
+        "repoType": "app",                                   // Repository type (app vs library)
+        "appManifestPath": "app/AppManifest.json",          // Path to app manifest
+        "githubRepoId": "eclipse-velocitas/vehicle-app-cpp-template"  // GitHub repository ID
     },
+    
+    // Velocitas CLI version compatibility
     "cliVersion": "v0.13.2"
 }
