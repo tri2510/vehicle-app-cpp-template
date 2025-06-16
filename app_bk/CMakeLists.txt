@@ -19,3 +19,4 @@ set(SERVICE_LIBS "")
 include(service-libs.cmake OPTIONAL)
 
 add_subdirectory(src)
+add_subdirectory(tests)

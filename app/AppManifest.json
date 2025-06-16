@@ -1,17 +1,31 @@
 {
     "manifestVersion": "v3",
-    "name": "SampleApp",
+    "name": "SpeedMonitorApp",
     "interfaces": [
         {
             "type": "vehicle-signal-interface",
             "config": {
                 "src": "https://github.com/COVESA/vehicle_signal_specification/releases/download/v4.0/vss_rel_4.0.json",
-                "datapoints":
-                {
+                "datapoints": {
                     "required": [
                         {
                             "path": "Vehicle.Speed",
                             "required": "true",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.Acceleration.Longitudinal",
+                            "required": "false",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.CurrentLocation.Latitude",
+                            "required": "false",
+                            "access": "read"
+                        },
+                        {
+                            "path": "Vehicle.CurrentLocation.Longitude",
+                            "required": "false",
                             "access": "read"
                         }
                     ]
@@ -21,10 +35,14 @@
         {
             "type": "pubsub",
             "config": {
-                "reads": [ "sampleapp/getSpeed" ],
+                "reads": [
+                    "speedmonitor/config",
+                    "speedmonitor/reset"
+                ],
                 "writes": [
-                    "sampleapp/getSpeed/response",
-                    "sampleapp/currentSpeed"
+                    "speedmonitor/alerts",
+                    "speedmonitor/status",
+                    "speedmonitor/statistics"
                 ]
             }
         }

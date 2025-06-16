@@ -29,6 +29,13 @@ build-app     # Build the application
 run-app       # Run the vehicle app
 ```
 
+> **Note**: If you encounter permission errors with `install-deps`, run:
+> ```bash
+> sudo chmod 777 /workspace
+> sudo mkdir -p /workspace/build-linux-x86_64/Debug/generators
+> sudo chmod -R 777 /workspace/build-linux-x86_64
+> ```
+
 That's it! Your Velocitas vehicle app development environment is ready.
 
 ## 📁 Project Structure
@@ -264,7 +271,12 @@ docker run --rm -it \
 
 **Permission Errors**
 ```bash
-# Fix file permissions
+# Fix file permissions - Method 1 (from inside container)
+sudo chmod 777 /workspace
+sudo mkdir -p /workspace/build-linux-x86_64/Debug/generators
+sudo chmod -R 777 /workspace/build-linux-x86_64
+
+# Fix file permissions - Method 2 (from outside container)
 docker run --rm -v $(pwd):/workspace --privileged velocitas-dev \
   bash -c "chown -R vscode:vscode /workspace"
 ```

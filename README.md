@@ -21,6 +21,15 @@ cd vehicle-app-cpp-template
 # 2. Build development environment
 docker build -f Dockerfile.dev -t velocitas-dev .
 
+## 2.1 With proxy:
+docker build -f Dockerfile.dev \
+  --build-arg HTTP_PROXY=http://127.0.0.1:3128 \
+  --build-arg HTTPS_PROXY=http://127.0.0.1:3128 \
+  --build-arg http_proxy=http://127.0.0.1:3128 \
+  --build-arg https_proxy=http://127.0.0.1:3128 \
+  --network=host \
+  -t velocitas-dev .
+
 # 3. Start developing
 docker run -it --privileged -v $(pwd):/workspace \
   -p 8080:8080 -p 1883:1883 -p 55555:55555 velocitas-dev

@@ -21,6 +21,17 @@ Before starting with any example, ensure you have:
 docker run -it --privileged -v $(pwd):/workspace \
   -p 8080:8080 -p 1883:1883 -p 55555:55555 velocitas-dev
 
+## 1.1. With proxy
+docker run -it --privileged \
+    -e HTTP_PROXY=http://127.0.0.1:3128 \
+    -e HTTPS_PROXY=http://127.0.0.1:3128 \
+    -e http_proxy=http://127.0.0.1:3128 \
+    -e https_proxy=http://127.0.0.1:3128 \
+    -v $(pwd):/workspace \
+    --network=host \
+    velocitas-dev
+
+
 # 2. Dependencies installed
 install-deps
 
