@@ -66,6 +66,7 @@ build-linux-x86_64/Debug/
 │   vss_rel_4.0   │    │vehicle-signal-  │    │Vehicle.Speed    │
 │     .json       │    │interface        │    │Vehicle.Accel... │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
+Note: For custom VSS signals, change "src" in app/AppManifest.json to local file path
                                                         │
                        ┌─────────────────┐             ▼
                        │ C++ code        │    ┌─────────────────┐

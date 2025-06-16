@@ -107,6 +107,7 @@ The Docker environment provides convenient commands for all development tasks:
 ```bash
 gen-model         # Input: VSS spec (JSON) → Output: C++ classes in Vehicle.hpp
                   # Downloads VSS 4.0 spec and generates Vehicle.Speed, Vehicle.Acceleration classes
+                  # Note: To use custom VSS signals, change "src" in app/AppManifest.json to your local VSS file
 install-deps      # Input: conanfile.txt → Output: Downloaded C++ libraries
                   # Installs Velocitas SDK, fmt, nlohmann_json, gRPC to ~/.conan2/
 build-app         # Input: C++ source files → Output: Executable in build/bin/app

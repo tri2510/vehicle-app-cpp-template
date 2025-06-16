@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   dev:
     build:
@@ -73,15 +71,12 @@ services:
     image: ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main
     container_name: velocitas-kuksa-client
     hostname: kuksa-client
-    environment:
-      - KUKSA_DATA_BROKER_ADDR=vehicledatabroker:55555
-    networks:
-      - velocitas-network
+    network_mode: host
     depends_on:
       - vehicledatabroker
     stdin_open: true
     tty: true
-    command: ["grpc://vehicledatabroker:55555"]
+    command: ["grpc://localhost:55555"]
     profiles:
       - testing
 

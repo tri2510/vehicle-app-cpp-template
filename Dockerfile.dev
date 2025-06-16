@@ -51,12 +51,11 @@ COPY --chown=$USERNAME:$USERNAME . /workspace
 RUN sudo chown -R $USERNAME:$USERNAME /workspace && \
     pip install --user -r requirements.txt && \
     export PATH="$HOME/.local/bin:$PATH" && \
-    velocitas init -f -v && \
-    ./install_dependencies.sh
+    velocitas init -f -v
 
 USER root
 
-RUN echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\nvelocitas exec runtime-local run-vehicle-app /workspace/build/bin/app' > /usr/local/bin/run-app && \
+RUN echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/workspace/build/bin/app' > /usr/local/bin/run-app && \
     echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\nvelocitas exec runtime-local run-vehicledatabroker-cli' > /usr/local/bin/vdb-cli && \
     echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\nvelocitas exec build-system build "$@"' > /usr/local/bin/build-app && \
     echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\nvelocitas exec build-system install "$@"' > /usr/local/bin/install-deps && \
