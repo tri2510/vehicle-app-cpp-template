@@ -1,6 +1,6 @@
 {
     "manifestVersion": "v3",
-    "name": "SpeedMonitorApp",
+    "name": "MinimalVehicleApp",
     "interfaces": [
         {
             "type": "vehicle-signal-interface",
@@ -12,38 +12,9 @@
                             "path": "Vehicle.Speed",
                             "required": "true",
                             "access": "read"
-                        },
-                        {
-                            "path": "Vehicle.Acceleration.Longitudinal",
-                            "required": "false",
-                            "access": "read"
-                        },
-                        {
-                            "path": "Vehicle.CurrentLocation.Latitude",
-                            "required": "false",
-                            "access": "read"
-                        },
-                        {
-                            "path": "Vehicle.CurrentLocation.Longitude",
-                            "required": "false",
-                            "access": "read"
                         }
                     ]
                 }
-            }
-        },
-        {
-            "type": "pubsub",
-            "config": {
-                "reads": [
-                    "speedmonitor/config",
-                    "speedmonitor/reset"
-                ],
-                "writes": [
-                    "speedmonitor/alerts",
-                    "speedmonitor/status",
-                    "speedmonitor/statistics"
-                ]
             }
         }
     ]
