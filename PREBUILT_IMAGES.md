@@ -9,7 +9,6 @@ CI/CD pipeline automatically builds and publishes Docker images to GitHub Contai
 | Image | Purpose | Size | Platforms |
 |-------|---------|------|-----------|
 | `ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest` | **Quick Build Utility** (Recommended) | ~2.5GB | linux/amd64, linux/arm64 |
-| `ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-dev:latest` | Development Environment | ~3.0GB | linux/amd64, linux/arm64 |
 
 ## 🚀 Quick Start with Pre-built Images
 
