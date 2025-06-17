@@ -197,13 +197,63 @@ main() {
     log_info "🚀 Build your VehicleApp.cpp and run it with live output"
     echo ""
     
-    # Step 1: Build the application if not already built
-    if [ -f "$BUILD_DIR/bin/app" ]; then
-        log_info "🔧 STEP 1/5: Found existing application..."
-        log_success "✅ Using pre-built application!"
-        log_info "🏃 Proceeding to run the vehicle application..."
+    # Step 1: Check if rebuild is needed
+    local need_rebuild=false
+    local app_executable=""
+    
+    # Find existing executable
+    for path in "$BUILD_DIR/bin/app" "$WORKSPACE/build-linux-x86_64/Release/bin/app" "$WORKSPACE/app/build/bin/app"; do
+        if [ -f "$path" ]; then
+            app_executable="$path"
+            break
+        fi
+    done
+    
+    if [ -z "$app_executable" ]; then
+        log_info "🔧 STEP 1/5: No existing executable found - building required..."
+        need_rebuild=true
     else
-        log_info "🔧 STEP 1/5: Building application..."
+        log_info "🔧 STEP 1/5: Found existing application..."
+        
+        # Check if input is provided and different from current source
+        local current_source="$WORKSPACE/app/src/VehicleApp.cpp"
+        local input_changed=false
+        
+        if [ -p /dev/stdin ]; then
+            # New input from stdin - need to check if it's different
+            local temp_input="/tmp/new_input.cpp"
+            cat > "$temp_input"
+            if [ -f "$current_source" ] && ! cmp -s "$temp_input" "$current_source"; then
+                input_changed=true
+                log_info "📝 Input from stdin differs from current source - rebuild needed"
+            fi
+            # Put the input back for potential use by build script
+            cat "$temp_input" > /dev/stdin 2>/dev/null || true
+        elif [ -f "/input" ]; then
+            # Input from mounted file
+            if [ -f "$current_source" ] && ! cmp -s "/input" "$current_source"; then
+                input_changed=true
+                log_info "📝 Mounted file differs from current source - rebuild needed"
+            fi
+        elif [ -f "/input/VehicleApp.cpp" ]; then
+            # Input from mounted directory
+            if [ -f "$current_source" ] && ! cmp -s "/input/VehicleApp.cpp" "$current_source"; then
+                input_changed=true
+                log_info "📝 Mounted directory file differs from current source - rebuild needed"
+            fi
+        fi
+        
+        if [ "$input_changed" = true ]; then
+            need_rebuild=true
+        else
+            log_success "✅ Using existing executable - no changes detected!"
+            local size=$(ls -lh "$app_executable" | awk '{print $5}')
+            log_info "📏 Executable: $app_executable ($size)"
+        fi
+    fi
+    
+    if [ "$need_rebuild" = true ]; then
+        log_info "🔄 Building application..."
         log_info "   This may take 60-90 seconds for compilation..."
         if ! /scripts/quick-build.sh build; then
             log_error "Build failed - cannot run application"
@@ -211,8 +261,9 @@ main() {
             exit 1
         fi
         log_success "✅ Build completed successfully!"
-        log_info "🏃 Proceeding to run the vehicle application..."
     fi
+    
+    log_info "🏃 Proceeding to run the vehicle application..."
     echo ""
     
     # Step 2: Check service availability
@@ -244,10 +295,88 @@ main() {
     log_success "Quick run completed successfully!"
 }
 
+# Function to run existing binary without rebuild
+rerun_only() {
+    echo ""
+    log_info "🏃 Velocitas C++ Quick Rerun Utility"
+    log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    log_info "🚀 Running pre-built template binary"
+    echo ""
+    
+    # Check if executable exists (pre-built during container creation)
+    local app_executable=""
+    for path in "$BUILD_DIR/bin/app" "$WORKSPACE/build-linux-x86_64/Release/bin/app" "$WORKSPACE/app/build/bin/app"; do
+        if [ -f "$path" ]; then
+            app_executable="$path"
+            break
+        fi
+    done
+    
+    if [ -z "$app_executable" ]; then
+        log_info "No pre-built executable found - building template app..."
+        
+        # Use the template that was built during container creation
+        cd "$WORKSPACE"
+        export PATH="/home/vscode/.local/bin:$PATH"
+        
+        log_info "🏗️  Quick build of template application..."
+        if ! velocitas exec build-system build -r >> "$LOG_FILE" 2>&1; then
+            log_error "Template build failed"
+            return 1
+        fi
+        
+        # Find the newly built executable
+        for path in "$BUILD_DIR/bin/app" "$WORKSPACE/build-linux-x86_64/Release/bin/app" "$WORKSPACE/app/build/bin/app"; do
+            if [ -f "$path" ]; then
+                app_executable="$path"
+                break
+            fi
+        done
+        
+        if [ -z "$app_executable" ]; then
+            log_error "Build succeeded but executable not found"
+            return 1
+        fi
+    fi
+    
+    log_success "✅ Found executable: $app_executable"
+    local size=$(ls -lh "$app_executable" | awk '{print $5}')
+    log_info "📏 Executable size: $size"
+    echo ""
+    
+    # Check services and run
+    log_info "🔧 Checking service environment..."
+    check_services
+    echo ""
+    
+    log_info "🔧 Running vehicle application..."
+    if run_application; then
+        echo ""
+        log_success "✅ Application completed ${RUN_TIMEOUT}s demonstration run"
+    else
+        echo ""
+        log_error "❌ Application run failed"
+        return 1
+    fi
+    echo ""
+    
+    log_info "🔧 Analyzing application behavior..."
+    analyze_output
+    echo ""
+    
+    log_info "🔧 Generating run summary..."
+    run_summary
+    
+    log_success "Quick rerun completed successfully!"
+}
+
 # Handle script execution
 case "${1:-run}" in
     "run")
         main
+        ;;
+    "rerun")
+        rerun_only
         ;;
     "help"|"--help"|"-h")
         show_help

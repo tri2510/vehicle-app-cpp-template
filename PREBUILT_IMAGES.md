@@ -47,7 +47,10 @@ getValue Vehicle.Speed
 subscribe Vehicle.Speed
 quit
 
-# 5. Stop services when done
+# 5. Run pre-built template instantly (no input needed)
+docker run --rm --network=host ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest rerun
+
+# 6. Stop services when done
 docker compose -f docker-compose.dev.yml down
 ```
 
@@ -75,10 +78,15 @@ cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
   --network=host \
   ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest run
 
-# Rerun (same app, no rebuild if executable exists)
+# Rerun (smart rebuild only if input changes)
 docker run --rm \
   --network=host \
   ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest run
+
+# Run pre-built template (no input needed, fastest)
+docker run --rm \
+  --network=host \
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest rerun
 ```
 
 ## 🔧 Advanced Usage

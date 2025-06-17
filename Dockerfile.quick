@@ -51,6 +51,9 @@ RUN apt-get update && apt-get install -y \
 RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
+# Set up quick build workspace with proper ownership
+RUN mkdir -p /quickbuild && chown -R $USERNAME:$USERNAME /quickbuild
+
 # Switch to user context
 USER $USERNAME
 
@@ -59,7 +62,7 @@ COPY requirements.txt /tmp/requirements.txt
 RUN python3 -m pip install --user --upgrade pip && \
     python3 -m pip install --user -r /tmp/requirements.txt
 
-# Set up quick build workspace
+# Set working directory
 WORKDIR /quickbuild
 
 # Copy fixed template configuration files
@@ -87,6 +90,10 @@ RUN export PATH="$HOME/.local/bin:$PATH" && \
 RUN export PATH="$HOME/.local/bin:$PATH" && \
     velocitas exec vehicle-signal-interface download-vspec && \
     velocitas exec vehicle-signal-interface generate-model
+
+# Pre-build the template application for instant rerun
+RUN export PATH="$HOME/.local/bin:$PATH" && \
+    velocitas exec build-system build -r
 
 # Switch back to root for script installation
 USER root

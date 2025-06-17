@@ -333,6 +333,10 @@ case "${1:-build}" in
         # Use quick-run.sh for build and run functionality
         exec /scripts/quick-run.sh
         ;;
+    "rerun")
+        # Run existing binary without rebuild
+        exec /scripts/quick-run.sh rerun
+        ;;
     "validate")
         get_user_input
         log_success "Validation completed - VehicleApp.cpp is valid"
@@ -355,6 +359,7 @@ case "${1:-build}" in
         echo "Commands:"
         echo "  build     - Build the application (default)"
         echo "  run       - Build (if needed) and run application with live output"
+        echo "  rerun     - Run pre-built template (no input needed, fastest)"
         echo "  validate  - Only validate VehicleApp.cpp"
         echo "  help      - Show this help message"
         echo ""

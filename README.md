@@ -8,26 +8,21 @@
 
 > **Based on [Eclipse Velocitas Vehicle App Template](https://github.com/eclipse-velocitas/vehicle-app-cpp-template)** - Enhanced for instant containerized building without local development environment setup.
 
-## ⚡ Ultra-Fast Quick Start (10 seconds)
+## ⚡ Ultra-Fast Quick Start
 
-### Option A: Use Pre-built Images (Recommended)
-```bash
-# Build your VehicleApp.cpp instantly using pre-built container
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest
-
-# That's it! No build time needed.
-```
-
-### Option B: Build Locally
+### Quick Build Setup
 ```bash
 # 1. Build the utility container (one-time setup, 3-5 minutes)
 docker build -f Dockerfile.quick -t velocitas-quick .
 
-# 2. Build your VehicleApp.cpp instantly  
+# 2. Run the pre-built template instantly (no input needed)
+docker run --rm --network=host velocitas-quick rerun
+
+# 3. Build your custom VehicleApp.cpp
 cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick
 ```
 
-💡 **New to Docker images?** See **[PREBUILT_IMAGES.md](PREBUILT_IMAGES.md)** for complete workflow including testing with vehicle signals.
+💡 **Want to use pre-built images?** See **[PREBUILT_IMAGES.md](PREBUILT_IMAGES.md)** for instant building without local setup.
 
 ### 📚 **Learning Template Available**
 New to Velocitas? Check out the comprehensive template that shows you how to configure vehicle signals:
@@ -54,6 +49,7 @@ The template includes:
 ✅ **Validation** - Code validation without full build  
 ✅ **Production Ready** - Optimized executable output  
 ✅ **CI/CD Optimized** - Perfect for automated pipelines  
+✅ **Instant Demo** - Pre-built template runs immediately after container build  
 
 ---
 
@@ -89,8 +85,11 @@ docker run --rm -v $(pwd):/input velocitas-quick
 # Method 4: Validation only (no build)
 cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick validate
 
-# Method 5: Build and run with services
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i --network=host ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest run
+# Method 5: Build and run with services (smart rebuild)
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i --network=host velocitas-quick run
+
+# Method 6: Run pre-built template (no input needed, fastest)
+docker run --rm --network=host velocitas-quick rerun
 ```
 
 ## 🎛️ Custom VSS Support
@@ -364,8 +363,11 @@ cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-qui
 cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick build
 cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick  # same as build
 
-# Build and run application with live output
+# Build and run application with live output (smart rebuild)
 cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i --network=host velocitas-quick run
+
+# Run pre-built template (no input needed, fastest)
+docker run --rm --network=host velocitas-quick rerun
 ```
 
 ---

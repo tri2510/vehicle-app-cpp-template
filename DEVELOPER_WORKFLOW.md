@@ -67,7 +67,7 @@ vehicle-app-cpp-template/
 
 ### 🚀 Workflow 1: Quick Build Utility (Recommended)
 
-**Perfect for**: Production builds, CI/CD, corporate environments, rapid prototyping
+**Perfect for**: Production builds, CI/CD, corporate environments, rapid prototyping, instant demos
 
 #### **Input Requirements:**
 - `VehicleApp.cpp` file (your vehicle application code)
@@ -132,6 +132,9 @@ docker run --rm -v $(pwd)/src:/input velocitas-quick
 
 # Validation only (no build)
 cat YourVehicleApp.cpp | docker run --rm -i velocitas-quick validate
+
+# Run pre-built template (instant demo, no input needed)
+docker run --rm --network=host velocitas-quick rerun
 ```
 
 #### **Output:**
@@ -387,6 +390,9 @@ cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-qui
 # Test validation only
 echo 'invalid code' | docker run --rm -i velocitas-quick validate
 
+# Test instant demo (pre-built template)
+docker run --rm --network=host velocitas-quick rerun
+
 # Test custom VSS
 docker run --rm -i \
   -e VSS_SPEC_URL=https://raw.githubusercontent.com/COVESA/vehicle_signal_specification/main/spec/VehicleSignalSpecification.json \
@@ -485,10 +491,11 @@ pipeline {
 ## 🎯 Best Practices
 
 ### Development Workflow
-1. **Start with Template**: Use `templates/app/src/VehicleApp.template.cpp` as learning base
-2. **Iterative Development**: Build → Test → Modify → Repeat
-3. **Validation First**: Always validate code before full build
-4. **Default VSS First**: Start with default signals, customize later
+1. **Start with Demo**: Run `docker run --rm --network=host velocitas-quick rerun` to see template in action
+2. **Learn from Template**: Use `templates/app/src/VehicleApp.template.cpp` as learning base
+3. **Iterative Development**: Build → Test → Modify → Repeat
+4. **Validation First**: Always validate code before full build
+5. **Default VSS First**: Start with default signals, customize later
 
 ### Production Deployment
 1. **Pre-build Containers**: Build once, use everywhere
