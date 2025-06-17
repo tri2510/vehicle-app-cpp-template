@@ -76,7 +76,7 @@ cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
   ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest run
 
 # Rerun (same app, no rebuild if executable exists)
-docker run --rm -i \
+docker run --rm \
   --network=host \
   ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest run
 ```
@@ -145,7 +145,7 @@ cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
   ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest
 
 # Rerun without rebuild (uses cached build)
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
+docker run --rm \
   -v my-velocitas-build:/quickbuild/build \
   --network=host \
   ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest run
