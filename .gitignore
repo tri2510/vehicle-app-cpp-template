@@ -49,11 +49,15 @@
 *.pyc
 
 # CMake
-build*
+build*/
+build-*/
+build-output/
 CMakeUserPresets.json
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+CTestTestfile.cmake
 
-# Mac files
-.DS_Store
 
 # Downloaded assets
 Assets
@@ -63,25 +67,56 @@ get_helm.sh
 .dockerignore.local
 docker-compose.override.yml
 .env.local
+.env.*.local
+*.env
+docker-compose.*.local.yml
 
-# Development tools (developers can create their own)
+# Runtime and deployment
+runtime_local/
+*.pid
+*.lock
+
+# Development tools and editors
 .vscode/
 .idea/
 *.swp
 *.swo
+*.tmp
+*.bak
+*.orig
 
-# conan licenses
-licenses
+# OS specific files
+Thumbs.db
+*.desktop
+.directory
+
+# Temporary files
+*~
+*.temp
+
+# Conan package manager
+licenses/
 conan_imports_manifest.txt
-
-# conan home
-.conan_home
+.conan_home/
+conanfile.lock
+conandata.yml
+test_package/
+*.conaninfo
+*.conanmanifest
+conanbuild.sh
+conanrunenv*.sh
+conanrun.sh
+deactivate_conan*.sh
 
 # generated vehicle model
 app/vehicle_model
 
-# log file folder
+# Logs and runtime data
 logs/
+*.log
+*.log.*
+debug/
+trace/
 
 # local velocitas files
 .velocitas/
