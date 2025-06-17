@@ -13,7 +13,7 @@ A **zero-setup Docker utility** for building [Velocitas](https://github.com/ecli
 docker build -f Dockerfile.quick -t velocitas-quick .
 
 # 2. Build your VehicleApp.cpp instantly  
-cat YourVehicleApp.cpp | docker run --rm -i velocitas-quick
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick
 
 # That's it! Your app is built and ready to run.
 ```
@@ -51,15 +51,15 @@ The template includes:
 ```bash
 # Build with proxy support
 docker build -f Dockerfile.quick \
-  --build-arg HTTP_PROXY=http://proxy:8080 \
-  --build-arg HTTPS_PROXY=http://proxy:8080 \
+  --build-arg HTTP_PROXY=http://127.0.0.1:3128 \
+  --build-arg HTTPS_PROXY=http://127.0.0.1:3128 \
   --network=host \
   -t velocitas-quick .
 
 # Use with runtime proxy
-cat YourVehicleApp.cpp | docker run --rm -i \
-  -e HTTP_PROXY=http://proxy:8080 \
-  -e HTTPS_PROXY=http://proxy:8080 \
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
+  -e HTTP_PROXY=http://127.0.0.1:3128 \
+  -e HTTPS_PROXY=http://127.0.0.1:3128 \
   velocitas-quick
 ```
 
@@ -67,16 +67,16 @@ cat YourVehicleApp.cpp | docker run --rm -i \
 
 ```bash
 # Method 1: Pipe from stdin (fastest)
-cat YourVehicleApp.cpp | docker run --rm -i velocitas-quick
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick
 
 # Method 2: Mount single file
-docker run --rm -v $(pwd)/YourVehicleApp.cpp:/input velocitas-quick
+docker run --rm -v $(pwd)/templates/app/src/VehicleApp.template.cpp:/input velocitas-quick
 
 # Method 3: Mount entire directory
 docker run --rm -v $(pwd):/input velocitas-quick
 
 # Method 4: Validation only (no build)
-cat YourVehicleApp.cpp | docker run --rm -i velocitas-quick validate
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick validate
 ```
 
 ## 🎛️ Custom VSS Support
@@ -86,12 +86,12 @@ cat YourVehicleApp.cpp | docker run --rm -i velocitas-quick validate
 docker run --rm -i \
   -v $(pwd)/my-custom-vss.json:/vss.json \
   -e VSS_SPEC_FILE=/vss.json \
-  velocitas-quick < YourApp.cpp
+  velocitas-quick < templates/app/src/VehicleApp.template.cpp
 
 # Use custom VSS URL
 docker run --rm -i \
   -e VSS_SPEC_URL=https://company.com/vehicle-signals.json \
-  velocitas-quick < YourApp.cpp
+  velocitas-quick < templates/app/src/VehicleApp.template.cpp
 ```
 
 ## 🏢 Corporate Integration Examples
@@ -101,11 +101,11 @@ docker run --rm -i \
 curl -s $BUILD_SERVER/latest/VehicleApp.cpp | \
   docker run --rm -i -e HTTP_PROXY=$CORPORATE_PROXY velocitas-quick
 
-# GitLab CI with custom VSS
+# GitLab CI with template example
 docker run --rm -i \
   -e VSS_SPEC_URL=$COMPANY_VSS_ENDPOINT \
   -e HTTP_PROXY=$CORPORATE_PROXY \
-  velocitas-quick < $CI_PROJECT_DIR/src/VehicleApp.cpp
+  velocitas-quick < templates/app/src/VehicleApp.template.cpp
 
 # Azure DevOps with file mount
 docker run --rm \
@@ -128,7 +128,7 @@ docker run --rm \
 ./test-mode2.sh --proxy
 
 # Custom proxy and timeout
-./test-mode2.sh --proxy --proxy-host company-proxy:8080 --timeout 180
+./test-mode2.sh --proxy --proxy-host company-127.0.0.1:3128 --timeout 180
 
 # Custom output directory
 ./test-mode2.sh --output my_test_results
@@ -248,8 +248,8 @@ pipeline {
 
 ```bash
 # Set persistent proxy environment
-export HTTP_PROXY=http://corporate-proxy:8080
-export HTTPS_PROXY=http://corporate-proxy:8080
+export HTTP_PROXY=http://corporate-127.0.0.1:3128
+export HTTPS_PROXY=http://corporate-127.0.0.1:3128
 
 # Build with corporate settings
 docker build -f Dockerfile.quick \
@@ -262,7 +262,7 @@ docker build -f Dockerfile.quick \
 docker run --rm -i \
   -e VSS_SPEC_URL=https://company.com/vss/spec.json \
   -e HTTP_PROXY=$HTTP_PROXY \
-  velocitas-corporate < VehicleApp.cpp
+  velocitas-corporate < templates/app/src/VehicleApp.template.cpp
 ```
 
 ---
@@ -283,7 +283,7 @@ docker build -f Dockerfile.quick -t velocitas-quick .
 docker push your-registry/velocitas-quick:latest
 
 # Use in pipeline
-docker run --rm -i your-registry/velocitas-quick:latest < src/app.cpp
+docker run --rm -i your-registry/velocitas-quick:latest < templates/app/src/VehicleApp.template.cpp
 ```
 
 ---
@@ -297,26 +297,26 @@ docker run --rm -i your-registry/velocitas-quick:latest < src/app.cpp
 docker run --rm -i \
   -v $(pwd)/custom-vss.json:/vss.json \
   -e VSS_SPEC_FILE=/vss.json \
-  velocitas-quick < VehicleApp.cpp
+  velocitas-quick < templates/app/src/VehicleApp.template.cpp
 
 # Option 2: Use VSS URL (supports authentication)
 docker run --rm -i \
   -e VSS_SPEC_URL=https://api.company.com/vss/v2.0/spec.json \
   -e VSS_AUTH_TOKEN=your-token \
-  velocitas-quick < VehicleApp.cpp
+  velocitas-quick < templates/app/src/VehicleApp.template.cpp
 ```
 
 ### Build Customization
 
 ```bash
 # Debug build with symbols
-docker run --rm -i -e BUILD_TYPE=Debug velocitas-quick < app.cpp
+docker run --rm -i -e BUILD_TYPE=Debug velocitas-quick < templates/app/src/VehicleApp.template.cpp
 
 # Custom build flags
-docker run --rm -i -e CMAKE_FLAGS="-DCUSTOM_FLAG=ON" velocitas-quick < app.cpp
+docker run --rm -i -e CMAKE_FLAGS="-DCUSTOM_FLAG=ON" velocitas-quick < templates/app/src/VehicleApp.template.cpp
 
 # Verbose build output
-docker run --rm -i -e VERBOSE_BUILD=1 velocitas-quick < app.cpp
+docker run --rm -i -e VERBOSE_BUILD=1 velocitas-quick < templates/app/src/VehicleApp.template.cpp
 ```
 
 ### Available Commands
@@ -326,11 +326,11 @@ docker run --rm -i -e VERBOSE_BUILD=1 velocitas-quick < app.cpp
 docker run --rm velocitas-quick help
 
 # Validation only (fast)
-cat app.cpp | docker run --rm -i velocitas-quick validate
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick validate
 
 # Build application (default)
-cat app.cpp | docker run --rm -i velocitas-quick build
-cat app.cpp | docker run --rm -i velocitas-quick  # same as build
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick build
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick  # same as build
 ```
 
 ---
@@ -421,7 +421,7 @@ vdb-cli           # Vehicle Data Broker CLI
 **Build fails:**
 ```bash
 # Check container logs
-docker run --rm -i velocitas-quick validate < YourApp.cpp
+docker run --rm -i velocitas-quick validate < templates/app/src/VehicleApp.template.cpp
 
 # Rebuild container
 docker build --no-cache -f Dockerfile.quick -t velocitas-quick .
@@ -430,7 +430,7 @@ docker build --no-cache -f Dockerfile.quick -t velocitas-quick .
 **Proxy connection issues:**
 ```bash
 # Test proxy connectivity
-docker run --rm -e HTTP_PROXY=http://proxy:8080 alpine wget -q --spider http://github.com
+docker run --rm -e HTTP_PROXY=http://127.0.0.1:3128 alpine wget -q --spider http://github.com
 
 # Verify proxy settings
 docker run --rm velocitas-quick env | grep -i proxy
@@ -449,7 +449,7 @@ docker run --rm -v $(pwd):/workspace --privileged velocitas-quick \
 curl -s $VSS_SPEC_URL | jq . > /dev/null && echo "VSS OK" || echo "VSS Failed"
 
 # Use default VSS (fallback)
-docker run --rm -i velocitas-quick < app.cpp  # Uses VSS 4.0 default
+docker run --rm -i velocitas-quick < templates/app/src/VehicleApp.template.cpp  # Uses VSS 4.0 default
 ```
 
 **Container size issues:**

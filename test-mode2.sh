@@ -215,7 +215,7 @@ test_basic_build_stdin() {
     local start_time=$(date +%s)
     local proxy_args=$(get_proxy_args)
     
-    timeout "$TEST_TIMEOUT" bash -c "cat archived/app/src/VehicleApp.cpp | docker run --rm -i $proxy_args '$CONTAINER_NAME' build" >> "$LOG_FILE" 2>&1
+    timeout "$TEST_TIMEOUT" bash -c "cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i $proxy_args '$CONTAINER_NAME' build" >> "$LOG_FILE" 2>&1
     
     local exit_code=$?
     local end_time=$(date +%s)
@@ -232,7 +232,7 @@ test_validation_command() {
     local start_time=$(date +%s)
     local proxy_args=$(get_proxy_args)
     
-    timeout "$TEST_TIMEOUT" bash -c "cat archived/app/src/VehicleApp.cpp | docker run --rm -i $proxy_args '$CONTAINER_NAME' validate" >> "$LOG_FILE" 2>&1
+    timeout "$TEST_TIMEOUT" bash -c "cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i $proxy_args '$CONTAINER_NAME' validate" >> "$LOG_FILE" 2>&1
     
     local exit_code=$?
     local end_time=$(date +%s)
@@ -249,7 +249,7 @@ test_custom_vss() {
     local start_time=$(date +%s)
     local proxy_args=$(get_proxy_args)
     
-    timeout "$TEST_TIMEOUT" bash -c "cat archived/app/src/VehicleApp.cpp | docker run --rm -i $proxy_args -e VSS_SPEC_URL=https://raw.githubusercontent.com/COVESA/vehicle_signal_specification/main/spec/VehicleSignalSpecification.json '$CONTAINER_NAME' build" >> "$LOG_FILE" 2>&1
+    timeout "$TEST_TIMEOUT" bash -c "cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i $proxy_args -e VSS_SPEC_URL=https://raw.githubusercontent.com/COVESA/vehicle_signal_specification/main/spec/VehicleSignalSpecification.json '$CONTAINER_NAME' build" >> "$LOG_FILE" 2>&1
     
     local exit_code=$?
     local end_time=$(date +%s)
@@ -290,7 +290,7 @@ test_file_mount_input() {
     local start_time=$(date +%s)
     local proxy_args=$(get_proxy_args)
     
-    timeout "$TEST_TIMEOUT" bash -c "docker run --rm -v \$(pwd)/archived/app/src/VehicleApp.cpp:/input $proxy_args '$CONTAINER_NAME' build" >> "$LOG_FILE" 2>&1
+    timeout "$TEST_TIMEOUT" bash -c "docker run --rm -v \$(pwd)/templates/app/src/VehicleApp.template.cpp:/input $proxy_args '$CONTAINER_NAME' build" >> "$LOG_FILE" 2>&1
     
     local exit_code=$?
     local end_time=$(date +%s)
@@ -307,7 +307,7 @@ test_directory_mount_input() {
     local start_time=$(date +%s)
     local proxy_args=$(get_proxy_args)
     
-    timeout "$TEST_TIMEOUT" bash -c "docker run --rm -v \$(pwd)/archived/app/src:/input $proxy_args '$CONTAINER_NAME' build" >> "$LOG_FILE" 2>&1
+    timeout "$TEST_TIMEOUT" bash -c "docker run --rm -v \$(pwd)/templates/app/src/VehicleApp.template.cpp:/input/VehicleApp.cpp $proxy_args '$CONTAINER_NAME' build" >> "$LOG_FILE" 2>&1
     
     local exit_code=$?
     local end_time=$(date +%s)
@@ -322,9 +322,9 @@ run_all_tests() {
     echo -e "${YELLOW}🚀 Starting Mode 2 Test Suite...${NC}"
     echo ""
     
-    # Check if VehicleApp example exists
-    if [[ ! -f "archived/app/src/VehicleApp.cpp" ]]; then
-        echo -e "${RED}❌ ERROR: archived/app/src/VehicleApp.cpp not found${NC}"
+    # Check if VehicleApp template exists
+    if [[ ! -f "templates/app/src/VehicleApp.template.cpp" ]]; then
+        echo -e "${RED}❌ ERROR: templates/app/src/VehicleApp.template.cpp not found${NC}"
         exit 1
     fi
     
