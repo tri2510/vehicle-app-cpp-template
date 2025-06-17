@@ -75,8 +75,7 @@ COPY --chown=$USERNAME:$USERNAME templates/app/src/VehicleApp.template.cpp /quic
 COPY --chown=$USERNAME:$USERNAME .velocitas.json /quickbuild/.velocitas.json
 
 # Initialize Velocitas environment
-RUN sudo chown -R $USERNAME:$USERNAME /quickbuild && \
-    pip install --user -r /tmp/requirements.txt && \
+RUN pip install --user -r /tmp/requirements.txt && \
     export PATH="$HOME/.local/bin:$PATH" && \
     velocitas init -f -v
 
