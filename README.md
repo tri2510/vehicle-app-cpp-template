@@ -27,7 +27,7 @@ docker build -f Dockerfile.quick -t velocitas-quick .
 cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick
 ```
 
-💡 **New to Docker images?** See **[PREBUILT_IMAGES.md](PREBUILT_IMAGES.md)** for detailed usage guide.
+💡 **New to Docker images?** See **[PREBUILT_IMAGES.md](PREBUILT_IMAGES.md)** for complete workflow including testing with vehicle signals.
 
 ### 📚 **Learning Template Available**
 New to Velocitas? Check out the comprehensive template that shows you how to configure vehicle signals:
