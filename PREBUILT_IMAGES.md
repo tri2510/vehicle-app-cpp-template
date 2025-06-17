@@ -22,24 +22,19 @@ cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
 # 2. Start Vehicle Data Broker
 docker compose -f docker-compose.dev.yml up vehicledatabroker -d
 
-# 3. Start KUKSA client for testing
-docker compose -f docker-compose.dev.yml --profile testing up kuksa-client -d
-
-# 4. Run your built app (connects to services)
+# 3. Run your built app (connects to services)
 cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
   --network=host \
   ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest run
 
-# 5. Send test signals manually (in another terminal)
-docker exec -it velocitas-kuksa-client kuksa-client grpc://localhost:55555
-# Inside kuksa-client shell, send test signals:
+# 4. Test with KUKSA client (in another terminal)
+docker run -it --rm --network=host ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main
+# Inside kuksa-client shell, test vehicle speed:
 setValue Vehicle.Speed 65.0
-setValue Vehicle.Powertrain.EngineSpeed 2500  
-setValue Vehicle.CurrentLocation.Latitude 37.7749
-setValue Vehicle.CurrentLocation.Longitude -122.4194
+getValue Vehicle.Speed
 
-# 6. Stop services when done
-docker compose -f docker-compose.dev.yml --profile testing down
+# 5. Stop services when done
+docker compose -f docker-compose.dev.yml down
 ```
 
 ### With Corporate Proxy
@@ -58,18 +53,18 @@ cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
 HTTP_PROXY=http://127.0.0.1:3128 HTTPS_PROXY=http://127.0.0.1:3128 \
 docker compose -f docker-compose.dev.yml up vehicledatabroker -d
 
-# 3. Start KUKSA client for testing
-HTTP_PROXY=http://127.0.0.1:3128 HTTPS_PROXY=http://127.0.0.1:3128 \
-docker compose -f docker-compose.dev.yml --profile testing up kuksa-client -d
-
-# 4. Run your built app (with proxy, connects to services)
+# 3. Run your built app (with proxy, connects to services)
 cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
   -e HTTP_PROXY=http://127.0.0.1:3128 \
   -e HTTPS_PROXY=http://127.0.0.1:3128 \
   --network=host \
   ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest run
 
-# Steps 5-6 remain the same (testing and cleanup)
+# 4. Test with KUKSA client (same as above)
+docker run -it --rm --network=host ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main
+
+# 5. Stop services when done  
+docker compose -f docker-compose.dev.yml down
 ```
 
 ### Basic Build-Only Usage
@@ -192,15 +187,11 @@ Before running your built application, start the Vehicle Data Broker and KUKSA c
 # Start Vehicle Data Broker  
 docker compose -f docker-compose.dev.yml up vehicledatabroker -d
 
-# Start KUKSA client for testing
-docker compose -f docker-compose.dev.yml --profile testing up kuksa-client -d
-
-# Verify services are running
-docker compose -f docker-compose.dev.yml --profile testing ps
+# Verify service is running
+docker compose -f docker-compose.dev.yml ps
 
 # Check service logs if needed
 docker compose -f docker-compose.dev.yml logs vehicledatabroker
-docker compose -f docker-compose.dev.yml --profile testing logs kuksa-client
 ```
 
 ### Run Your Built Application
@@ -229,44 +220,38 @@ docker run --rm \
 Test your vehicle application by sending signals manually:
 
 ```bash
-# Connect to KUKSA client shell
-docker exec -it velocitas-kuksa-client kuksa-client grpc://localhost:55555
+# Start KUKSA client (interactive)
+docker run -it --rm --network=host ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main
 
-# Inside the kuksa-client shell, send test signals:
+# Inside the kuksa-client shell, test vehicle speed:
 setValue Vehicle.Speed 65.0
-setValue Vehicle.Powertrain.EngineSpeed 2500
-setValue Vehicle.CurrentLocation.Latitude 37.7749
-setValue Vehicle.CurrentLocation.Longitude -122.4194
-setValue Vehicle.Acceleration.Longitudinal 2.5
-setValue Vehicle.Acceleration.Lateral 0.8
-
-# Read current values
 getValue Vehicle.Speed
-getValue Vehicle.Powertrain.EngineSpeed
 
-# Subscribe to signal changes
+# Test different speed values
+setValue Vehicle.Speed 45.0
+setValue Vehicle.Speed 85.0
+setValue Vehicle.Speed 120.0
+
+# Subscribe to speed changes
 subscribe Vehicle.Speed
 
 # Exit client
 quit
 ```
 
-### Common Test Scenarios
+### Common Speed Test Scenarios
 
 ```bash
 # Test speed monitoring (for speed alert apps)
-setValue Vehicle.Speed 45.0    # Normal speed
+setValue Vehicle.Speed 30.0    # City speed
+setValue Vehicle.Speed 65.0    # Highway speed  
 setValue Vehicle.Speed 85.0    # Over speed limit
 setValue Vehicle.Speed 120.0   # Excessive speed
+setValue Vehicle.Speed 0.0     # Stopped
 
-# Test location updates (for navigation apps)
-setValue Vehicle.CurrentLocation.Latitude 40.7128   # New York
-setValue Vehicle.CurrentLocation.Longitude -74.0060
-
-# Test engine parameters (for diagnostic apps) 
-setValue Vehicle.Powertrain.EngineSpeed 3000
-setValue Vehicle.Powertrain.CoolantTemperature 195.5
-setValue Vehicle.Powertrain.FuelLevel 45.2
+# Monitor speed changes
+subscribe Vehicle.Speed
+getValue Vehicle.Speed
 ```
 
 ### Service Endpoints
@@ -276,7 +261,7 @@ When services are running, your application will connect to:
 | Service | Endpoint | Purpose |
 |---------|----------|---------|
 | **Vehicle Data Broker** | `127.0.0.1:55555` | Vehicle signal access |
-| **KUKSA Client** | `grpc://localhost:55555` | Manual signal testing interface |
+| **KUKSA Client** | `--network=host` | Manual signal testing (connects to VDB) |
 
 ### Stop Services
 

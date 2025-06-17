@@ -88,6 +88,9 @@ docker run --rm -v $(pwd):/input velocitas-quick
 
 # Method 4: Validation only (no build)
 cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick validate
+
+# Method 5: Build and run with services
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i --network=host velocitas-quick run
 ```
 
 ## 🎛️ Custom VSS Support
@@ -166,6 +169,23 @@ echo 'invalid code' | docker run --rm -i velocitas-quick validate
 docker run --rm -i \
   -e VSS_SPEC_URL=https://raw.githubusercontent.com/COVESA/vehicle_signal_specification/main/spec/VehicleSignalSpecification.json \
   velocitas-quick < templates/app/src/VehicleApp.template.cpp
+```
+
+### Testing with Live Services
+
+```bash
+# 1. Start Vehicle Data Broker
+docker compose -f docker-compose.dev.yml up vehicledatabroker -d
+
+# 2. Run your app with services
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i --network=host velocitas-quick run
+
+# 3. Test with KUKSA client (in another terminal)
+docker run -it --rm --network=host ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main
+# Inside kuksa-client: setValue Vehicle.Speed 65.0
+
+# 4. Stop services
+docker compose -f docker-compose.dev.yml down
 ```
 
 ---
@@ -268,7 +288,7 @@ docker build -f Dockerfile.quick \
   --build-arg HTTP_PROXY=$HTTP_PROXY \
   --build-arg HTTPS_PROXY=$HTTPS_PROXY \
   --network=host \
-  -t velocitas-corporate .
+  -t velocitas-quick .
 
 # Use with company VSS specification
 docker run --rm -i \
@@ -343,6 +363,9 @@ cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-qui
 # Build application (default)
 cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick build
 cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick  # same as build
+
+# Build and run application with live output
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i --network=host velocitas-quick run
 ```
 
 ---
