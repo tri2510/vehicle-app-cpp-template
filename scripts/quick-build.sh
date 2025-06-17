@@ -330,7 +330,7 @@ case "${1:-build}" in
         main
         ;;
     "run")
-        # Delegate to quick-run.sh for build and run functionality
+        # Use quick-run.sh for build and run functionality
         exec /scripts/quick-run.sh
         ;;
     "validate")
@@ -354,7 +354,7 @@ case "${1:-build}" in
         echo ""
         echo "Commands:"
         echo "  build     - Build the application (default)"
-        echo "  run       - Build and run the application with live output"
+        echo "  run       - Build (if needed) and run application with live output"
         echo "  validate  - Only validate VehicleApp.cpp"
         echo "  help      - Show this help message"
         echo ""

@@ -90,7 +90,7 @@ docker run --rm -v $(pwd):/input velocitas-quick
 cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick validate
 
 # Method 5: Build and run with services
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i --network=host velocitas-quick run
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i --network=host ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest run
 ```
 
 ## 🎛️ Custom VSS Support

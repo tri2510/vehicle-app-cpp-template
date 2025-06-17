@@ -197,18 +197,22 @@ main() {
     log_info "🚀 Build your VehicleApp.cpp and run it with live output"
     echo ""
     
-    # Step 1: Build the application first
-    log_info "🔧 STEP 1/5: Building application..."
-    log_info "   This may take 60-90 seconds for compilation..."
-    if ! /scripts/quick-build.sh build; then
-        log_error "Build failed - cannot run application"
-        log_info "💡 Check build output above for compilation errors"
-        exit 1
+    # Step 1: Build the application if not already built
+    if [ -f "$BUILD_DIR/bin/app" ]; then
+        log_info "🔧 STEP 1/5: Found existing application..."
+        log_success "✅ Using pre-built application!"
+        log_info "🏃 Proceeding to run the vehicle application..."
+    else
+        log_info "🔧 STEP 1/5: Building application..."
+        log_info "   This may take 60-90 seconds for compilation..."
+        if ! /scripts/quick-build.sh build; then
+            log_error "Build failed - cannot run application"
+            log_info "💡 Check build output above for compilation errors"
+            exit 1
+        fi
+        log_success "✅ Build completed successfully!"
+        log_info "🏃 Proceeding to run the vehicle application..."
     fi
-    echo ""
-    
-    log_success "✅ Build completed successfully!"
-    log_info "🏃 Proceeding to run the vehicle application..."
     echo ""
     
     # Step 2: Check service availability
