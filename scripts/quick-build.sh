@@ -204,27 +204,65 @@ generate_model() {
 # Function to build application
 build_application() {
     log_info "Building C++ application..."
+    log_info "🔧 Configuring build environment..."
     
     cd "$WORKSPACE"
     export PATH="/home/vscode/.local/bin:$PATH"
+    
+    log_info "📦 Installing dependencies (if needed)..."
+    if ! velocitas exec build-system install >> "$LOG_FILE" 2>&1; then
+        log_warning "Dependency installation had issues, continuing with build..."
+    fi
+    
+    log_info "🏗️  Starting compilation (Release mode for optimization)..."
+    log_info "   This may take 60-90 seconds depending on code complexity..."
     
     # Build with optimized release mode for faster builds
     if ! velocitas exec build-system build -r >> "$LOG_FILE" 2>&1; then
         log_error "Build failed"
         echo ""
-        echo "Build log (last 20 lines):"
-        tail -n 20 "$LOG_FILE"
+        echo "Build log (last 30 lines):"
+        tail -n 30 "$LOG_FILE"
+        echo ""
+        echo "💡 Common fixes:"
+        echo "   - Check for syntax errors in VehicleApp.cpp"
+        echo "   - Ensure all required includes are present"
+        echo "   - Verify Vehicle signal names are correct"
         return 1
     fi
     
-    # Verify executable was created
-    if [ ! -f "$BUILD_DIR/bin/app" ]; then
+    log_info "🔍 Verifying build output..."
+    
+    # Check for multiple possible executable locations
+    local executable_found=false
+    local executable_path=""
+    
+    # Check common Velocitas build locations
+    for path in "$BUILD_DIR/bin/app" "$WORKSPACE/build-linux-x86_64/Release/bin/app" "$WORKSPACE/app/build/bin/app"; do
+        if [ -f "$path" ]; then
+            executable_found=true
+            executable_path="$path"
+            break
+        fi
+    done
+    
+    if [ "$executable_found" = false ]; then
         log_error "Build succeeded but executable not found"
+        log_info "Searched locations:"
+        log_info "  - $BUILD_DIR/bin/app"
+        log_info "  - $WORKSPACE/build-linux-x86_64/Release/bin/app"
+        log_info "  - $WORKSPACE/app/build/bin/app"
+        log_info "Available files in build directory:"
+        find "$WORKSPACE" -name "app" -type f 2>/dev/null || echo "  No 'app' executable found"
         return 1
     fi
     
-    local size=$(ls -lh "$BUILD_DIR/bin/app" | awk '{print $5}')
-    log_success "Build completed successfully (executable size: $size)"
+    local size=$(ls -lh "$executable_path" | awk '{print $5}')
+    local permissions=$(ls -l "$executable_path" | awk '{print $1}')
+    log_success "Build completed successfully!"
+    log_info "📍 Executable location: $executable_path"
+    log_info "📏 Executable size: $size"
+    log_info "🔐 Permissions: $permissions"
 }
 
 # Function to display build summary
@@ -247,28 +285,43 @@ build_summary() {
 
 # Main execution flow
 main() {
-    log_info "Quick Build Mode 2 - Blackbox Utility"
+    echo ""
+    log_info "🚀 Velocitas C++ Quick Build Utility"
+    log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    log_info "📦 Zero-setup containerized build for Velocitas vehicle apps"
+    echo ""
     
     # Step 1: Get user input
+    log_info "🔧 STEP 1/5: Processing input..."
     get_user_input
+    echo ""
     
     # Step 2: Prepare workspace
+    log_info "🔧 STEP 2/5: Preparing build workspace..."
     prepare_workspace
+    echo ""
     
     # Step 3: Generate vehicle model (if needed)
+    log_info "🔧 STEP 3/5: Vehicle signal model preparation..."
     if [ ! -d "$WORKSPACE/app/vehicle_model" ]; then
         generate_model
     else
-        log_info "Vehicle model already exists, skipping generation"
+        log_info "✅ Vehicle model already exists, skipping generation"
     fi
+    echo ""
     
     # Step 4: Build application
+    log_info "🔧 STEP 4/5: Building C++ application..."
     build_application
+    echo ""
     
     # Step 5: Display summary
+    log_info "🔧 STEP 5/5: Finalizing build..."
     build_summary
     
-    log_success "Quick build completed successfully!"
+    echo ""
+    log_success "🎉 Quick build completed successfully!"
+    log_info "💡 Your vehicle app is ready to run!"
 }
 
 # Handle script arguments

@@ -8,17 +8,26 @@
 
 > **Based on [Eclipse Velocitas Vehicle App Template](https://github.com/eclipse-velocitas/vehicle-app-cpp-template)** - Enhanced for instant containerized building without local development environment setup.
 
-## ⚡ Ultra-Fast Quick Start (30 seconds)
+## ⚡ Ultra-Fast Quick Start (10 seconds)
 
+### Option A: Use Pre-built Images (Recommended)
 ```bash
-# 1. Build the utility container (one-time setup)
+# Build your VehicleApp.cpp instantly using pre-built container
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest
+
+# That's it! No build time needed.
+```
+
+### Option B: Build Locally
+```bash
+# 1. Build the utility container (one-time setup, 3-5 minutes)
 docker build -f Dockerfile.quick -t velocitas-quick .
 
 # 2. Build your VehicleApp.cpp instantly  
 cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick
-
-# That's it! Your app is built and ready to run.
 ```
+
+💡 **New to Docker images?** See **[PREBUILT_IMAGES.md](PREBUILT_IMAGES.md)** for detailed usage guide.
 
 ### 📚 **Learning Template Available**
 New to Velocitas? Check out the comprehensive template that shows you how to configure vehicle signals:
@@ -189,15 +198,13 @@ This template includes a comprehensive **Speed Monitor & Alert System** demonstr
 ## 📁 Project Structure
 
 ```
-vehicle-app-cpp-template/
+velocitas-cpp-quickbuild-template/
 ├── 🚀 Quick Build Utility (Main)
 │   ├── Dockerfile.quick             # Main utility container
 │   ├── scripts/quick-build.sh       # Entry script
 │   ├── scripts/quick-run.sh         # Build and run script
 │   ├── scripts/validate-template.sh # Validation script
-│   └── templates/                   # Fixed configurations
-├── 📱 Vehicle Applications  
-│   └── examples/                    # Example applications
+│   └── templates/                   # Fixed configurations & learning template
 ├── 🧪 Testing & Validation
 │   ├── test-mode2.sh               # Automated test script
 │   └── test_results/               # Test output logs
@@ -206,12 +213,15 @@ vehicle-app-cpp-template/
 │   ├── requirements.txt            # Python dependencies
 │   └── .velocitas.json             # Velocitas configuration
 ├── 🛠️ Traditional Development (Optional)
-│   ├── Dockerfile.dev               # Full development container
-│   ├── docker-compose.dev.yml       # Complete development stack
-│   └── config/mosquitto.conf        # MQTT configuration
+│   ├── docker-compose.dev.yml      # Complete development stack
+│   └── config/mosquitto.conf       # MQTT configuration
+├── 🔄 CI/CD & Automation
+│   └── .github/workflows/          # GitHub Actions for builds & releases
 └── 📚 Documentation
-    ├── archived/                   # Previous docs + sample app
-    └── README.md                   # This file
+    ├── README.md                   # This file
+    ├── PREBUILT_IMAGES.md          # Pre-built Docker images guide
+    ├── DEVELOPER_WORKFLOW.md       # Complete development workflows
+    └── NOTICE                      # License attribution
 ```
 
 ---
@@ -387,7 +397,8 @@ vdb-cli           # Vehicle Data Broker CLI
 ## 📖 Documentation & Resources
 
 ### Internal Documentation
-- **[archived/](archived/)** - Previous documentation versions
+- **[PREBUILT_IMAGES.md](PREBUILT_IMAGES.md)** - Guide to using pre-built Docker images
+- **[DEVELOPER_WORKFLOW.md](DEVELOPER_WORKFLOW.md)** - Complete development workflows
 - **Test Results** - Stored in `test_results/` after running tests
 
 ### External Resources

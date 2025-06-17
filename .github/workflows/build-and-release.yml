@@ -21,14 +21,12 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME_QUICK: ${{ github.repository }}/velocitas-quick
-  IMAGE_NAME_DEV: ${{ github.repository }}/velocitas-dev
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     outputs:
       image-digest-quick: ${{ steps.build-quick.outputs.digest }}
-      image-digest-dev: ${{ steps.build-dev.outputs.digest }}
       version: ${{ steps.meta.outputs.version }}
     
     steps:
@@ -78,24 +76,6 @@ jobs:
           VERSION=${{ steps.meta.outputs.version }}
           VCS_REF=${{ github.sha }}
 
-    - name: Build Development Docker image
-      id: build-dev
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        file: ./Dockerfile.dev
-        platforms: linux/amd64,linux/arm64
-        push: ${{ github.event_name != 'pull_request' }}
-        tags: |
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DEV }}:${{ steps.meta.outputs.version }}
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DEV }}:latest
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        build-args: |
-          BUILD_DATE=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
-          VERSION=${{ steps.meta.outputs.version }}
-          VCS_REF=${{ github.sha }}
 
   test-images:
     needs: build-and-test
@@ -111,12 +91,6 @@ jobs:
           - image: quick
             test-type: proxy
             tag: ghcr.io/${{ github.repository }}/velocitas-quick:${{ needs.build-and-test.outputs.version }}
-          - image: dev
-            test-type: basic
-            tag: ghcr.io/${{ github.repository }}/velocitas-dev:${{ needs.build-and-test.outputs.version }}
-          - image: dev
-            test-type: proxy
-            tag: ghcr.io/${{ github.repository }}/velocitas-dev:${{ needs.build-and-test.outputs.version }}
     
     steps:
     - name: Checkout repository
@@ -149,20 +123,6 @@ jobs:
           echo "✅ Help command test passed"
         fi
 
-    - name: Test Development Image
-      if: matrix.image == 'dev'
-      run: |
-        # Test development environment
-        if [ "${{ matrix.test-type }}" = "basic" ]; then
-          echo "Testing development environment..."
-          docker run --rm ${{ matrix.tag }} bash -c "which velocitas && echo '✅ Velocitas CLI available'"
-        fi
-        
-        # Test development tools
-        if [ "${{ matrix.test-type }}" = "proxy" ]; then
-          echo "Testing development tools..."
-          docker run --rm ${{ matrix.tag }} bash -c "which cmake && which ninja && echo '✅ Build tools available'"
-        fi
 
     - name: Run automated test suite
       if: matrix.image == 'quick'
@@ -250,11 +210,6 @@ jobs:
         docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${{ steps.release-notes.outputs.version }}
         ```
         
-        **Development Environment:**
-        ```bash
-        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DEV }}:${{ steps.release-notes.outputs.version }}
-        ```
-        
         ### 🎯 Quick Start
         
         ```bash
@@ -330,13 +285,10 @@ jobs:
       run: |
         # Tag and push latest versions
         docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${{ needs.build-and-test.outputs.version }}
-        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DEV }}:${{ needs.build-and-test.outputs.version }}
         
         docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${{ needs.build-and-test.outputs.version }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:latest
-        docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DEV }}:${{ needs.build-and-test.outputs.version }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DEV }}:latest
         
         docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:latest
-        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DEV }}:latest
 
   notify:
     needs: [build-and-test, test-images, security-scan, release]
@@ -348,9 +300,8 @@ jobs:
       if: needs.release.result == 'success'
       run: |
         echo "🎉 Successfully released Velocitas C++ Vehicle App Template!"
-        echo "📦 Images available at:"
+        echo "📦 Image available at:"
         echo "   - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:latest"
-        echo "   - ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DEV }}:latest"
         
     - name: Notify failure
       if: needs.release.result == 'failure'
