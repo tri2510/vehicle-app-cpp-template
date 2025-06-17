@@ -1,0 +1,9 @@
+ℹ️  [INFO] Workspace: /quickbuild
+ℹ️  [INFO] Quick Build Mode 2 - Blackbox Utility
+ℹ️  [INFO] Reading user VehicleApp.cpp...
+❌ [ERROR] No input provided. Use stdin or mount file at /input
+
+Usage examples:
+  cat VehicleApp.cpp | docker run -i velocitas-quick
+  docker run -v $(pwd)/VehicleApp.cpp:/input velocitas-quick
+  docker run -v $(pwd):/input velocitas-quick

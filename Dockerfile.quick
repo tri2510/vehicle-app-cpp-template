@@ -1,0 +1,122 @@
+# ============================================================================
+# Dockerfile.quick - Mode 2 Blackbox Utility Container
+# ============================================================================
+# Purpose: Lightweight container for quick VehicleApp.cpp build and validation
+# Usage: 
+#   docker build -f Dockerfile.quick -t velocitas-quick .
+#   cat VehicleApp.cpp | docker run -i velocitas-quick
+# ============================================================================
+
+FROM ghcr.io/eclipse-velocitas/devcontainer-base-images/cpp:v0.4
+
+# Container metadata
+LABEL maintainer="Velocitas Team"
+LABEL description="Quick Build Utility for VehicleApp.cpp - Mode 2 Blackbox"
+LABEL version="1.0"
+
+# Environment configuration
+ENV DEBIAN_FRONTEND=noninteractive
+ENV GITHUB_API_TOKEN=""
+ENV SDV_MIDDLEWARE_TYPE=native
+ENV SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555
+ENV SDV_MQTT_ADDRESS=127.0.0.1:1883
+
+# User configuration
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+# Create user (if not exists)
+RUN groupadd --gid $USER_GID $USERNAME || true && \
+    useradd --uid $USER_UID --gid $USER_GID -m $USERNAME || true
+
+# Install essential packages for quick builds
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    sudo \
+    build-essential \
+    cmake \
+    ninja-build \
+    ccache \
+    pkg-config \
+    python3 \
+    python3-pip \
+    netcat-openbsd \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Configure sudo access
+RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
+
+# Switch to user context
+USER $USERNAME
+
+# Install Python dependencies
+COPY requirements.txt /tmp/requirements.txt
+RUN python3 -m pip install --user --upgrade pip && \
+    python3 -m pip install --user -r /tmp/requirements.txt
+
+# Set up quick build workspace
+WORKDIR /quickbuild
+
+# Copy fixed template configuration files
+COPY --chown=$USERNAME:$USERNAME templates/AppManifest.json /quickbuild/app/AppManifest.json
+COPY --chown=$USERNAME:$USERNAME templates/conanfile.txt /quickbuild/conanfile.txt
+COPY --chown=$USERNAME:$USERNAME templates/CMakeLists.txt /quickbuild/CMakeLists.txt
+COPY --chown=$USERNAME:$USERNAME templates/app/ /quickbuild/app/
+
+# Copy template placeholder for VehicleApp.cpp
+COPY --chown=$USERNAME:$USERNAME templates/app/src/VehicleApp.template.cpp /quickbuild/app/src/VehicleApp.cpp
+
+# Copy minimal Velocitas configuration
+COPY --chown=$USERNAME:$USERNAME .velocitas.json /quickbuild/.velocitas.json
+
+# Initialize Velocitas environment
+RUN sudo chown -R $USERNAME:$USERNAME /quickbuild && \
+    pip install --user -r /tmp/requirements.txt && \
+    export PATH="$HOME/.local/bin:$PATH" && \
+    velocitas init -f -v
+
+# Pre-install dependencies for faster builds
+RUN export PATH="$HOME/.local/bin:$PATH" && \
+    velocitas exec build-system install
+
+# Pre-generate vehicle model for faster builds
+RUN export PATH="$HOME/.local/bin:$PATH" && \
+    velocitas exec vehicle-signal-interface download-vspec && \
+    velocitas exec vehicle-signal-interface generate-model
+
+# Switch back to root for script installation
+USER root
+
+# Install utility scripts
+COPY --chown=$USERNAME:$USERNAME scripts/ /scripts/
+RUN chmod +x /scripts/*.sh
+
+# Create CLI command aliases for quick access
+RUN echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-build.sh "$@"' > /usr/local/bin/build && \
+    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-run.sh "$@"' > /usr/local/bin/run && \
+    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/validate-template.sh "$@"' > /usr/local/bin/validate && \
+    chmod +x /usr/local/bin/build /usr/local/bin/run /usr/local/bin/validate
+
+# Switch back to user
+USER $USERNAME
+
+# Set up PATH for Velocitas tools
+ENV PATH="/home/$USERNAME/.local/bin:$PATH"
+
+# Expose common ports (optional - for future service integration)
+EXPOSE 1883 55555 8080
+
+# Health check for container readiness
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD /scripts/quick-build.sh help >/dev/null 2>&1 || exit 1
+
+# Default entrypoint - quick build mode
+ENTRYPOINT ["/scripts/quick-build.sh"]
+
+# Default command - build action
+CMD ["build"]

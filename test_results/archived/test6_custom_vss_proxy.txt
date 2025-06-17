@@ -1,0 +1,31 @@
+🔧 TEST 6: Custom VSS Support with Proxy
+Command: cat app/src/VehicleApp.cpp  < /dev/null |  docker run --rm -i -e HTTP_PROXY=http://127.0.0.1:3128 -e HTTPS_PROXY=http://127.0.0.1:3128 -e VSS_SPEC_URL=https://raw.githubusercontent.com/COVESA/vehicle_signal_specification/main/spec/VehicleSignalSpecification.json velocitas-quick-proxy build
+Started: Tue Jun 17 10:51:47 AM +07 2025
+ℹ️  [INFO] Workspace: /quickbuild
+ℹ️  [INFO] Quick Build Mode 2 - Blackbox Utility
+ℹ️  [INFO] Reading user VehicleApp.cpp...
+ℹ️  [INFO] Reading from stdin...
+✅ [SUCCESS] VehicleApp.cpp validation passed
+✅ [SUCCESS] VehicleApp.cpp loaded successfully (264 lines)
+ℹ️  [INFO] Preparing build workspace...
+ℹ️  [INFO] Configuring VSS specification...
+ℹ️  [INFO] Using custom VSS URL: https://raw.githubusercontent.com/COVESA/vehicle_signal_specification/main/spec/VehicleSignalSpecification.json
+✅ [SUCCESS] VSS configuration updated
+ℹ️  [INFO] VSS source: https://raw.githubusercontent.com/COVESA/vehicle_signal_specification/main/spec/VehicleSignalSpecification.json
+✅ [SUCCESS] Workspace prepared
+ℹ️  [INFO] Generating vehicle model from VSS...
+✅ [SUCCESS] Vehicle model generated
+ℹ️  [INFO] Building C++ application...
+✅ [SUCCESS] Build completed successfully (executable size: 14M)
+ℹ️  [INFO] Build Summary:
+============================================
+✅ VehicleApp.cpp: Validated and compiled
+✅ Dependencies: Pre-installed (cached)
+✅ Vehicle Model: Generated from VSS
+✅ Executable: /quickbuild/build/bin/app
+📊 Size: 13.3MiB
+🕐 Completed: Tue Jun 17 03:53:00 UTC 2025
+============================================
+✅ [SUCCESS] Quick build completed successfully!
+Completed: Tue Jun 17 10:53:22 AM +07 2025
+Exit Code: 0

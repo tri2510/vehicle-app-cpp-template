@@ -1,0 +1,28 @@
+🔧 TEST 2: Help Command with Proxy Container
+Command: docker run --rm velocitas-quick-proxy help
+Started: Tue Jun 17 10:42:21 AM +07 2025
+ℹ️  [INFO] Workspace: /quickbuild
+Quick Build Script - Mode 2 Blackbox Utility
+
+Usage:
+  cat VehicleApp.cpp | docker run -i velocitas-quick
+  docker run -v $(pwd)/app.cpp:/input velocitas-quick
+  docker run -v $(pwd):/input velocitas-quick
+
+Custom VSS Support:
+  # Use custom VSS file
+  docker run -v $(pwd)/my-vss.json:/vss.json -e VSS_SPEC_FILE=/vss.json -i velocitas-quick
+
+  # Use custom VSS URL
+  docker run -e VSS_SPEC_URL=https://company.com/vss.json -i velocitas-quick
+
+Commands:
+  build     - Build the application (default)
+  validate  - Only validate VehicleApp.cpp
+  help      - Show this help message
+
+Environment Variables:
+  VSS_SPEC_FILE - Path to custom VSS JSON file
+  VSS_SPEC_URL  - URL to custom VSS JSON specification
+Completed: Tue Jun 17 10:42:44 AM +07 2025
+Exit Code: 0

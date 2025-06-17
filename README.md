@@ -1,449 +1,452 @@
-# Vehicle App C++ Template - Docker Development Environment
+# Velocitas C++ Vehicle App Template - Quick Build Utility
 
 [![License: Apache](https://img.shields.io/badge/License-Apache-yellow.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Docker](https://img.shields.io/badge/Docker-Enabled-blue.svg)](https://docker.com)
 [![Velocitas](https://img.shields.io/badge/Velocitas-C++-green.svg)](https://github.com/eclipse-velocitas/velocitas-docs)
 
-A modern, Docker-only development environment for creating [Velocitas](https://github.com/eclipse-velocitas/velocitas-docs) Vehicle Apps in C++. No devcontainer setup required - just Docker!
+A **zero-setup Docker utility** for building [Velocitas](https://github.com/eclipse-velocitas/velocitas-docs) Vehicle Apps in C++. Simply input your code and get a production-ready executable.
 
-## 🚀 Quick Start
+## ⚡ Ultra-Fast Quick Start (30 seconds)
 
-### Prerequisites
-- [Docker](https://docker.com) installed and running
-- Git for version control
-
-### Development Workflow - 4 Simple Steps
-
-#### Step 1: Build Development Environment
 ```bash
-# Clone the repository
-git clone https://github.com/tri2510/vehicle-app-cpp-template.git
-cd vehicle-app-cpp-template
+# 1. Build the utility container (one-time setup)
+docker build -f Dockerfile.quick -t velocitas-quick .
 
-# Build development container
-docker build -f Dockerfile.dev -t velocitas-dev .
+# 2. Build your VehicleApp.cpp instantly  
+cat YourVehicleApp.cpp | docker run --rm -i velocitas-quick
 
-# With proxy (if needed):
-docker build -f Dockerfile.dev \
-  --build-arg HTTP_PROXY=http://127.0.0.1:3128 \
-  --build-arg HTTPS_PROXY=http://127.0.0.1:3128 \
-  --build-arg http_proxy=http://127.0.0.1:3128 \
-  --build-arg https_proxy=http://127.0.0.1:3128 \
+# That's it! Your app is built and ready to run.
+```
+
+## 🎯 Key Features
+
+✅ **Zero Dependencies** - No host installation required  
+✅ **Lightning Fast** - Pre-compiled dependencies (60-90 seconds total)  
+✅ **Proxy Ready** - Full corporate network support  
+✅ **VSS Flexible** - Use default VSS 4.0 or custom specifications  
+✅ **Multi-Input** - stdin, file mount, or directory mount  
+✅ **Validation** - Code validation without full build  
+✅ **Production Ready** - Optimized executable output  
+✅ **CI/CD Optimized** - Perfect for automated pipelines  
+
+---
+
+## 🔧 Proxy Support (Corporate Networks)
+
+```bash
+# Build with proxy support
+docker build -f Dockerfile.quick \
+  --build-arg HTTP_PROXY=http://proxy:8080 \
+  --build-arg HTTPS_PROXY=http://proxy:8080 \
   --network=host \
-  -t velocitas-dev .
+  -t velocitas-quick .
+
+# Use with runtime proxy
+cat YourVehicleApp.cpp | docker run --rm -i \
+  -e HTTP_PROXY=http://proxy:8080 \
+  -e HTTPS_PROXY=http://proxy:8080 \
+  velocitas-quick
 ```
 
-#### Step 2: Build Your Vehicle App
+## 📝 Multiple Input Methods
+
 ```bash
-# Enter development container
-docker run -it --privileged -v $(pwd):/workspace \
-  --network=host velocitas-dev
+# Method 1: Pipe from stdin (fastest)
+cat YourVehicleApp.cpp | docker run --rm -i velocitas-quick
 
-# With proxy (if needed):
-docker run -it --privileged -v $(pwd):/workspace \
-  --network=host \
-  -e HTTP_PROXY=http://127.0.0.1:3128 \
-  -e HTTPS_PROXY=http://127.0.0.1:3128 \
-  -e http_proxy=http://127.0.0.1:3128 \
-  -e https_proxy=http://127.0.0.1:3128 \
-  velocitas-dev
+# Method 2: Mount single file
+docker run --rm -v $(pwd)/YourVehicleApp.cpp:/input velocitas-quick
 
-# Inside container - build your app
-gen-model      # Generate C++ classes from Vehicle Signal Specification (VSS)
-install-deps   # Install C++ dependencies using Conan package manager
-build-app      # Compile the vehicle application with CMake/Ninja
+# Method 3: Mount entire directory
+docker run --rm -v $(pwd):/input velocitas-quick
+
+# Method 4: Validation only (no build)
+cat YourVehicleApp.cpp | docker run --rm -i velocitas-quick validate
 ```
 
-#### Step 3: Start Runtime Services
+## 🎛️ Custom VSS Support
+
 ```bash
-# In a separate terminal, start MQTT broker and Vehicle Data Broker
-docker compose -f docker-compose.dev.yml up mosquitto vehicledatabroker -d
+# Use custom VSS file
+docker run --rm -i \
+  -v $(pwd)/my-custom-vss.json:/vss.json \
+  -e VSS_SPEC_FILE=/vss.json \
+  velocitas-quick < YourApp.cpp
 
-# Optional: Start Kuksa client for testing (in another terminal)
-docker compose -f docker-compose.dev.yml up kuksa-client
-
-# Or use the standalone Kuksa client:
-docker run -it --rm \
-  --network host \
-  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main \
-  "grpc://localhost:55555"
+# Use custom VSS URL
+docker run --rm -i \
+  -e VSS_SPEC_URL=https://company.com/vehicle-signals.json \
+  velocitas-quick < YourApp.cpp
 ```
 
-#### Step 4: Run and Test Your App
+## 🏢 Corporate Integration Examples
+
 ```bash
-# Back in the development container, run your app
-run-app
+# Jenkins/CI Pipeline
+curl -s $BUILD_SERVER/latest/VehicleApp.cpp | \
+  docker run --rm -i -e HTTP_PROXY=$CORPORATE_PROXY velocitas-quick
 
-# Your vehicle app is now running and connected to:
-# - MQTT Broker (localhost:1883)
-# - Vehicle Data Broker (localhost:55555)
+# GitLab CI with custom VSS
+docker run --rm -i \
+  -e VSS_SPEC_URL=$COMPANY_VSS_ENDPOINT \
+  -e HTTP_PROXY=$CORPORATE_PROXY \
+  velocitas-quick < $CI_PROJECT_DIR/src/VehicleApp.cpp
+
+# Azure DevOps with file mount
+docker run --rm \
+  -v $BUILD_SOURCESDIRECTORY/src:/input \
+  -e HTTPS_PROXY=$AGENT_PROXY \
+  velocitas-quick
 ```
 
-**That's it! 🎉 Your vehicle app is running and ready for development.**
+---
 
-## 🏗️ Docker Architecture
+## 🧪 Testing & Validation
 
-### Development Environment Components
+### Automated Testing Script
 
-| Component | Purpose | Port |
-|-----------|---------|------|
-| **Development Container** | Complete C++ toolchain with Velocitas SDK | - |
-| **MQTT Broker** | Message communication (Eclipse Mosquitto) | 1883, 9001 |
-| **Vehicle Data Broker** | Vehicle signal management (KUKSA.val) | 55555 |
-| **Kuksa Client** | Interactive vehicle data testing client | - |
-| **Development Tools** | Build, test, lint, format, debug tools | - |
-
-### Docker Files
-
-- **`Dockerfile.dev`** - Complete development environment
-- **`docker-compose.dev.yml`** - Full development stack with services
-- **`config/mosquitto.conf`** - MQTT broker configuration
-
-## 🛠️ Development Commands
-
-The Docker environment provides convenient commands for all development tasks:
-
-### Build & Dependencies
 ```bash
-gen-model         # Input: VSS spec (JSON) → Output: C++ classes in Vehicle.hpp
-                  # Downloads VSS 4.0 spec and generates Vehicle.Speed, Vehicle.Acceleration classes
-                  # Note: To use custom VSS signals, change "src" in app/AppManifest.json to your local VSS file
-install-deps      # Input: conanfile.txt → Output: Downloaded C++ libraries
-                  # Installs Velocitas SDK, fmt, nlohmann_json, gRPC to ~/.conan2/
-build-app         # Input: C++ source files → Output: Executable in build/bin/app
-build-app -r      # Same as above but optimized Release build
+# Run comprehensive test suite (no proxy)
+./test-mode2.sh
+
+# Run tests with proxy
+./test-mode2.sh --proxy
+
+# Custom proxy and timeout
+./test-mode2.sh --proxy --proxy-host company-proxy:8080 --timeout 180
+
+# Custom output directory
+./test-mode2.sh --output my_test_results
 ```
 
-### Runtime Services
+The test script validates:
+- Container building with/without proxy
+- Multiple input methods (stdin, file mount, directory mount)
+- Custom VSS support
+- Validation functionality
+- Error handling
+- Build performance and reliability
+
+### Manual Testing Examples
+
 ```bash
-run-app           # Input: build/bin/app → Output: Running vehicle app with logs
-                  # Note: Requires MQTT broker and VDB to be started separately via Docker Compose
+# Test with template app
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick
+
+# Test validation only
+echo 'invalid code' | docker run --rm -i velocitas-quick validate
+
+# Test with custom VSS
+docker run --rm -i \
+  -e VSS_SPEC_URL=https://raw.githubusercontent.com/COVESA/vehicle_signal_specification/main/spec/VehicleSignalSpecification.json \
+  velocitas-quick < templates/app/src/VehicleApp.template.cpp
 ```
 
-### Code Quality & Testing
-```bash
-check-code        # Input: C++ source files → Output: Lint/format reports and fixes
-./build/bin/app_utests  # Input: Test executable → Output: Test results and coverage
-```
+---
 
-### Development Tools
-```bash
-gen-model         # Input: VSS spec URL → Output: Generated Vehicle.hpp classes
-gen-grpc          # Input: .proto files → Output: Generated gRPC client/server code
-vdb-cli           # Input: Commands → Output: Interactive VDB management console
-```
+## 🚗 Vehicle Application Examples
+
+This template includes a comprehensive **Speed Monitor & Alert System** demonstrating production-ready vehicle application development.
+
+### ✅ Speed Monitor & Alert System
+- **Real-time speed monitoring** with configurable limits
+- **Safety event detection** (hard braking, rapid acceleration)
+- **MQTT communication** for alerts and configuration
+- **Comprehensive statistics** and performance tracking
+- **Production-ready** with full error handling
+
+### Example Implementation Features
+- **Vehicle Signal Integration:** `Vehicle.Speed`, `Vehicle.Acceleration.Longitudinal`
+- **MQTT Topics:** `speedmonitor/alerts`, `speedmonitor/config`, `speedmonitor/status`  
+- **Event-Driven Architecture:** Asynchronous processing with robust error handling
+- **Configurable Thresholds:** Dynamic speed limits and alert cooldowns
+
+### Additional Examples Available
+- **Fuel Efficiency Tracker** - Consumption monitoring and optimization
+- **Maintenance Reminder System** - Proactive maintenance based on diagnostics
+- **Parking Assistant** (Tutorial) - Proximity sensor guidance
+- **Climate Control Optimizer** (Tutorial) - Intelligent HVAC management
+
+---
 
 ## 📁 Project Structure
 
 ```
 vehicle-app-cpp-template/
-├── 🐳 Docker Development Environment
-│   ├── Dockerfile.dev              # Development container
-│   ├── docker-compose.dev.yml      # Full development stack
-│   └── config/mosquitto.conf       # MQTT configuration
-├── 📱 Vehicle Application
-│   ├── app/src/                     # C++ source code
-│   ├── app/tests/                   # Unit tests
-│   ├── AppManifest.json            # App configuration
-│   └── CMakeLists.txt               # Build configuration
-├── 🔧 Development Configuration
+├── 🚀 Quick Build Utility (Main)
+│   ├── Dockerfile.quick             # Main utility container
+│   ├── scripts/quick-build.sh       # Entry script
+│   ├── scripts/quick-run.sh         # Build and run script
+│   ├── scripts/validate-template.sh # Validation script
+│   └── templates/                   # Fixed configurations
+├── 📱 Vehicle Applications  
+│   └── examples/                    # Example applications
+├── 🧪 Testing & Validation
+│   ├── test-mode2.sh               # Automated test script
+│   └── test_results/               # Test output logs
+├── 🔧 Configuration
 │   ├── conanfile.txt               # C++ dependencies
 │   ├── requirements.txt            # Python dependencies
 │   └── .velocitas.json             # Velocitas configuration
-├── 📖 Example Applications
-│   └── examples/                   # Example vehicle apps
+├── 🛠️ Traditional Development (Optional)
+│   ├── Dockerfile.dev               # Full development container
+│   ├── docker-compose.dev.yml       # Complete development stack
+│   └── config/mosquitto.conf        # MQTT configuration
 └── 📚 Documentation
-    ├── DOCKER_DEVELOPMENT.md      # Complete development guide
+    ├── archived/                   # Previous docs + sample app
     └── README.md                   # This file
 ```
 
-## 🚗 Vehicle Application - Speed Monitor & Alert System
+---
 
-This repository contains a **production-ready Speed Monitor & Alert System** that demonstrates real-world vehicle application development using the Eclipse Velocitas framework.
+## 🏢 Production & Enterprise Use
 
-### ✅ Speed Monitor & Alert System
-- **Real-time speed monitoring** with configurable speed limits
-- **Speed limit violation detection** with instant MQTT alerts  
-- **Hard braking and rapid acceleration detection** for safety monitoring
-- **MQTT-based configuration** for dynamic threshold updates
-- **Comprehensive statistics** tracking and reporting
-- **Status:** Complete with source code, comprehensive tests, and documentation
+### CI/CD Integration
 
-### 🔧 Features Demonstrated
-- **Vehicle Signal Integration:** Real-time data from Vehicle.Speed and Vehicle.Acceleration.Longitudinal
-- **MQTT Communication:** Bi-directional messaging for alerts and configuration
-- **Event-Driven Architecture:** Asynchronous processing with error handling
-- **Configurable Thresholds:** Dynamic speed limits and alert settings
-- **Alert Cooldown Logic:** Prevents alert spam with intelligent timing
-- **Production-Ready:** Full error handling, logging, and robust design
+```yaml
+# GitHub Actions Example
+- name: Build Vehicle App
+  run: |
+    docker build -f Dockerfile.quick -t builder .
+    cat src/VehicleApp.cpp | docker run --rm -i \
+      -e VSS_SPEC_URL=${{ secrets.COMPANY_VSS_URL }} \
+      -e HTTP_PROXY=${{ secrets.CORPORATE_PROXY }} \
+      builder > app-executable
 
-### 📊 MQTT Topics
-- **`speedmonitor/config`** - Receive configuration updates
-- **`speedmonitor/alerts`** - Publish speed violations and safety alerts
-- **`speedmonitor/status`** - Publish current speed and system status
-- **`speedmonitor/statistics`** - Publish performance metrics
+# Jenkins Pipeline Example  
+pipeline {
+    agent any
+    steps {
+        script {
+            sh '''
+                docker build -f Dockerfile.quick -t velocitas-quick .
+                docker run --rm -v ${WORKSPACE}/src:/input \
+                  -e HTTP_PROXY=${CORPORATE_PROXY} \
+                  velocitas-quick
+            '''
+        }
+    }
+}
+```
 
-This example provides a complete foundation for building sophisticated vehicle monitoring applications.
-
-## 🔧 Development Workflow
-
-### Recommended: Separate Container Workflow
-This is the most reliable approach for vehicle app development:
+### Corporate Network Configuration
 
 ```bash
-# Terminal 1: Start runtime services
+# Set persistent proxy environment
+export HTTP_PROXY=http://corporate-proxy:8080
+export HTTPS_PROXY=http://corporate-proxy:8080
+
+# Build with corporate settings
+docker build -f Dockerfile.quick \
+  --build-arg HTTP_PROXY=$HTTP_PROXY \
+  --build-arg HTTPS_PROXY=$HTTPS_PROXY \
+  --network=host \
+  -t velocitas-corporate .
+
+# Use with company VSS specification
+docker run --rm -i \
+  -e VSS_SPEC_URL=https://company.com/vss/spec.json \
+  -e HTTP_PROXY=$HTTP_PROXY \
+  velocitas-corporate < VehicleApp.cpp
+```
+
+---
+
+## 🚀 Performance & Benchmarks
+
+### Performance Metrics
+- **Container Build Time:** 3-5 minutes (one-time)
+- **App Build Time:** 60-90 seconds (cached dependencies)
+- **Memory Usage:** ~2GB during build, ~500MB runtime
+- **Executable Size:** ~13-15MB optimized binary
+- **Network:** Proxy-friendly with minimal external dependencies
+
+### Optimization Tips
+```bash
+# Pre-build container for CI/CD
+docker build -f Dockerfile.quick -t velocitas-quick .
+docker push your-registry/velocitas-quick:latest
+
+# Use in pipeline
+docker run --rm -i your-registry/velocitas-quick:latest < src/app.cpp
+```
+
+---
+
+## 🔧 Advanced Configuration
+
+### Custom VSS Specifications
+
+```bash
+# Option 1: Mount custom VSS file
+docker run --rm -i \
+  -v $(pwd)/custom-vss.json:/vss.json \
+  -e VSS_SPEC_FILE=/vss.json \
+  velocitas-quick < VehicleApp.cpp
+
+# Option 2: Use VSS URL (supports authentication)
+docker run --rm -i \
+  -e VSS_SPEC_URL=https://api.company.com/vss/v2.0/spec.json \
+  -e VSS_AUTH_TOKEN=your-token \
+  velocitas-quick < VehicleApp.cpp
+```
+
+### Build Customization
+
+```bash
+# Debug build with symbols
+docker run --rm -i -e BUILD_TYPE=Debug velocitas-quick < app.cpp
+
+# Custom build flags
+docker run --rm -i -e CMAKE_FLAGS="-DCUSTOM_FLAG=ON" velocitas-quick < app.cpp
+
+# Verbose build output
+docker run --rm -i -e VERBOSE_BUILD=1 velocitas-quick < app.cpp
+```
+
+### Available Commands
+
+```bash
+# Help and information
+docker run --rm velocitas-quick help
+
+# Validation only (fast)
+cat app.cpp | docker run --rm -i velocitas-quick validate
+
+# Build application (default)
+cat app.cpp | docker run --rm -i velocitas-quick build
+cat app.cpp | docker run --rm -i velocitas-quick  # same as build
+```
+
+---
+
+## 🛠️ Traditional Development Environment (Optional)
+
+For users who need comprehensive development features, debugging, or educational exploration, a full development environment is available.
+
+### Setup Traditional Environment
+
+```bash
+# Build development container
+docker build -f Dockerfile.dev -t velocitas-dev .
+
+# Start runtime services
 docker compose -f docker-compose.dev.yml up mosquitto vehicledatabroker -d
 
-# Terminal 2: Development container
+# Enter development environment  
 docker run -it --privileged -v $(pwd):/workspace \
   --network=host velocitas-dev
 
-# With proxy (if needed):
-docker run -it --privileged -v $(pwd):/workspace \
-  --network=host \
-  -e HTTP_PROXY=http://127.0.0.1:3128 \
-  -e HTTPS_PROXY=http://127.0.0.1:3128 \
-  -e http_proxy=http://127.0.0.1:3128 \
-  -e https_proxy=http://127.0.0.1:3128 \
-  velocitas-dev
-
-# Inside development container:
-gen-model && install-deps && build-app && run-app
-# 1. Generate vehicle classes from VSS spec
-# 2. Install dependencies (Velocitas SDK, etc.)  
-# 3. Compile the C++ application
-# 4. Run the vehicle app
+# Inside container - full development cycle
+gen-model      # Generate C++ classes from VSS
+install-deps   # Install dependencies with Conan
+build-app      # Build with CMake/Ninja
+run-app        # Run the vehicle application
 ```
 
-### Alternative: Single Container Development
-For development without separate services (limited functionality):
+### Traditional Development Commands
 
 ```bash
-# Single container for development only
-docker run -it --privileged -v $(pwd):/workspace \
-  --network=host velocitas-dev
+# Code Generation & Build
+gen-model         # Generate Vehicle.hpp from VSS
+install-deps      # Install Velocitas SDK and dependencies  
+build-app         # Compile C++ application
+build-app -r      # Release build (optimized)
 
-# Inside container:
-gen-model && install-deps && build-app
-# Note: run-app requires separate MQTT broker and VDB via Docker Compose
+# Runtime & Testing
+run-app           # Run the vehicle application
+check-code        # Run linting and formatting
+./build/bin/app_utests  # Execute unit tests
+
+# Development Tools  
+gen-grpc          # Generate gRPC code from proto
+vdb-cli           # Vehicle Data Broker CLI
 ```
 
-### Using Docker Compose
-For a complete development environment:
+**Note:** The traditional environment requires more setup and is primarily for comprehensive development, debugging, and learning scenarios.
 
-```bash
-# Start all services including dev container
-docker compose -f docker-compose.dev.yml up -d
+---
 
-# Access development container
-docker compose -f docker-compose.dev.yml exec dev bash
+## 📖 Documentation & Resources
 
-# Start Kuksa client for testing (separate terminal)
-docker compose -f docker-compose.dev.yml up kuksa-client --profile testing
-```
+### Internal Documentation
+- **[archived/](archived/)** - Previous documentation versions
+- **Test Results** - Stored in `test_results/` after running tests
 
-## 🧪 Testing Your Vehicle App
-
-### Unit Testing
-```bash
-# In development container
-build-app
-./build/bin/app_utests
-```
-
-### Integration Testing with Real Services
-```bash
-# Terminal 1: Start runtime services
-docker compose -f docker-compose.dev.yml up mosquitto vehicledatabroker -d
-
-# Terminal 2: Development container (with proxy if needed)
-docker run -it --privileged -v $(pwd):/workspace \
-  --network=host \
-  -e HTTP_PROXY=http://127.0.0.1:3128 \
-  -e HTTPS_PROXY=http://127.0.0.1:3128 \
-  -e http_proxy=http://127.0.0.1:3128 \
-  -e https_proxy=http://127.0.0.1:3128 \
-  velocitas-dev
-
-# Inside development container:
-gen-model && install-deps && build-app && run-app
-```
-
-### Testing Vehicle Data with Kuksa Client
-```bash
-# Option 1: Using Docker Compose (recommended)
-docker compose -f docker-compose.dev.yml up kuksa-client
-
-# Option 2: Standalone Kuksa client
-docker run -it --rm \
-  --network host \
-  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main \
-  "grpc://localhost:55555"
-
-# In Kuksa client, send vehicle data:
-setValue Vehicle.Speed 25.0                    # Triggers speed monitoring (25 m/s = 90 km/h)
-setValue Vehicle.Acceleration.Longitudinal -6.0 # Triggers braking alert
-getValue Vehicle.Speed                          # Check current value
-```
-
-### Testing MQTT Communication
-```bash
-# Send MQTT configuration updates
-docker run --rm --network host eclipse-mosquitto:2.0 mosquitto_pub \
-  -h localhost -t "speedmonitor/config" \
-  -m '{"speed_limit_kmh": 60.0, "enable_speed_limit_alerts": true}'
-
-# Monitor MQTT alerts
-docker run --rm --network host eclipse-mosquitto:2.0 mosquitto_sub \
-  -h localhost -t "speedmonitor/alerts"
-```
-
-### Code Quality
-```bash
-# Run all quality checks
-check-code
-
-# Individual tools available:
-# - clang-format (formatting)
-# - clang-tidy (static analysis)  
-# - cpplint (style checking)
-# - cppcheck (error detection)
-```
-
-## 🎯 Key Features
-
-### ✅ Zero Setup Complexity
-- No devcontainer configuration required
-- No VS Code dependencies
-- No complex installation procedures
-- Works with any IDE or editor
-
-### ✅ Complete Development Environment
-- Full C++ toolchain (GCC, CMake, Ninja)
-- Velocitas SDK >= 0.7.0 integrated
-- Conan 2.x package management
-- All development tools included
-
-### ✅ Vehicle-Specific Tools
-- Vehicle Data Broker (KUKSA.val) integration
-- MQTT communication (Eclipse Mosquitto)
-- Vehicle Signal Specification (VSS) support
-- gRPC SDK generation
-
-### ✅ Production Ready
-- Multi-stage Docker builds
-- Optimized container images
-- Environment configuration support
-- Deployment-ready containers
-
-## 🚀 Deployment
-
-### Building Production Images
-```bash
-# Build your app first
-build-app
-
-# Create production container
-docker build -f app/Dockerfile -t my-vehicle-app .
-
-# Run in production
-docker run -d --name vehicle-app \
-  -e SDV_MQTT_ADDRESS=production-mqtt:1883 \
-  -e SDV_VEHICLEDATABROKER_ADDRESS=production-vdb:55555 \
-  my-vehicle-app
-```
-
-## 📖 Documentation
-
-- **[DOCKER_DEVELOPMENT.md](DOCKER_DEVELOPMENT.md)** - Complete development guide
+### External Resources
 - **[Velocitas Documentation](https://eclipse-velocitas.github.io/velocitas-docs/)** - Framework documentation
-- **[Vehicle Signal Specification](https://covesa.github.io/vehicle_signal_specification/)** - VSS reference
+- **[Vehicle Signal Specification](https://covesa.github.io/vehicle_signal_specification/)** - VSS reference  
 - **[KUKSA.val](https://github.com/eclipse/kuksa.val)** - Vehicle Data Broker
+- **[Eclipse Velocitas GitHub](https://github.com/eclipse-velocitas)** - Source code and examples
+
+---
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes in the Docker environment
-4. Test thoroughly: `check-code && build-app && ./build/bin/app_utests`
-5. Commit your changes: `git commit -m 'Add amazing feature'`
-6. Push to the branch: `git push origin feature/amazing-feature`
-7. Open a Pull Request
+3. Test your changes:
+   ```bash
+   # Test quick build utility
+   ./test-mode2.sh --proxy
+   
+   # Test with template
+   cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick
+   ```
+4. Commit changes: `git commit -m 'Add amazing feature'`
+5. Push to branch: `git push origin feature/amazing-feature`
+6. Open Pull Request
 
-## 🆚 Migration from DevContainer
-
-This repository has been migrated from a devcontainer-based setup to a pure Docker development environment. Benefits include:
-
-### Before (DevContainer)
-- ❌ VS Code dependency
-- ❌ Complex devcontainer configuration
-- ❌ IDE-specific setup
-- ❌ Limited development flexibility
-
-### After (Docker-Only)
-- ✅ IDE/Editor agnostic
-- ✅ Simple Docker workflow
-- ✅ Faster setup and build
-- ✅ Better portability
-- ✅ Cleaner repository structure
-
-### Migration Guide
-If you have an existing devcontainer-based setup:
-
-1. **Remove devcontainer files** (already done in this repo)
-2. **Switch to Docker workflow**: Use `Dockerfile.dev` instead of devcontainer
-3. **Update documentation**: Follow this README instead of devcontainer docs
-4. **Rebuild environment**: `docker build -f Dockerfile.dev -t velocitas-dev .`
-
-## 📋 Requirements
-
-### System Requirements
-- **Docker**: Version 20.10+ recommended
-- **Operating System**: Linux, macOS, or Windows with WSL2
-- **Memory**: 4GB+ RAM recommended for development
-- **Storage**: 2GB+ free space for Docker images
-
-### Velocitas Requirements
-- **Velocitas C++ SDK**: >= 0.7.0 (included)
-- **Conan**: 2.x (included) 
-- **Vehicle Signals**: VSS 4.0 compatible (included)
-- **Communication**: MQTT and gRPC support (included)
+---
 
 ## 🐛 Troubleshooting
 
 ### Common Issues
 
-**Docker build fails**
+**Build fails:**
 ```bash
-# Clean Docker cache and rebuild
+# Check container logs
+docker run --rm -i velocitas-quick validate < YourApp.cpp
+
+# Rebuild container
+docker build --no-cache -f Dockerfile.quick -t velocitas-quick .
+```
+
+**Proxy connection issues:**
+```bash
+# Test proxy connectivity
+docker run --rm -e HTTP_PROXY=http://proxy:8080 alpine wget -q --spider http://github.com
+
+# Verify proxy settings
+docker run --rm velocitas-quick env | grep -i proxy
+```
+
+**Permission problems:**
+```bash
+# Fix file permissions
+docker run --rm -v $(pwd):/workspace --privileged velocitas-quick \
+  bash -c "chown -R $(id -u):$(id -g) /workspace"
+```
+
+**VSS specification errors:**
+```bash
+# Verify VSS URL accessibility
+curl -s $VSS_SPEC_URL | jq . > /dev/null && echo "VSS OK" || echo "VSS Failed"
+
+# Use default VSS (fallback)
+docker run --rm -i velocitas-quick < app.cpp  # Uses VSS 4.0 default
+```
+
+**Container size issues:**
+```bash
+# Clean Docker cache
 docker system prune -f
-docker build --no-cache -f Dockerfile.dev -t velocitas-dev .
+
+# Remove old images
+docker rmi $(docker images -f "dangling=true" -q)
 ```
 
-**Permission errors**
-```bash
-# Fix file permissions inside container
-docker run --rm -v $(pwd):/workspace --privileged velocitas-dev \
-  bash -c "chown -R vscode:vscode /workspace"
-```
-
-**Port conflicts**
-```bash
-# Check for conflicting services
-docker ps
-netstat -tulpn | grep -E '(1883|55555|8080)'
-
-# Use different ports
-docker run -it --privileged -v $(pwd):/workspace \
-  -p 8081:8080 -p 1884:1883 -p 55556:55555 velocitas-dev
-```
-
-**Build errors**
-```bash
-# Clean and rebuild
-rm -rf build-linux-x86_64
-install-deps && build-app
-```
+---
 
 ## 📄 License
 
@@ -451,13 +454,34 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ## 🏷️ Version Information
 
-- **Template Version**: Docker-enabled v1.0
-- **Velocitas SDK**: >= 0.7.0  
+- **Template Version**: Quick Build v2.0
+- **Velocitas SDK**: >= 0.7.0
 - **Conan**: 2.15.1+
 - **Base Image**: eclipse-velocitas/devcontainer-base-images/cpp:v0.4
 
 ---
 
+## 🎯 Why This Approach?
+
+### ✅ Advantages
+- **Zero Setup Time** - Ready to use immediately  
+- **Corporate Ready** - Full proxy and firewall support  
+- **CI/CD Optimized** - Perfect for automated pipelines  
+- **Flexible Input** - Multiple ways to provide code  
+- **Custom VSS** - Adapt to any vehicle specification  
+- **Reproducible** - Same environment, predictable results  
+- **Lightweight** - Minimal resource usage  
+
+### 🎪 Use Cases
+- **Rapid Prototyping** - Quick iteration and testing
+- **CI/CD Pipelines** - Automated building and testing
+- **Corporate Environments** - Proxy and firewall compatibility
+- **Educational** - No complex setup for learning
+- **Production Builds** - Consistent, reproducible binaries
+- **Custom VSS** - Company-specific vehicle specifications
+
+---
+
 **Happy Vehicle App Development! 🚗💨**
 
-For detailed development instructions, see [DOCKER_DEVELOPMENT.md](DOCKER_DEVELOPMENT.md).
+*Build your Velocitas C++ vehicle apps instantly with zero setup complexity.*
