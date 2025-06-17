@@ -18,6 +18,21 @@ cat YourVehicleApp.cpp | docker run --rm -i velocitas-quick
 # That's it! Your app is built and ready to run.
 ```
 
+### 📚 **Learning Template Available**
+New to Velocitas? Check out the comprehensive template that shows you how to configure vehicle signals:
+```bash
+# View the instructive template with signal examples
+cat templates/app/src/VehicleApp.template.cpp
+
+# Build the template to see how it works
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick
+```
+The template includes:
+- **50+ vehicle signal examples** with descriptions
+- **Step-by-step signal subscription** guide
+- **Common use case patterns** (speed monitoring, fuel tracking, etc.)
+- **VSS customization** instructions
+
 ## 🎯 Key Features
 
 ✅ **Zero Dependencies** - No host installation required  
@@ -130,7 +145,7 @@ The test script validates:
 ### Manual Testing Examples
 
 ```bash
-# Test with template app
+# Test with instructive template (shows how to use vehicle signals)
 cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick
 
 # Test validation only
@@ -390,7 +405,7 @@ vdb-cli           # Vehicle Data Broker CLI
    # Test quick build utility
    ./test-mode2.sh --proxy
    
-   # Test with template
+   # Test with instructive template
    cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick
    ```
 4. Commit changes: `git commit -m 'Add amazing feature'`
