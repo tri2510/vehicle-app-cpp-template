@@ -104,13 +104,19 @@ jobs:
     
     strategy:
       matrix:
-        image: [quick, dev]
-        test-type: [basic, proxy]
         include:
           - image: quick
-            tag: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${{ needs.build-and-test.outputs.version }}
+            test-type: basic
+            tag: ghcr.io/${{ github.repository }}/velocitas-quick:${{ needs.build-and-test.outputs.version }}
+          - image: quick
+            test-type: proxy
+            tag: ghcr.io/${{ github.repository }}/velocitas-quick:${{ needs.build-and-test.outputs.version }}
           - image: dev
-            tag: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_DEV }}:${{ needs.build-and-test.outputs.version }}
+            test-type: basic
+            tag: ghcr.io/${{ github.repository }}/velocitas-dev:${{ needs.build-and-test.outputs.version }}
+          - image: dev
+            test-type: proxy
+            tag: ghcr.io/${{ github.repository }}/velocitas-dev:${{ needs.build-and-test.outputs.version }}
     
     steps:
     - name: Checkout repository

@@ -1,10 +1,12 @@
-# Velocitas C++ Vehicle App Template - Quick Build Utility
+# Velocitas C++ Quick Build Template
 
 [![License: Apache](https://img.shields.io/badge/License-Apache-yellow.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Docker](https://img.shields.io/badge/Docker-Enabled-blue.svg)](https://docker.com)
 [![Velocitas](https://img.shields.io/badge/Velocitas-C++-green.svg)](https://github.com/eclipse-velocitas/velocitas-docs)
 
-A **zero-setup Docker utility** for building [Velocitas](https://github.com/eclipse-velocitas/velocitas-docs) Vehicle Apps in C++. Simply input your code and get a production-ready executable.
+🚀 **Zero-setup Docker utility** for building [Eclipse Velocitas](https://github.com/eclipse-velocitas/velocitas-docs) vehicle applications in C++. Enhanced template with quick build, corporate proxy support, custom VSS specifications, and comprehensive learning guide.
+
+> **Based on [Eclipse Velocitas Vehicle App Template](https://github.com/eclipse-velocitas/vehicle-app-cpp-template)** - Enhanced for instant containerized building without local development environment setup.
 
 ## ⚡ Ultra-Fast Quick Start (30 seconds)
 
