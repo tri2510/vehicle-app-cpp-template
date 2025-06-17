@@ -13,7 +13,7 @@
 ### Option A: Use Pre-built Images (Recommended)
 ```bash
 # Build your VehicleApp.cpp instantly using pre-built container
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest
 
 # That's it! No build time needed.
 ```
@@ -198,7 +198,7 @@ This template includes a comprehensive **Speed Monitor & Alert System** demonstr
 ## 📁 Project Structure
 
 ```
-velocitas-cpp-quickbuild-template/
+vehicle-app-cpp-template/
 ├── 🚀 Quick Build Utility (Main)
 │   ├── Dockerfile.quick             # Main utility container
 │   ├── scripts/quick-build.sh       # Entry script

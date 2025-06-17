@@ -8,20 +8,80 @@ CI/CD pipeline automatically builds and publishes Docker images to GitHub Contai
 
 | Image | Purpose | Size | Platforms |
 |-------|---------|------|-----------|
-| `ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest` | **Quick Build Utility** (Recommended) | ~2.5GB | linux/amd64, linux/arm64 |
+| `ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest` | **Quick Build Utility** (Recommended) | ~2.5GB | linux/amd64, linux/arm64 |
 
-## 🚀 Quick Start with Pre-built Images
+## 🚀 Quick Start - Complete Workflow
 
-### Basic Usage
+### Build, Run & Test Your Vehicle App (End-to-End)
+
+```bash
+# 1. Build your vehicle app
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest
+
+# 2. Start Vehicle Data Broker
+docker compose -f docker-compose.dev.yml up vehicledatabroker -d
+
+# 3. Start KUKSA client for testing
+docker compose -f docker-compose.dev.yml --profile testing up kuksa-client -d
+
+# 4. Run your built app (connects to services)
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
+  --network=host \
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest run
+
+# 5. Send test signals manually (in another terminal)
+docker exec -it velocitas-kuksa-client kuksa-client grpc://localhost:55555
+# Inside kuksa-client shell, send test signals:
+setValue Vehicle.Speed 65.0
+setValue Vehicle.Powertrain.EngineSpeed 2500  
+setValue Vehicle.CurrentLocation.Latitude 37.7749
+setValue Vehicle.CurrentLocation.Longitude -122.4194
+
+# 6. Stop services when done
+docker compose -f docker-compose.dev.yml --profile testing down
+```
+
+### With Corporate Proxy
+
+```bash
+# 1. Build your vehicle app (with proxy)
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
+  -e HTTP_PROXY=http://127.0.0.1:3128 \
+  -e HTTPS_PROXY=http://127.0.0.1:3128 \
+  -e http_proxy=http://127.0.0.1:3128 \
+  -e https_proxy=http://127.0.0.1:3128 \
+  --network=host \
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest
+
+# 2. Start Vehicle Data Broker (with proxy if needed)
+HTTP_PROXY=http://127.0.0.1:3128 HTTPS_PROXY=http://127.0.0.1:3128 \
+docker compose -f docker-compose.dev.yml up vehicledatabroker -d
+
+# 3. Start KUKSA client for testing
+HTTP_PROXY=http://127.0.0.1:3128 HTTPS_PROXY=http://127.0.0.1:3128 \
+docker compose -f docker-compose.dev.yml --profile testing up kuksa-client -d
+
+# 4. Run your built app (with proxy, connects to services)
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
+  -e HTTP_PROXY=http://127.0.0.1:3128 \
+  -e HTTPS_PROXY=http://127.0.0.1:3128 \
+  --network=host \
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest run
+
+# Steps 5-6 remain the same (testing and cleanup)
+```
+
+### Basic Build-Only Usage
 
 ```bash
 # Build your vehicle app instantly (no local build needed!)
 cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
-  ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest
 
 # Build your own VehicleApp.cpp
 cat YourVehicleApp.cpp | docker run --rm -i \
-  ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest
 ```
 
 ### Corporate Network Usage
@@ -31,7 +91,7 @@ cat YourVehicleApp.cpp | docker run --rm -i \
 cat YourVehicleApp.cpp | docker run --rm -i \
   -e HTTP_PROXY=http://proxy:3128 \
   -e HTTPS_PROXY=http://proxy:3128 \
-  ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest
 ```
 
 ### Custom VSS Specification
@@ -40,13 +100,13 @@ cat YourVehicleApp.cpp | docker run --rm -i \
 # With custom VSS URL
 cat YourVehicleApp.cpp | docker run --rm -i \
   -e VSS_SPEC_URL=https://company.com/vss.json \
-  ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest
 
 # With custom VSS file
 docker run --rm -i \
   -v $(pwd)/custom-vss.json:/vss.json \
   -e VSS_SPEC_FILE=/vss.json \
-  ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest < YourVehicleApp.cpp
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest < YourVehicleApp.cpp
 ```
 
 ## 🏷️ Image Versioning
@@ -64,13 +124,13 @@ docker run --rm -i \
 
 ```bash
 # Use latest stable (recommended)
-docker run --rm -i ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest
+docker run --rm -i ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest
 
 # Use specific version for reproducibility
-docker run --rm -i ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:v1.0.0
+docker run --rm -i ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:v1.0.0
 
 # Use development version
-docker run --rm -i ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:develop
+docker run --rm -i ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:develop
 ```
 
 ## 📋 Complete Usage Examples
@@ -80,7 +140,7 @@ docker run --rm -i ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-q
 ```bash
 # Method 1: Pipe from file
 cat YourVehicleApp.cpp | docker run --rm -i \
-  ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest
 
 # Method 2: Pipe from command
 echo '#include "sdk/VehicleApp.h"
@@ -91,7 +151,7 @@ public:
         velocitas::logger().info("My Vehicle App Started!");
     }
 };' | docker run --rm -i \
-  ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest
 ```
 
 ### 2. File Mount Input
@@ -100,12 +160,12 @@ public:
 # Mount single file
 docker run --rm \
   -v $(pwd)/YourVehicleApp.cpp:/input \
-  ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest
 
 # Mount directory (looks for VehicleApp.cpp in directory)
 docker run --rm \
   -v $(pwd)/src:/input \
-  ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest
 ```
 
 ### 3. Validation Only
@@ -113,13 +173,122 @@ docker run --rm \
 ```bash
 # Validate without building
 cat YourVehicleApp.cpp | docker run --rm -i \
-  ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest validate
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest validate
 
 # Quick syntax check
 echo 'invalid code' | docker run --rm -i \
-  ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest validate
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest validate
 ```
 
+## 🚀 Running Built Applications
+
+After building your vehicle application, you can run it with real services for complete functionality.
+
+### Setup Required Services
+
+Before running your built application, start the Vehicle Data Broker and KUKSA client:
+
+```bash
+# Start Vehicle Data Broker  
+docker compose -f docker-compose.dev.yml up vehicledatabroker -d
+
+# Start KUKSA client for testing
+docker compose -f docker-compose.dev.yml --profile testing up kuksa-client -d
+
+# Verify services are running
+docker compose -f docker-compose.dev.yml --profile testing ps
+
+# Check service logs if needed
+docker compose -f docker-compose.dev.yml logs vehicledatabroker
+docker compose -f docker-compose.dev.yml --profile testing logs kuksa-client
+```
+
+### Run Your Built Application
+
+Once services are running, you can execute your built vehicle application:
+
+```bash
+# Build your app first
+cat YourVehicleApp.cpp | docker run --rm -i \
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest
+
+# Then run the built application with quick-run script
+cat YourVehicleApp.cpp | docker run --rm -i \
+  --network=host \
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest run
+
+# Or mount and run
+docker run --rm \
+  --network=host \
+  -v $(pwd)/YourVehicleApp.cpp:/input \
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest run
+```
+
+### Manual Signal Testing with KUKSA Client
+
+Test your vehicle application by sending signals manually:
+
+```bash
+# Connect to KUKSA client shell
+docker exec -it velocitas-kuksa-client kuksa-client grpc://localhost:55555
+
+# Inside the kuksa-client shell, send test signals:
+setValue Vehicle.Speed 65.0
+setValue Vehicle.Powertrain.EngineSpeed 2500
+setValue Vehicle.CurrentLocation.Latitude 37.7749
+setValue Vehicle.CurrentLocation.Longitude -122.4194
+setValue Vehicle.Acceleration.Longitudinal 2.5
+setValue Vehicle.Acceleration.Lateral 0.8
+
+# Read current values
+getValue Vehicle.Speed
+getValue Vehicle.Powertrain.EngineSpeed
+
+# Subscribe to signal changes
+subscribe Vehicle.Speed
+
+# Exit client
+quit
+```
+
+### Common Test Scenarios
+
+```bash
+# Test speed monitoring (for speed alert apps)
+setValue Vehicle.Speed 45.0    # Normal speed
+setValue Vehicle.Speed 85.0    # Over speed limit
+setValue Vehicle.Speed 120.0   # Excessive speed
+
+# Test location updates (for navigation apps)
+setValue Vehicle.CurrentLocation.Latitude 40.7128   # New York
+setValue Vehicle.CurrentLocation.Longitude -74.0060
+
+# Test engine parameters (for diagnostic apps) 
+setValue Vehicle.Powertrain.EngineSpeed 3000
+setValue Vehicle.Powertrain.CoolantTemperature 195.5
+setValue Vehicle.Powertrain.FuelLevel 45.2
+```
+
+### Service Endpoints
+
+When services are running, your application will connect to:
+
+| Service | Endpoint | Purpose |
+|---------|----------|---------|
+| **Vehicle Data Broker** | `127.0.0.1:55555` | Vehicle signal access |
+| **KUKSA Client** | `grpc://localhost:55555` | Manual signal testing interface |
+
+### Stop Services
+
+When finished testing:
+
+```bash
+# Stop services
+docker compose -f docker-compose.dev.yml down
+
+# Clean up volumes (optional)
+docker compose -f docker-compose.dev.yml down -v
+```
 
 ## 🔧 Advanced Configuration
 
@@ -143,7 +312,7 @@ docker run --rm -i \
   -e HTTPS_PROXY=http://corporate-proxy:8080 \
   -e VSS_SPEC_URL=https://company.com/internal/vss.json \
   -e VSS_AUTH_TOKEN=company-token \
-  ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest < YourVehicleApp.cpp
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest < YourVehicleApp.cpp
 ```
 
 
@@ -167,10 +336,10 @@ docker run --rm -i \
 **Image not found:**
 ```bash
 # Make sure image name is correct
-docker pull ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest
+docker pull ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest
 
 # Check available tags
-curl -s https://api.github.com/repos/tri2510/velocitas-cpp-quickbuild-template/packages
+curl -s https://api.github.com/repos/tri2510/vehicle-app-cpp-template/packages
 ```
 
 **Permission denied:**
@@ -182,7 +351,7 @@ echo $GITHUB_TOKEN | docker login ghcr.io -u $GITHUB_USERNAME --password-stdin
 **Network issues:**
 ```bash
 # Test image accessibility
-docker run --rm ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest help
+docker run --rm ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest help
 
 # Use specific registry mirror if needed
 docker run --rm your-registry-mirror/velocitas-quick:latest help
@@ -192,17 +361,17 @@ docker run --rm your-registry-mirror/velocitas-quick:latest help
 ```bash
 # Check validation first
 cat YourVehicleApp.cpp | docker run --rm -i \
-  ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:latest validate
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest validate
 
 # Use different version if latest has issues
-docker run --rm -i ghcr.io/tri2510/velocitas-cpp-quickbuild-template/velocitas-quick:v1.0.0
+docker run --rm -i ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:v1.0.0
 ```
 
 ## 📚 Related Documentation
 
 - **[README.md](README.md)** - Main project documentation
 - **[DEVELOPER_WORKFLOW.md](DEVELOPER_WORKFLOW.md)** - Complete development workflows
-- **[GitHub Releases](https://github.com/tri2510/velocitas-cpp-quickbuild-template/releases)** - Version history and release notes
+- **[GitHub Releases](https://github.com/tri2510/vehicle-app-cpp-template/releases)** - Version history and release notes
 
 ---
 
