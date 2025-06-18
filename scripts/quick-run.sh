@@ -14,7 +14,7 @@ set -e
 WORKSPACE="/quickbuild"
 BUILD_DIR="$WORKSPACE/build"
 LOG_FILE="/tmp/run.log"
-RUN_TIMEOUT=15
+RUN_TIMEOUT=60
 
 # Logging functions
 log_info() {
@@ -220,15 +220,20 @@ main() {
         local input_changed=false
         
         if [ -p /dev/stdin ]; then
-            # New input from stdin - need to check if it's different
+            # New input from stdin - check if different before rebuilding
             local temp_input="/tmp/new_input.cpp"
             cat > "$temp_input"
-            if [ -f "$current_source" ] && ! cmp -s "$temp_input" "$current_source"; then
+            
+            if [ -f "$current_source" ] && cmp -s "$temp_input" "$current_source"; then
+                log_info "📝 Input identical to current source - skipping rebuild"
+                input_changed=false
+            else
+                # Replace source with new input and rebuild
+                mkdir -p "$(dirname "$current_source")"
+                cp "$temp_input" "$current_source"
                 input_changed=true
-                log_info "📝 Input from stdin differs from current source - rebuild needed"
+                log_info "📝 Input differs from current source - replacing and rebuilding"
             fi
-            # Put the input back for potential use by build script
-            cat "$temp_input" > /dev/stdin 2>/dev/null || true
         elif [ -f "/input" ]; then
             # Input from mounted file
             if [ -f "$current_source" ] && ! cmp -s "/input" "$current_source"; then
@@ -255,10 +260,24 @@ main() {
     if [ "$need_rebuild" = true ]; then
         log_info "🔄 Building application..."
         log_info "   This may take 60-90 seconds for compilation..."
-        if ! /scripts/quick-build.sh build; then
-            log_error "Build failed - cannot run application"
-            log_info "💡 Check build output above for compilation errors"
-            exit 1
+        # Pass the saved input to build script
+        if [ -f "/tmp/new_input.cpp" ]; then
+            log_info "🔍 Debug: Found saved input file, size: $(wc -l < /tmp/new_input.cpp) lines"
+            log_info "🔍 Debug: First few lines of input:"
+            head -5 "/tmp/new_input.cpp" | tee -a "$LOG_FILE"
+            log_info "🔄 Building with custom input..."
+            if ! cat "/tmp/new_input.cpp" | /scripts/quick-build.sh build; then
+                log_error "Build failed - cannot run application"
+                log_info "💡 Check build output above for compilation errors"
+                exit 1
+            fi
+        else
+            log_info "🔄 Building template (no custom input found)..."
+            if ! /scripts/quick-build.sh build; then
+                log_error "Build failed - cannot run application"
+                log_info "💡 Check build output above for compilation errors"
+                exit 1
+            fi
         fi
         log_success "✅ Build completed successfully!"
     fi

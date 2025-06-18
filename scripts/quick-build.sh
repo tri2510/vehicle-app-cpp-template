@@ -40,7 +40,7 @@ run_with_logging() {
     local success_msg="$2"
     local warning_msg="$3"
     
-    if [[ "${VERBOSE_BUILD:-}" == "1" ]]; then
+    if [[ "${VERBOSE_BUILD:-1}" == "1" ]]; then
         # Verbose mode: show command output to both console and log
         if eval "$command" 2>&1 | tee -a "$LOG_FILE"; then
             log_success "$success_msg"
@@ -58,7 +58,7 @@ run_with_logging() {
         else
             local exit_code=$?
             log_warning "$warning_msg"
-            log_info "   💡 Use VERBOSE_BUILD=1 to see detailed output"
+            log_info "   💡 Set VERBOSE_BUILD=0 to hide detailed output"
             return $exit_code
         fi
     fi
@@ -250,7 +250,7 @@ build_application() {
     
     # Build with optimized release mode for faster builds
     if ! run_with_logging "velocitas exec build-system build -r" "C++ compilation completed successfully" "Build compilation failed"; then
-        log_error "Build failed"
+        log_error "❌ Build failed"
         echo ""
         echo "Build log (last 30 lines):"
         tail -n 30 "$LOG_FILE"
@@ -262,29 +262,39 @@ build_application() {
         return 1
     fi
     
+    # Additional check: scan build log for actual compilation failures
+    if grep -q "ninja: build stopped\|FAILED:\|error:" "$LOG_FILE"; then
+        log_error "❌ Compilation errors detected in build output"
+        echo ""
+        echo "Compilation errors found:"
+        grep -A2 -B1 "error:\|FAILED:" "$LOG_FILE" | tail -10
+        echo ""
+        echo "💡 Verbose build is enabled by default"
+        return 1
+    fi
+    
     log_info "🔍 Verifying build output..."
     
-    # Check for multiple possible executable locations
-    local executable_found=false
-    local executable_path=""
+    # Check only the primary build location (no fallbacks to old executables)
+    local executable_path="$BUILD_DIR/bin/app"
     
-    # Check common Velocitas build locations
-    for path in "$BUILD_DIR/bin/app" "$WORKSPACE/build-linux-x86_64/Release/bin/app" "$WORKSPACE/app/build/bin/app"; do
-        if [ -f "$path" ]; then
-            executable_found=true
-            executable_path="$path"
-            break
-        fi
-    done
-    
-    if [ "$executable_found" = false ]; then
-        log_error "Build succeeded but executable not found"
-        log_info "Searched locations:"
-        log_info "  - $BUILD_DIR/bin/app"
-        log_info "  - $WORKSPACE/build-linux-x86_64/Release/bin/app"
-        log_info "  - $WORKSPACE/app/build/bin/app"
+    if [ ! -f "$executable_path" ]; then
+        log_error "Build reported success but executable not found at expected location"
+        log_info "Expected: $executable_path"
         log_info "Available files in build directory:"
-        find "$WORKSPACE" -name "app" -type f 2>/dev/null || echo "  No 'app' executable found"
+        find "$BUILD_DIR" -name "*app*" -type f 2>/dev/null || echo "  No app executable found"
+        return 1
+    fi
+    
+    # Additional safety: verify executable was created recently (within last 5 minutes)
+    local file_age=$(stat -c %Y "$executable_path")
+    local current_time=$(date +%s)
+    local age_seconds=$((current_time - file_age))
+    
+    if [ $age_seconds -gt 300 ]; then
+        log_error "Executable found but appears to be old (${age_seconds}s old)"
+        log_error "This indicates the build may have failed silently"
+        log_info "Expected: Fresh executable from current build"
         return 1
     fi
     
@@ -343,7 +353,13 @@ main() {
     
     # Step 4: Build application
     log_info "🔧 STEP 4/5: Building C++ application..."
-    build_application
+    if ! build_application; then
+        log_error "❌ Build failed - stopping execution"
+        echo ""
+        echo "💡 Verbose build is enabled by default. To suppress:"
+        echo "   cat VehicleApp.cpp | docker run --rm -i -e VERBOSE_BUILD=0 velocitas-quick build"
+        exit 1
+    fi
     echo ""
     
     # Step 5: Display summary
@@ -385,7 +401,13 @@ step_compile() {
     echo ""
     
     # Build application
-    build_application
+    if ! build_application; then
+        log_error "❌ Compilation failed - stopping execution"
+        echo ""
+        echo "💡 Verbose build is enabled by default. To suppress:"
+        echo "   cat VehicleApp.cpp | docker run --rm -i -e VERBOSE_BUILD=0 velocitas-quick compile"
+        exit 1
+    fi
     
     log_success "Compilation completed successfully!"
 }
@@ -462,7 +484,7 @@ case "${1:-build}" in
         echo "Environment Variables:"
         echo "  VSS_SPEC_FILE - Path to custom VSS JSON file"
         echo "  VSS_SPEC_URL  - URL to custom VSS JSON specification"
-        echo "  VERBOSE_BUILD - Set to 1 to show detailed command output"
+        echo "  VERBOSE_BUILD - Set to 0 to hide detailed command output (default: 1)"
         ;;
     *)
         log_error "Unknown command: $1"

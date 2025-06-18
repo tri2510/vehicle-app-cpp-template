@@ -40,8 +40,9 @@ This script runs comprehensive tests for the velocitas-quick container including
 - Run/rerun commands (2 tests)
 - Sequential granular workflow (1 test)
 - Verbose build mode (1 test)
+- Smart rebuild detection (1 test)
 
-Total: 17 test cases covering all velocitas-quick functionality
+Total: 18 test cases covering all velocitas-quick functionality
 
 OPTIONS:
     -p, --proxy         Enable proxy testing (default: false)
@@ -565,6 +566,40 @@ test_verbose_build_mode() {
     fi
 }
 
+# Test 18: Smart Rebuild Detection
+test_smart_rebuild() {
+    log_test_start 18 "Smart Rebuild Detection"
+    
+    local start_time=$(date +%s)
+    local env_args=$(get_env_args)
+    local network_host=""
+    if [[ "$USE_PROXY" != "true" ]]; then
+        network_host="--network=host"
+    fi
+    
+    # First run - should build
+    echo "Step 1: Initial build run..." >> "$LOG_FILE"
+    timeout "$TEST_TIMEOUT" bash -c "cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i $network_host $env_args '$CONTAINER_NAME' run" >> "$LOG_FILE" 2>&1
+    local first_exit=$?
+    
+    # Second run with identical input - should skip rebuild
+    echo "Step 2: Identical input run (should skip rebuild)..." >> "$LOG_FILE"
+    timeout "$TEST_TIMEOUT" bash -c "cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i $network_host $env_args '$CONTAINER_NAME' run" >> "$LOG_FILE" 2>&1
+    local second_exit=$?
+    
+    local end_time=$(date +%s)
+    local duration=$((end_time - start_time))
+    
+    # Check if both runs succeeded and second run detected identical input
+    if [[ $first_exit -eq 0 ]] && [[ $second_exit -eq 0 ]] && grep -q "Input identical to current source - skipping rebuild\|Using existing executable" "$LOG_FILE"; then
+        log_test_result 18 "Smart Rebuild Detection" 0 $duration
+        return 0
+    else
+        log_test_result 18 "Smart Rebuild Detection" 1 $duration
+        return 1
+    fi
+}
+
 # Run all tests
 run_all_tests() {
     echo -e "${YELLOW}🚀 Starting Mode 2 Test Suite...${NC}"
@@ -602,6 +637,9 @@ run_all_tests() {
     
     # Run verbose mode test
     test_verbose_build_mode || true
+    
+    # Run smart rebuild test
+    test_smart_rebuild || true
 }
 
 # Print summary

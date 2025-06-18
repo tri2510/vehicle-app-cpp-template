@@ -85,7 +85,7 @@ docker run --rm -v $(pwd):/input velocitas-quick
 # Method 4: Validation only (no build)
 cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick validate
 
-# Method 5: Build and run with services (smart rebuild)
+# Method 5: Build and run with services (smart rebuild - only rebuilds if input differs)
 cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i --network=host velocitas-quick run
 
 # Method 6: Run pre-built template (no input needed, fastest)
@@ -481,8 +481,11 @@ vdb-cli           # Vehicle Data Broker CLI
 
 **Build fails:**
 ```bash
-# Check container logs
-docker run --rm -i velocitas-quick validate < templates/app/src/VehicleApp.template.cpp
+# Use verbose build to see detailed compilation output
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i -e VERBOSE_BUILD=1 velocitas-quick build
+
+# Check input validation
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick validate
 
 # Rebuild container
 docker build --no-cache -f Dockerfile.quick -t velocitas-quick .
