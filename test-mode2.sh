@@ -41,8 +41,9 @@ This script runs comprehensive tests for the velocitas-quick container including
 - Sequential granular workflow (1 test)
 - Verbose build mode (1 test)
 - Smart rebuild detection (1 test)
+- Skip dependencies flag (1 test)
 
-Total: 18 test cases covering all velocitas-quick functionality
+Total: 19 test cases covering all velocitas-quick functionality
 
 OPTIONS:
     -p, --proxy         Enable proxy testing (default: false)
@@ -53,7 +54,7 @@ OPTIONS:
     -h, --help          Show this help message
 
 EXAMPLES:
-    # Run all 18 tests without proxy
+    # Run all 19 tests without proxy
     $0
 
     # Run all tests with proxy
@@ -618,6 +619,29 @@ test_smart_rebuild() {
     fi
 }
 
+# Test 19: Skip Dependencies Flag
+test_skip_dependencies() {
+    log_test_start 19 "Skip Dependencies Flag"
+    
+    local start_time=$(date +%s)
+    local proxy_args=$(get_proxy_args)
+    
+    timeout "$TEST_TIMEOUT" bash -c "cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i $proxy_args -e SKIP_DEPS=1 '$CONTAINER_NAME' build" >> "$LOG_FILE" 2>&1
+    
+    local exit_code=$?
+    local end_time=$(date +%s)
+    local duration=$((end_time - start_time))
+    
+    # Check if skip deps message appears in log and build succeeded
+    if [[ $exit_code -eq 0 ]] && grep -q "Skipping dependency verification (SKIP_DEPS=1)\|Using pre-cached packages without verification" "$LOG_FILE"; then
+        log_test_result 19 "Skip Dependencies Flag" 0 $duration
+        return 0
+    else
+        log_test_result 19 "Skip Dependencies Flag" 1 $duration
+        return 1
+    fi
+}
+
 # Run all tests
 run_all_tests() {
     echo -e "${YELLOW}🚀 Starting Mode 2 Test Suite...${NC}"
@@ -658,6 +682,9 @@ run_all_tests() {
     
     # Run smart rebuild test
     test_smart_rebuild || true
+    
+    # Run skip dependencies test
+    test_skip_dependencies || true
 }
 
 # Print summary

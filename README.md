@@ -353,6 +353,9 @@ docker run --rm -i -e CMAKE_FLAGS="-DCUSTOM_FLAG=ON" velocitas-quick < templates
 
 # Verbose build output (shows detailed command output)
 docker run --rm -i -e VERBOSE_BUILD=1 velocitas-quick < templates/app/src/VehicleApp.template.cpp
+
+# Skip dependency verification for fastest builds (uses pre-cached packages)
+docker run --rm -i -e SKIP_DEPS=1 velocitas-quick < templates/app/src/VehicleApp.template.cpp
 ```
 
 ### Available Commands
@@ -392,6 +395,8 @@ docker run --rm velocitas-quick finalize      # Build summary (Step 5)
 | `HTTPS_PROXY` | HTTPS proxy for corporate networks | `http://proxy:3128` | Corporate firewalls |
 | `BUILD_TYPE` | Build configuration | `Debug`, `Release` | Development vs production |
 | `CMAKE_FLAGS` | Additional CMake flags | `-DCUSTOM_FLAG=ON` | Custom build options |
+| `VERBOSE_BUILD` | Show detailed command output | `1` | Debugging builds |
+| `SKIP_DEPS` | Skip dependency verification | `1` | Fastest builds |
 
 ---
 

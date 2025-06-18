@@ -164,6 +164,11 @@ cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
 cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
   -e VERBOSE_BUILD=1 \
   ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest
+
+# Method 6: Skip dependency verification for fastest builds
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
+  -e SKIP_DEPS=1 \
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest
 ```
 
 ### Persistent Builds (Faster Reruns)

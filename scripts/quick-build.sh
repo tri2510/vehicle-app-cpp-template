@@ -240,9 +240,15 @@ build_application() {
     cd "$WORKSPACE"
     export PATH="/home/vscode/.local/bin:$PATH"
     
-    log_info "📦 Installing dependencies (if needed)..."
-    if ! run_with_logging "velocitas exec build-system install" "Dependencies installed/verified successfully" "Dependency installation had issues, continuing with build..."; then
-        : # Continue with build even if dependency installation has issues
+    # Check if package verification should be skipped
+    if [[ "${SKIP_DEPS:-0}" == "1" ]]; then
+        log_info "📦 Skipping dependency verification (SKIP_DEPS=1)..."
+        log_info "   💡 Using pre-cached packages without verification"
+    else
+        log_info "📦 Installing dependencies (if needed)..."
+        if ! run_with_logging "velocitas exec build-system install" "Dependencies installed/verified successfully" "Dependency installation had issues, continuing with build..."; then
+            : # Continue with build even if dependency installation has issues
+        fi
     fi
     
     log_info "🏗️  Starting compilation (Release mode for optimization)..."
@@ -467,6 +473,10 @@ case "${1:-build}" in
         echo "  # Use custom VSS URL"
         echo "  docker run -e VSS_SPEC_URL=https://company.com/vss.json -i velocitas-quick"
         echo ""
+        echo "Performance Optimization:"
+        echo "  # Skip dependency verification for fastest builds"
+        echo "  docker run -e SKIP_DEPS=1 -i velocitas-quick"
+        echo ""
         echo "Commands:"
         echo "  build       - Build the application (default)"
         echo "  run         - Build (if needed) and run application with live output"
@@ -486,6 +496,7 @@ case "${1:-build}" in
         echo "  VSS_SPEC_FILE - Path to custom VSS JSON file"
         echo "  VSS_SPEC_URL  - URL to custom VSS JSON specification"
         echo "  VERBOSE_BUILD - Set to 1 to show detailed command output (default: 0)"
+        echo "  SKIP_DEPS     - Set to 1 to skip dependency verification for faster builds (default: 0)"
         ;;
     *)
         log_error "Unknown command: $1"
