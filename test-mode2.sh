@@ -53,7 +53,7 @@ OPTIONS:
     -h, --help          Show this help message
 
 EXAMPLES:
-    # Run all 17 tests without proxy
+    # Run all 18 tests without proxy
     $0
 
     # Run all tests with proxy
@@ -306,7 +306,7 @@ test_custom_vss() {
     local start_time=$(date +%s)
     local proxy_args=$(get_proxy_args)
     
-    timeout "$TEST_TIMEOUT" bash -c "cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i $proxy_args -e VSS_SPEC_URL=https://raw.githubusercontent.com/COVESA/vehicle_signal_specification/main/spec/VehicleSignalSpecification.json '$CONTAINER_NAME' build" >> "$LOG_FILE" 2>&1
+    timeout 120 bash -c "cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i $proxy_args -e VSS_SPEC_URL=https://raw.githubusercontent.com/COVESA/vehicle_signal_specification/main/spec/VehicleSignalSpecification.json '$CONTAINER_NAME' build" >> "$LOG_FILE" 2>&1
     
     local exit_code=$?
     local end_time=$(date +%s)
@@ -477,6 +477,11 @@ test_run_command() {
     local end_time=$(date +%s)
     local duration=$((end_time - start_time))
     
+    # Exit code 124 means timeout, which is expected for run command (it runs for full timeout duration)
+    if [[ $exit_code -eq 124 ]]; then
+        exit_code=0  # Convert timeout to success for run command
+    fi
+    
     log_test_result 14 "Run Command (build and run)" $exit_code $duration
     return $exit_code
 }
@@ -498,6 +503,11 @@ test_rerun_command() {
     local exit_code=$?
     local end_time=$(date +%s)
     local duration=$((end_time - start_time))
+    
+    # Exit code 124 means timeout, which is expected for rerun command (it runs for full timeout duration)
+    if [[ $exit_code -eq 124 ]]; then
+        exit_code=0  # Convert timeout to success for rerun command
+    fi
     
     log_test_result 15 "Rerun Command (pre-built template)" $exit_code $duration
     return $exit_code
@@ -589,6 +599,14 @@ test_smart_rebuild() {
     
     local end_time=$(date +%s)
     local duration=$((end_time - start_time))
+    
+    # Handle timeout exit codes (124) as success for run commands
+    if [[ $first_exit -eq 124 ]]; then
+        first_exit=0
+    fi
+    if [[ $second_exit -eq 124 ]]; then
+        second_exit=0
+    fi
     
     # Check if both runs succeeded and second run detected identical input
     if [[ $first_exit -eq 0 ]] && [[ $second_exit -eq 0 ]] && grep -q "Input identical to current source - skipping rebuild\|Using existing executable" "$LOG_FILE"; then

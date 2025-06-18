@@ -298,7 +298,7 @@ docker build -f Dockerfile.quick \
 docker run --rm -i \
   -e VSS_SPEC_URL=https://company.com/vss/spec.json \
   -e HTTP_PROXY=$HTTP_PROXY \
-  velocitas-corporate < templates/app/src/VehicleApp.template.cpp
+  velocitas-quick < templates/app/src/VehicleApp.template.cpp
 ```
 
 ---

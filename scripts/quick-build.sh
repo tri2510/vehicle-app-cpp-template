@@ -40,7 +40,7 @@ run_with_logging() {
     local success_msg="$2"
     local warning_msg="$3"
     
-    if [[ "${VERBOSE_BUILD:-1}" == "1" ]]; then
+    if [[ "${VERBOSE_BUILD:-0}" == "1" ]]; then
         # Verbose mode: show command output to both console and log
         if eval "$command" 2>&1 | tee -a "$LOG_FILE"; then
             log_success "$success_msg"
@@ -58,7 +58,7 @@ run_with_logging() {
         else
             local exit_code=$?
             log_warning "$warning_msg"
-            log_info "   💡 Set VERBOSE_BUILD=0 to hide detailed output"
+            log_info "   💡 Set VERBOSE_BUILD=1 to show detailed output"
             return $exit_code
         fi
     fi
@@ -269,7 +269,8 @@ build_application() {
         echo "Compilation errors found:"
         grep -A2 -B1 "error:\|FAILED:" "$LOG_FILE" | tail -10
         echo ""
-        echo "💡 Verbose build is enabled by default"
+        echo "💡 To see detailed build output, use verbose mode:"
+        echo "   cat VehicleApp.cpp | docker run --rm -i -e VERBOSE_BUILD=1 velocitas-quick"
         return 1
     fi
     
@@ -356,8 +357,8 @@ main() {
     if ! build_application; then
         log_error "❌ Build failed - stopping execution"
         echo ""
-        echo "💡 Verbose build is enabled by default. To suppress:"
-        echo "   cat VehicleApp.cpp | docker run --rm -i -e VERBOSE_BUILD=0 velocitas-quick build"
+        echo "💡 To see detailed build output, use verbose mode:"
+        echo "   cat VehicleApp.cpp | docker run --rm -i -e VERBOSE_BUILD=1 velocitas-quick build"
         exit 1
     fi
     echo ""
@@ -404,8 +405,8 @@ step_compile() {
     if ! build_application; then
         log_error "❌ Compilation failed - stopping execution"
         echo ""
-        echo "💡 Verbose build is enabled by default. To suppress:"
-        echo "   cat VehicleApp.cpp | docker run --rm -i -e VERBOSE_BUILD=0 velocitas-quick compile"
+        echo "💡 To see detailed build output, use verbose mode:"
+        echo "   cat VehicleApp.cpp | docker run --rm -i -e VERBOSE_BUILD=1 velocitas-quick compile"
         exit 1
     fi
     
@@ -484,7 +485,7 @@ case "${1:-build}" in
         echo "Environment Variables:"
         echo "  VSS_SPEC_FILE - Path to custom VSS JSON file"
         echo "  VSS_SPEC_URL  - URL to custom VSS JSON specification"
-        echo "  VERBOSE_BUILD - Set to 0 to hide detailed command output (default: 1)"
+        echo "  VERBOSE_BUILD - Set to 1 to show detailed command output (default: 0)"
         ;;
     *)
         log_error "Unknown command: $1"
