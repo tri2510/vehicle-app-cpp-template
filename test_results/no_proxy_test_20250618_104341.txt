@@ -1,0 +1,27 @@
+🧪 Mode 2 Test Suite - Wed Jun 18 10:43:41 AM +07 2025
+📊 Configuration:
+   Proxy: false
+   Verbose: true
+   Container: velocitas-quick
+   Timeout: 120s
+   Output: test_results
+
+📋 System Info:
+   Docker: Docker version 28.2.2, build e6534b4
+   OS: Linux HC-C-0057R 6.5.0-26-generic #26~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Tue Mar 12 10:22:43 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+   Disk: /dev/mapper/ubuntu--vg-ubuntu--lv  935G  321G  567G  37% /
+
+🔧 TEST 1: Container Build
+Started: Wed Jun 18 10:43:41 AM +07 2025
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.quick
+#1 transferring dockerfile: 4.97kB done
+#1 DONE 0.0s
+
+#2 [auth] eclipse-velocitas/devcontainer-base-images/cpp:pull token for ghcr.io
+#2 DONE 0.0s
+
+#3 [internal] load metadata for ghcr.io/eclipse-velocitas/devcontainer-base-images/cpp:v0.4
+#3 CANCELED
+ERROR: failed to solve: Canceled: context canceled

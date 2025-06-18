@@ -33,6 +33,37 @@ log_warning() {
     echo "⚠️  [WARNING] $1" | tee -a "$LOG_FILE"
 }
 
+# Unified logging function for commands
+# Usage: run_with_logging "command" "success_message" "warning_message"
+run_with_logging() {
+    local command="$1"
+    local success_msg="$2"
+    local warning_msg="$3"
+    
+    if [[ "${VERBOSE_BUILD:-}" == "1" ]]; then
+        # Verbose mode: show command output to both console and log
+        if eval "$command" 2>&1 | tee -a "$LOG_FILE"; then
+            log_success "$success_msg"
+            return 0
+        else
+            local exit_code=$?
+            log_warning "$warning_msg"
+            return $exit_code
+        fi
+    else
+        # Normal mode: hide command output, show hint for verbose mode
+        if eval "$command" >> "$LOG_FILE" 2>&1; then
+            log_success "$success_msg"
+            return 0
+        else
+            local exit_code=$?
+            log_warning "$warning_msg"
+            log_info "   💡 Use VERBOSE_BUILD=1 to see detailed output"
+            return $exit_code
+        fi
+    fi
+}
+
 # Initialize build log
 echo "🚀 Quick Build Started: $(date)" > "$LOG_FILE"
 log_info "Workspace: $WORKSPACE"
@@ -188,13 +219,13 @@ generate_model() {
     cd "$WORKSPACE"
     export PATH="/home/vscode/.local/bin:$PATH"
     
-    if ! velocitas exec vehicle-signal-interface download-vspec >> "$LOG_FILE" 2>&1; then
+    if ! run_with_logging "velocitas exec vehicle-signal-interface download-vspec" "VSS specification downloaded" "Failed to download VSS specification"; then
         log_error "Failed to download VSS specification"
         return 1
     fi
     
-    if ! velocitas exec vehicle-signal-interface generate-model >> "$LOG_FILE" 2>&1; then
-        log_error "Failed to generate vehicle model"
+    if ! run_with_logging "velocitas exec vehicle-signal-interface generate-model" "Vehicle model generated" "Failed to generate vehicle model"; then
+        log_error "Failed to generate vehicle model"  
         return 1
     fi
     
@@ -210,15 +241,15 @@ build_application() {
     export PATH="/home/vscode/.local/bin:$PATH"
     
     log_info "📦 Installing dependencies (if needed)..."
-    if ! velocitas exec build-system install >> "$LOG_FILE" 2>&1; then
-        log_warning "Dependency installation had issues, continuing with build..."
+    if ! run_with_logging "velocitas exec build-system install" "Dependencies installed/verified successfully" "Dependency installation had issues, continuing with build..."; then
+        : # Continue with build even if dependency installation has issues
     fi
     
     log_info "🏗️  Starting compilation (Release mode for optimization)..."
     log_info "   This may take 60-90 seconds depending on code complexity..."
     
     # Build with optimized release mode for faster builds
-    if ! velocitas exec build-system build -r >> "$LOG_FILE" 2>&1; then
+    if ! run_with_logging "velocitas exec build-system build -r" "C++ compilation completed successfully" "Build compilation failed"; then
         log_error "Build failed"
         echo ""
         echo "Build log (last 30 lines):"
@@ -324,6 +355,54 @@ main() {
     log_info "💡 Your vehicle app is ready to run!"
 }
 
+# Function to run individual steps
+step_model() {
+    echo ""
+    log_info "🚀 Velocitas C++ Model Generation Utility"
+    log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    log_info "🔧 STEP 3: Vehicle signal model preparation"
+    echo ""
+    
+    # Prepare workspace
+    prepare_workspace
+    echo ""
+    
+    # Generate vehicle model
+    generate_model
+    
+    log_success "Model generation completed successfully!"
+}
+
+step_compile() {
+    echo ""
+    log_info "🚀 Velocitas C++ Compilation Utility"
+    log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    log_info "🔧 STEP 4: C++ application building"
+    echo ""
+    
+    # Get input if needed
+    get_user_input
+    echo ""
+    
+    # Build application
+    build_application
+    
+    log_success "Compilation completed successfully!"
+}
+
+step_finalize() {
+    echo ""
+    log_info "🚀 Velocitas C++ Build Finalization Utility"
+    log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    log_info "🔧 STEP 5: Finalizing build"
+    echo ""
+    
+    # Display summary
+    build_summary
+    
+    log_success "Build finalization completed successfully!"
+}
+
 # Handle script arguments
 case "${1:-build}" in
     "build")
@@ -341,6 +420,15 @@ case "${1:-build}" in
         get_user_input
         log_success "Validation completed - VehicleApp.cpp is valid"
         ;;
+    "gen-model"|"model")
+        step_model
+        ;;
+    "compile"|"build-cpp")
+        step_compile
+        ;;
+    "finalize")
+        step_finalize
+        ;;
     "help"|"--help"|"-h")
         echo "Quick Build Script - Mode 2 Blackbox Utility"
         echo ""
@@ -357,15 +445,24 @@ case "${1:-build}" in
         echo "  docker run -e VSS_SPEC_URL=https://company.com/vss.json -i velocitas-quick"
         echo ""
         echo "Commands:"
-        echo "  build     - Build the application (default)"
-        echo "  run       - Build (if needed) and run application with live output"
-        echo "  rerun     - Run pre-built template (no input needed, fastest)"
-        echo "  validate  - Only validate VehicleApp.cpp"
-        echo "  help      - Show this help message"
+        echo "  build       - Build the application (default)"
+        echo "  run         - Build (if needed) and run application with live output"
+        echo "  rerun       - Run pre-built template (no input needed, fastest)"
+        echo "  validate    - Only validate VehicleApp.cpp"
+        echo ""
+        echo "Granular Build Commands:"
+        echo "  gen-model   - Generate vehicle signal model from VSS (Step 3)"
+        echo "  model       - Alias for gen-model"
+        echo "  compile     - Compile C++ application only (Step 4)"
+        echo "  build-cpp   - Alias for compile"
+        echo "  finalize    - Build summary and finalization (Step 5)"
+        echo ""
+        echo "  help        - Show this help message"
         echo ""
         echo "Environment Variables:"
         echo "  VSS_SPEC_FILE - Path to custom VSS JSON file"
         echo "  VSS_SPEC_URL  - URL to custom VSS JSON specification"
+        echo "  VERBOSE_BUILD - Set to 1 to show detailed command output"
         ;;
     *)
         log_error "Unknown command: $1"

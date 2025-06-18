@@ -106,7 +106,10 @@ RUN chmod +x /scripts/*.sh
 RUN echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-build.sh "$@"' > /usr/local/bin/build && \
     echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-run.sh "$@"' > /usr/local/bin/run && \
     echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/validate-template.sh "$@"' > /usr/local/bin/validate && \
-    chmod +x /usr/local/bin/build /usr/local/bin/run /usr/local/bin/validate
+    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-build.sh gen-model "$@"' > /usr/local/bin/gen-model && \
+    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-build.sh compile "$@"' > /usr/local/bin/compile && \
+    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-build.sh finalize "$@"' > /usr/local/bin/finalize && \
+    chmod +x /usr/local/bin/build /usr/local/bin/run /usr/local/bin/validate /usr/local/bin/gen-model /usr/local/bin/compile /usr/local/bin/finalize
 
 # Switch back to user
 USER $USERNAME

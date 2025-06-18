@@ -89,6 +89,25 @@ docker run --rm \
   ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest rerun
 ```
 
+### Granular Build Commands
+```bash
+# Step 3: Generate vehicle signal model only
+docker run --rm \
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest gen-model
+
+# Step 4: Compile C++ application only
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest compile
+
+# Step 5: Build finalization and summary
+docker run --rm \
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest finalize
+
+# Alternative command aliases
+docker run --rm ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest model      # alias for gen-model
+docker run --rm ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest build-cpp # alias for compile
+```
+
 ## 🔧 Advanced Usage
 
 ### With Corporate Proxy
@@ -140,6 +159,11 @@ docker run --rm \
 # Method 4: Validation only
 cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
   ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest validate
+
+# Method 5: Verbose build (shows detailed command output)
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
+  -e VERBOSE_BUILD=1 \
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest
 ```
 
 ### Persistent Builds (Faster Reruns)
@@ -223,7 +247,7 @@ docker run --rm ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:latest 
 ## 📚 Related Documentation
 
 - **[README.md](README.md)** - Main project documentation  
-- **[DEVELOPER_WORKFLOW.md](DEVELOPER_WORKFLOW.md)** - Complete development workflows
+- **[BUILD_FLOW.md](BUILD_FLOW.md)** - Build file flow and architecture internals
 - **[GitHub Releases](https://github.com/tri2510/vehicle-app-cpp-template/releases)** - Version history and release notes
 
 ---

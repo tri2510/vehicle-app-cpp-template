@@ -90,6 +90,11 @@ cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i --network=hos
 
 # Method 6: Run pre-built template (no input needed, fastest)
 docker run --rm --network=host velocitas-quick rerun
+
+# Method 7: Granular build steps
+docker run --rm velocitas-quick gen-model  # Step 3: Generate vehicle model only
+cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick compile  # Step 4: Compile only
+docker run --rm velocitas-quick finalize  # Step 5: Build summary
 ```
 
 ## 🎛️ Custom VSS Support
@@ -346,7 +351,7 @@ docker run --rm -i -e BUILD_TYPE=Debug velocitas-quick < templates/app/src/Vehic
 # Custom build flags
 docker run --rm -i -e CMAKE_FLAGS="-DCUSTOM_FLAG=ON" velocitas-quick < templates/app/src/VehicleApp.template.cpp
 
-# Verbose build output
+# Verbose build output (shows detailed command output)
 docker run --rm -i -e VERBOSE_BUILD=1 velocitas-quick < templates/app/src/VehicleApp.template.cpp
 ```
 
@@ -368,7 +373,25 @@ cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i --network=hos
 
 # Run pre-built template (no input needed, fastest)
 docker run --rm --network=host velocitas-quick rerun
+
+# Granular build commands
+docker run --rm velocitas-quick gen-model     # Generate vehicle model (Step 3)
+docker run --rm velocitas-quick model         # Alias for gen-model
+docker run --rm velocitas-quick compile       # Compile C++ app (Step 4)
+docker run --rm velocitas-quick build-cpp     # Alias for compile  
+docker run --rm velocitas-quick finalize      # Build summary (Step 5)
 ```
+
+### Environment Variables
+
+| Variable | Purpose | Example | Usage |
+|----------|---------|---------|-------|
+| `VSS_SPEC_URL` | Custom VSS specification URL | `https://company.com/vss.json` | Custom vehicle signals |
+| `VSS_SPEC_FILE` | Custom VSS file path in container | `/vss.json` | Local VSS specification |
+| `HTTP_PROXY` | HTTP proxy for corporate networks | `http://proxy:3128` | Corporate firewalls |
+| `HTTPS_PROXY` | HTTPS proxy for corporate networks | `http://proxy:3128` | Corporate firewalls |
+| `BUILD_TYPE` | Build configuration | `Debug`, `Release` | Development vs production |
+| `CMAKE_FLAGS` | Additional CMake flags | `-DCUSTOM_FLAG=ON` | Custom build options |
 
 ---
 
@@ -423,7 +446,7 @@ vdb-cli           # Vehicle Data Broker CLI
 
 ### Internal Documentation
 - **[PREBUILT_IMAGES.md](PREBUILT_IMAGES.md)** - Guide to using pre-built Docker images
-- **[DEVELOPER_WORKFLOW.md](DEVELOPER_WORKFLOW.md)** - Complete development workflows
+- **[BUILD_FLOW.md](BUILD_FLOW.md)** - Build file flow and architecture internals
 - **Test Results** - Stored in `test_results/` after running tests
 
 ### External Resources

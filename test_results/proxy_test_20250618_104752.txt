@@ -1,0 +1,109 @@
+🧪 Mode 2 Test Suite - Wed Jun 18 10:47:52 AM +07 2025
+📊 Configuration:
+   Proxy: true
+   Proxy Host: 127.0.0.1:3128
+   Verbose: true
+   Container: velocitas-quick-proxy
+   Timeout: 120s
+   Output: test_results
+
+📋 System Info:
+   Docker: Docker version 28.2.2, build e6534b4
+   OS: Linux HC-C-0057R 6.5.0-26-generic #26~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Tue Mar 12 10:22:43 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+   Disk: /dev/mapper/ubuntu--vg-ubuntu--lv  935G  321G  567G  37% /
+
+🔧 TEST 1: Container Build
+Started: Wed Jun 18 10:47:52 AM +07 2025
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.quick
+#1 transferring dockerfile: 4.97kB done
+#1 DONE 0.0s
+
+#2 [auth] eclipse-velocitas/devcontainer-base-images/cpp:pull token for ghcr.io
+#2 DONE 0.0s
+
+#3 [internal] load metadata for ghcr.io/eclipse-velocitas/devcontainer-base-images/cpp:v0.4
+#3 DONE 2.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 126B done
+#4 DONE 0.0s
+
+#5 [ 1/21] FROM ghcr.io/eclipse-velocitas/devcontainer-base-images/cpp:v0.4@sha256:07b710143fc78143e744c932d2acb48ab71a8ae59ef95fcb1d20e4db59bf6a7c
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 701B done
+#6 DONE 0.0s
+
+#7 [10/21] COPY --chown=vscode:vscode templates/conanfile.txt /quickbuild/conanfile.txt
+#7 CACHED
+
+#8 [18/21] RUN export PATH="$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" &&     velocitas exec build-system build -r
+#8 CACHED
+
+#9 [ 8/21] WORKDIR /quickbuild
+#9 CACHED
+
+#10 [20/21] RUN chmod +x /scripts/*.sh
+#10 CACHED
+
+#11 [13/21] COPY --chown=vscode:vscode templates/app/src/VehicleApp.template.cpp /quickbuild/app/src/VehicleApp.cpp
+#11 CACHED
+
+#12 [17/21] RUN export PATH="$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" &&     velocitas exec vehicle-signal-interface download-vspec &&     velocitas exec vehicle-signal-interface generate-model
+#12 CACHED
+
+#13 [ 6/21] COPY requirements.txt /tmp/requirements.txt
+#13 CACHED
+
+#14 [ 3/21] RUN apt-get update && apt-get install -y     curl     wget     git     sudo     build-essential     cmake     ninja-build     ccache     pkg-config     python3     python3-pip     netcat-openbsd     jq     && rm -rf /var/lib/apt/lists/*
+#14 CACHED
+
+#15 [ 5/21] RUN mkdir -p /quickbuild && chown -R vscode:vscode /quickbuild
+#15 CACHED
+
+#16 [16/21] RUN export PATH="$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" &&     velocitas exec build-system install
+#16 CACHED
+
+#17 [ 9/21] COPY --chown=vscode:vscode templates/AppManifest.json /quickbuild/app/AppManifest.json
+#17 CACHED
+
+#18 [ 7/21] RUN python3 -m pip install --user --upgrade pip &&     python3 -m pip install --user -r /tmp/requirements.txt
+#18 CACHED
+
+#19 [14/21] COPY --chown=vscode:vscode .velocitas.json /quickbuild/.velocitas.json
+#19 CACHED
+
+#20 [ 2/21] RUN groupadd --gid 1000 vscode || true &&     useradd --uid 1000 --gid 1000 -m vscode || true
+#20 CACHED
+
+#21 [12/21] COPY --chown=vscode:vscode templates/app/ /quickbuild/app/
+#21 CACHED
+
+#22 [ 4/21] RUN echo vscode ALL=(root) NOPASSWD:ALL > /etc/sudoers.d/vscode     && chmod 0440 /etc/sudoers.d/vscode
+#22 CACHED
+
+#23 [11/21] COPY --chown=vscode:vscode templates/CMakeLists.txt /quickbuild/CMakeLists.txt
+#23 CACHED
+
+#24 [15/21] RUN pip install --user -r /tmp/requirements.txt &&     export PATH="$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" &&     velocitas init -f -v
+#24 CACHED
+
+#25 [19/21] COPY --chown=vscode:vscode scripts/ /scripts/
+#25 CACHED
+
+#26 [21/21] RUN echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-build.sh "$@"' > /usr/local/bin/build &&     echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-run.sh "$@"' > /usr/local/bin/run &&     echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/validate-template.sh "$@"' > /usr/local/bin/validate &&     echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-build.sh gen-model "$@"' > /usr/local/bin/gen-model &&     echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-build.sh compile "$@"' > /usr/local/bin/compile &&     echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-build.sh finalize "$@"' > /usr/local/bin/finalize &&     chmod +x /usr/local/bin/build /usr/local/bin/run /usr/local/bin/validate /usr/local/bin/gen-model /usr/local/bin/compile /usr/local/bin/finalize
+#26 CACHED
+
+#27 exporting to image
+#27 exporting layers done
+#27 writing image sha256:1b2a71d975d5d491ff09c98a8331cae8866a4cc4852840271159d668a0372823 done
+#27 naming to docker.io/library/velocitas-quick-proxy done
+#27 DONE 0.0s
+Completed: Wed Jun 18 10:47:55 AM +07 2025
+Exit Code: 0
+Duration: 3s
+
+✅ TEST 1 PASSED: Container Build
