@@ -60,11 +60,16 @@ jobs:
         BASE_VERSION=$(echo $LAST_TAG | sed 's/v//')
         PRERELEASE_TAG="${BASE_VERSION}-${PRERELEASE_SUFFIX}.${TIMESTAMP}.${SHORT_SHA}"
         
+        # Create Docker-safe branch tag (replace / with -)
+        DOCKER_BRANCH_TAG=$(echo "${BRANCH_NAME}" | sed 's/\//-/g')
+        
         echo "prerelease-tag=${PRERELEASE_TAG}" >> $GITHUB_OUTPUT
         echo "branch-name=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+        echo "docker-branch-tag=${DOCKER_BRANCH_TAG}" >> $GITHUB_OUTPUT
         echo "base-version=${BASE_VERSION}" >> $GITHUB_OUTPUT
         
         echo "Generated prerelease version: ${PRERELEASE_TAG}"
+        echo "Docker branch tag: ${DOCKER_BRANCH_TAG}"
 
     - name: Extract metadata
       id: meta
@@ -87,7 +92,7 @@ jobs:
         tags: |
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${{ steps.generate-version.outputs.prerelease-tag }}
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:prerelease-latest
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${{ steps.generate-version.outputs.branch-name }}-prerelease
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${{ steps.generate-version.outputs.docker-branch-tag }}-prerelease
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
@@ -117,7 +122,7 @@ jobs:
         docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:prerelease-latest
         
         # Branch-specific prerelease
-        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${{ steps.generate-version.outputs.branch-name }}-prerelease
+        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:release-v1-0-1-prerelease
         ```
         
         ### 🎯 Quick Test
@@ -175,8 +180,8 @@ jobs:
         # Latest prerelease
         docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:prerelease-latest
         
-        # Branch-specific prerelease
-        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${GITHUB_REF#refs/heads/}-prerelease
+        # Branch-specific prerelease  
+        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:release-v1-0-1-prerelease
         ```
         
         ### 🎯 Quick Test
