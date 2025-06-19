@@ -1,0 +1,242 @@
+name: Prerelease Build
+
+on:
+  push:
+    branches: [ 'release/**' ]
+  workflow_dispatch:
+    inputs:
+      prerelease_version:
+        description: 'Prerelease version suffix (e.g., alpha, beta, rc1)'
+        required: false
+        default: 'rc'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME_QUICK: ${{ github.repository }}/velocitas-quick
+
+jobs:
+  build-prerelease:
+    runs-on: ubuntu-latest
+    outputs:
+      image-digest-quick: ${{ steps.build-quick.outputs.digest }}
+      version: ${{ steps.meta.outputs.version }}
+      prerelease-tag: ${{ steps.generate-version.outputs.prerelease-tag }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Generate prerelease version
+      id: generate-version
+      run: |
+        # Extract branch name and get latest tag
+        BRANCH_NAME=${GITHUB_REF#refs/heads/}
+        LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+        
+        # Generate timestamp for uniqueness
+        TIMESTAMP=$(date +%Y%m%d%H%M%S)
+        SHORT_SHA=${GITHUB_SHA:0:7}
+        
+        # Determine prerelease suffix
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.prerelease_version }}" ]; then
+          PRERELEASE_SUFFIX="${{ github.event.inputs.prerelease_version }}"
+        else
+          PRERELEASE_SUFFIX="rc"
+        fi
+        
+        # Create prerelease version
+        BASE_VERSION=$(echo $LAST_TAG | sed 's/v//')
+        PRERELEASE_TAG="${BASE_VERSION}-${PRERELEASE_SUFFIX}.${TIMESTAMP}.${SHORT_SHA}"
+        
+        echo "prerelease-tag=${PRERELEASE_TAG}" >> $GITHUB_OUTPUT
+        echo "branch-name=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+        echo "base-version=${BASE_VERSION}" >> $GITHUB_OUTPUT
+        
+        echo "Generated prerelease version: ${PRERELEASE_TAG}"
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}
+        tags: |
+          type=raw,value=${{ steps.generate-version.outputs.prerelease-tag }}
+          type=raw,value=prerelease-latest
+          type=ref,event=branch,suffix=-prerelease
+
+    - name: Build Prerelease Docker image
+      id: build-quick
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.quick
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: |
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${{ steps.generate-version.outputs.prerelease-tag }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:prerelease-latest
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${{ steps.generate-version.outputs.branch-name }}-prerelease
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        build-args: |
+          BUILD_DATE=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
+          VERSION=${{ steps.generate-version.outputs.prerelease-tag }}
+          VCS_REF=${{ github.sha }}
+
+    - name: Generate prerelease notes
+      id: prerelease-notes
+      run: |
+        cat > prerelease-notes.md << 'EOF'
+        ## 🧪 Prerelease Package - Vehicle App C++ Template
+        
+        **⚠️ This is a prerelease version for testing purposes.**
+        
+        ### 📦 Docker Images
+        
+        **Quick Build Utility (Prerelease):**
+        ```bash
+        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${{ steps.generate-version.outputs.prerelease-tag }}
+        ```
+        
+        **Alternative tags:**
+        ```bash
+        # Latest prerelease
+        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:prerelease-latest
+        
+        # Branch-specific prerelease
+        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${{ steps.generate-version.outputs.branch-name }}-prerelease
+        ```
+        
+        ### 🎯 Quick Test
+        
+        ```bash
+        # Pull and test the prerelease
+        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${{ steps.generate-version.outputs.prerelease-tag }}
+        
+        # Build your vehicle app
+        cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${{ steps.generate-version.outputs.prerelease-tag }}
+        ```
+        
+        ### 📊 Build Information
+        
+        - **Branch**: ${{ steps.generate-version.outputs.branch-name }}
+        - **Base Version**: ${{ steps.generate-version.outputs.base-version }}
+        - **Commit**: ${{ github.sha }}
+        - **Architecture**: linux/amd64, linux/arm64
+        - **Built**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+        
+        ### 🔍 Testing Notes
+        
+        This prerelease is automatically generated from the `${{ steps.generate-version.outputs.branch-name }}` branch.
+        Please test thoroughly before promoting to a full release.
+        
+        Report any issues in the GitHub repository.
+        EOF
+
+  create-prerelease:
+    needs: [build-prerelease]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Create prerelease notes file
+      run: |
+        cat > prerelease-notes.md << 'EOF'
+        ## 🧪 Prerelease Package - Vehicle App C++ Template
+        
+        **⚠️ This is a prerelease version for testing purposes.**
+        
+        ### 📦 Docker Images
+        
+        **Quick Build Utility (Prerelease):**
+        ```bash
+        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${{ needs.build-prerelease.outputs.prerelease-tag }}
+        ```
+        
+        **Alternative tags:**
+        ```bash
+        # Latest prerelease
+        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:prerelease-latest
+        
+        # Branch-specific prerelease
+        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${GITHUB_REF#refs/heads/}-prerelease
+        ```
+        
+        ### 🎯 Quick Test
+        
+        ```bash
+        # Pull and test the prerelease
+        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${{ needs.build-prerelease.outputs.prerelease-tag }}
+        
+        # Build your vehicle app
+        cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${{ needs.build-prerelease.outputs.prerelease-tag }}
+        ```
+        
+        ### 📊 Build Information
+        
+        - **Branch**: ${GITHUB_REF#refs/heads/}
+        - **Commit**: ${{ github.sha }}
+        - **Architecture**: linux/amd64, linux/arm64
+        - **Built**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+        
+        ### 🔍 Testing Notes
+        
+        This prerelease is automatically generated from the `${GITHUB_REF#refs/heads/}` branch.
+        Please test thoroughly before promoting to a full release.
+        
+        Report any issues in the GitHub repository.
+        EOF
+
+    - name: Create GitHub Prerelease
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ needs.build-prerelease.outputs.prerelease-tag }}
+        name: Prerelease v${{ needs.build-prerelease.outputs.prerelease-tag }}
+        body_path: prerelease-notes.md
+        draft: false
+        prerelease: true
+        generate_release_notes: true
+        files: |
+          README.md
+          templates/app/src/VehicleApp.template.cpp
+
+  notify-prerelease:
+    needs: [build-prerelease, create-prerelease]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Notify prerelease success
+      if: needs.build-prerelease.result == 'success' && needs.create-prerelease.result == 'success'
+      run: |
+        echo "🧪 Successfully created prerelease package!"
+        echo "📦 Docker Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${{ needs.build-prerelease.outputs.prerelease-tag }}"
+        echo "🏷️ GitHub Release: v${{ needs.build-prerelease.outputs.prerelease-tag }}"
+        echo ""
+        echo "🎯 Test with:"
+        echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_QUICK }}:${{ needs.build-prerelease.outputs.prerelease-tag }}"
+        
+    - name: Notify prerelease failure
+      if: needs.build-prerelease.result == 'failure' || needs.create-prerelease.result == 'failure'
+      run: |
+        echo "❌ Prerelease creation failed:"
+        echo "  - Build: ${{ needs.build-prerelease.result }}"
+        echo "  - Release: ${{ needs.create-prerelease.result }}"
+        exit 1
