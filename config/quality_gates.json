@@ -1,0 +1,167 @@
+{
+  "quality_gates": {
+    "version": "1.0",
+    "description": "Quality gate definitions and thresholds for SDV C++ examples",
+    "last_updated": "2025-06-23",
+    "build": {
+      "success_rate": {
+        "threshold": "100%",
+        "description": "All builds must succeed",
+        "critical": true
+      },
+      "max_build_time": {
+        "threshold": "300s",
+        "description": "Build time should not exceed 5 minutes",
+        "critical": false
+      },
+      "max_image_size": {
+        "threshold": "2.5GB",
+        "description": "Docker image size limit",
+        "critical": false
+      },
+      "dependency_resolution": {
+        "threshold": "100%",
+        "description": "All dependencies must resolve successfully",
+        "critical": true
+      }
+    },
+    "testing": {
+      "unit_test_coverage": {
+        "threshold": "95%",
+        "description": "Minimum line coverage for unit tests",
+        "critical": true
+      },
+      "integration_test_pass_rate": {
+        "threshold": "100%",
+        "description": "All integration tests must pass",
+        "critical": true
+      },
+      "performance_regression_threshold": {
+        "threshold": "5%",
+        "description": "Maximum allowed performance regression",
+        "critical": true
+      },
+      "test_execution_time": {
+        "threshold": "600s",
+        "description": "Maximum time for complete test suite",
+        "critical": false
+      }
+    },
+    "security": {
+      "max_critical_vulnerabilities": {
+        "threshold": 0,
+        "description": "No critical vulnerabilities allowed",
+        "critical": true
+      },
+      "max_high_vulnerabilities": {
+        "threshold": 0,
+        "description": "No high-severity vulnerabilities allowed",
+        "critical": true
+      },
+      "max_medium_vulnerabilities": {
+        "threshold": 5,
+        "description": "Maximum medium-severity vulnerabilities",
+        "critical": false
+      },
+      "security_scan_pass_rate": {
+        "threshold": "100%",
+        "description": "All security scans must pass",
+        "critical": true
+      }
+    },
+    "code_quality": {
+      "static_analysis_critical_issues": {
+        "threshold": 0,
+        "description": "No critical static analysis issues",
+        "critical": true
+      },
+      "static_analysis_major_issues": {
+        "threshold": 5,
+        "description": "Maximum major static analysis issues",
+        "critical": false
+      },
+      "documentation_coverage": {
+        "threshold": "100%",
+        "description": "All public APIs must be documented",
+        "critical": false
+      },
+      "code_complexity_threshold": {
+        "threshold": 10,
+        "description": "Maximum cyclomatic complexity",
+        "critical": false
+      }
+    },
+    "performance": {
+      "signal_processing_latency": {
+        "threshold": "10ms",
+        "description": "Maximum signal processing latency",
+        "critical": true
+      },
+      "memory_usage_threshold": {
+        "threshold": "150MB",
+        "description": "Maximum memory usage per application",
+        "critical": true
+      },
+      "cpu_utilization_threshold": {
+        "threshold": "50%",
+        "description": "Maximum average CPU utilization",
+        "critical": false
+      },
+      "throughput_threshold": {
+        "threshold": "100 signals/sec",
+        "description": "Minimum signal processing throughput",
+        "critical": true
+      }
+    },
+    "deployment": {
+      "container_startup_time": {
+        "threshold": "30s",
+        "description": "Maximum container startup time",
+        "critical": false
+      },
+      "health_check_success_rate": {
+        "threshold": "100%",
+        "description": "Health checks must always pass",
+        "critical": true
+      },
+      "resource_limits_compliance": {
+        "threshold": "100%",
+        "description": "Must comply with resource limits",
+        "critical": true
+      }
+    }
+  },
+  "quality_metrics": {
+    "overall_quality_score": {
+      "calculation": "weighted_average",
+      "weights": {
+        "build": 0.15,
+        "testing": 0.25,
+        "security": 0.25,
+        "code_quality": 0.20,
+        "performance": 0.15
+      },
+      "minimum_passing_score": 85
+    },
+    "critical_gate_failures": {
+      "max_allowed": 0,
+      "description": "No critical quality gates can fail"
+    }
+  },
+  "enforcement": {
+    "block_deployment_on_failure": true,
+    "notify_on_threshold_breach": true,
+    "automatic_rollback": true,
+    "escalation_policy": {
+      "critical_failures": "immediate",
+      "major_failures": "within_1_hour",
+      "minor_failures": "within_24_hours"
+    }
+  },
+  "reporting": {
+    "generate_quality_report": true,
+    "quality_trend_analysis": true,
+    "benchmark_against_baseline": true,
+    "store_historical_data": true
+  }
+}
