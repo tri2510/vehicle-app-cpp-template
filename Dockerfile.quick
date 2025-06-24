@@ -71,8 +71,11 @@ COPY --chown=$USERNAME:$USERNAME templates/conanfile.txt /quickbuild/conanfile.t
 COPY --chown=$USERNAME:$USERNAME templates/CMakeLists.txt /quickbuild/CMakeLists.txt
 COPY --chown=$USERNAME:$USERNAME templates/app/ /quickbuild/app/
 
-# Copy template placeholder for VehicleApp.cpp
-COPY --chown=$USERNAME:$USERNAME templates/app/src/VehicleApp.template.cpp /quickbuild/app/src/VehicleApp.cpp
+# Copy template placeholder for VehicleApp.cpp (now using unified template)
+COPY --chown=$USERNAME:$USERNAME templates/app/src/VehicleApp.cpp /quickbuild/app/src/VehicleApp.cpp
+
+# Copy SDV examples for reference
+COPY --chown=$USERNAME:$USERNAME examples/ /quickbuild/examples/
 
 # Copy minimal Velocitas configuration
 COPY --chown=$USERNAME:$USERNAME .velocitas.json /quickbuild/.velocitas.json
@@ -102,14 +105,14 @@ USER root
 COPY --chown=$USERNAME:$USERNAME scripts/ /scripts/
 RUN chmod +x /scripts/*.sh
 
-# Create CLI command aliases for quick access
-RUN echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-build.sh "$@"' > /usr/local/bin/build && \
-    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-run.sh "$@"' > /usr/local/bin/run && \
-    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/validate-template.sh "$@"' > /usr/local/bin/validate && \
-    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-build.sh gen-model "$@"' > /usr/local/bin/gen-model && \
-    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-build.sh compile "$@"' > /usr/local/bin/compile && \
-    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-build.sh finalize "$@"' > /usr/local/bin/finalize && \
-    chmod +x /usr/local/bin/build /usr/local/bin/run /usr/local/bin/validate /usr/local/bin/gen-model /usr/local/bin/compile /usr/local/bin/finalize
+# Create unified CLI aliases for enhanced build system
+RUN echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/velocitas-cli.sh "$@"' > /usr/local/bin/velocitas-cli && \
+    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/velocitas-cli.sh build "$@"' > /usr/local/bin/build && \
+    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/velocitas-cli.sh run "$@"' > /usr/local/bin/run && \
+    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/velocitas-cli.sh test "$@"' > /usr/local/bin/test && \
+    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/velocitas-cli.sh validate "$@"' > /usr/local/bin/validate && \
+    echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/velocitas-cli.sh clean "$@"' > /usr/local/bin/clean && \
+    chmod +x /usr/local/bin/velocitas-cli /usr/local/bin/build /usr/local/bin/run /usr/local/bin/test /usr/local/bin/validate /usr/local/bin/clean
 
 # Switch back to user
 USER $USERNAME
@@ -122,10 +125,10 @@ EXPOSE 1883 55555 8080
 
 # Health check for container readiness
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD /scripts/quick-build.sh help >/dev/null 2>&1 || exit 1
+    CMD /scripts/velocitas-cli.sh help >/dev/null 2>&1 || exit 1
 
-# Default entrypoint - quick build mode
-ENTRYPOINT ["/scripts/quick-build.sh"]
+# Default entrypoint - unified CLI
+ENTRYPOINT ["/scripts/velocitas-cli.sh"]
 
 # Default command - build action
 CMD ["build"]

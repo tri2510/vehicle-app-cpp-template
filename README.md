@@ -10,46 +10,117 @@
 
 ## ⚡ Ultra-Fast Quick Start
 
-### Quick Build Setup
+### Enhanced Build System (New!)
 ```bash
 # 1. Build the utility container (one-time setup, 3-5 minutes)
 docker build -f Dockerfile.quick -t velocitas-quick .
 
-# 2. Run the pre-built template instantly (no input needed)
-docker run --rm --network=host velocitas-quick rerun
+# 2. Build with file mounting (recommended method)
+docker run -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp velocitas-quick build --verbose
 
-# 3. Build your custom VehicleApp.cpp
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick
+# 3. Run your application
+docker run -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp velocitas-quick run
+
+# 4. Test with signal validation
+docker run -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp velocitas-quick test signal-validation
 ```
 
 💡 **Want to use pre-built images?** See **[PREBUILT_IMAGES.md](PREBUILT_IMAGES.md)** for instant building without local setup.
 
-### 📚 **Learning Template Available**
-New to Velocitas? Check out the comprehensive template that shows you how to configure vehicle signals:
+### 📚 **Learning Templates & SDV Examples**
+New to Velocitas? Check out the comprehensive templates and real SDV examples:
 ```bash
-# View the instructive template with signal examples
-cat templates/app/src/VehicleApp.template.cpp
+# View the step-by-step template
+cat templates/app/src/VehicleApp.cpp
 
-# Build the template to see how it works
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick
+# Try the comprehensive SDV Fleet Management example
+cp examples/FleetManagementSDV.cpp templates/app/src/VehicleApp.cpp
+docker run -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp velocitas-quick build --verbose
 ```
-The template includes:
-- **50+ vehicle signal examples** with descriptions
-- **Step-by-step signal subscription** guide
-- **Common use case patterns** (speed monitoring, fuel tracking, etc.)
-- **VSS customization** instructions
+Available resources:
+- **Step-by-step template** with 50+ vehicle signal examples
+- **FleetManagementSDV example** - Complete automotive use case
+- **Signal validation testing** with multi-container KUKSA setup
+- **Build control flags** for customized builds
 
 ## 🎯 Key Features
 
 ✅ **Zero Dependencies** - No host installation required  
 ✅ **Lightning Fast** - Pre-compiled dependencies (60-90 seconds total)  
+✅ **File Mounting First** - Reliable file mounting instead of piping  
+✅ **Unified CLI** - Single script for build, run, and test operations  
+✅ **Enhanced Control** - Verbose logging, clean builds, skip flags  
+✅ **Signal Testing** - Multi-container KUKSA validation  
 ✅ **Proxy Ready** - Full corporate network support  
 ✅ **VSS Flexible** - Use default VSS 4.0 or custom specifications  
-✅ **Multi-Input** - stdin, file mount, or directory mount  
-✅ **Validation** - Code validation without full build  
+✅ **SDV Examples** - Real automotive use case demonstrations  
 ✅ **Production Ready** - Optimized executable output  
-✅ **CI/CD Optimized** - Perfect for automated pipelines  
-✅ **Instant Demo** - Pre-built template runs immediately after container build  
+
+---
+
+## 🚀 Enhanced Build System
+
+The new unified CLI provides comprehensive control over the build process:
+
+### File Mounting (Recommended)
+```bash
+# Mount your C++ file directly (most reliable)
+docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick build --verbose
+
+# Mount from examples directory
+docker run -v $(pwd)/examples/FleetManagementSDV.cpp:/app.cpp velocitas-quick build
+```
+
+### Build Control Flags
+```bash
+# Verbose output (see all build steps)
+docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick build --verbose
+
+# Clean build (remove old artifacts)
+docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick build --clean
+
+# Skip dependencies (faster builds)
+docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick build --skip-deps
+
+# Skip VSS generation
+docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick build --skip-vss
+
+# Force rebuild even if unchanged
+docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick build --force
+```
+
+### Multi-Container Testing
+```bash
+# Test signal injection and processing
+docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick test signal-validation
+
+# Test build process
+docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick test build-validation
+
+# Run complete test suite
+docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick test full-suite
+```
+
+### Available Commands
+```bash
+# Build application
+docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick build
+
+# Run application (builds if needed)
+docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick run [timeout]
+
+# Test application
+docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick test [type]
+
+# Validate code only
+docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick validate
+
+# Clean artifacts
+docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick clean
+
+# Show help
+docker run velocitas-quick help
+```
 
 ---
 
