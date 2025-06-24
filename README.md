@@ -1,52 +1,118 @@
-# Velocitas C++ Quick Build Template
+# Velocitas C++ Vehicle App Template
 
 [![License: Apache](https://img.shields.io/badge/License-Apache-yellow.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Docker](https://img.shields.io/badge/Docker-Enabled-blue.svg)](https://docker.com)
 [![Velocitas](https://img.shields.io/badge/Velocitas-C++-green.svg)](https://github.com/eclipse-velocitas/velocitas-docs)
 
-🚀 **Zero-setup Docker utility** for building [Eclipse Velocitas](https://github.com/eclipse-velocitas/velocitas-docs) vehicle applications in C++. Enhanced template with quick build, corporate proxy support, custom VSS specifications, and comprehensive learning guide.
+🚀 **Complete Software-Defined Vehicle development template** with zero-setup Docker utility for building [Eclipse Velocitas](https://github.com/eclipse-velocitas/velocitas-docs) vehicle applications in C++. Enhanced with unified CLI, signal processing validation, corporate proxy support, and comprehensive learning examples.
 
 > **Based on [Eclipse Velocitas Vehicle App Template](https://github.com/eclipse-velocitas/vehicle-app-cpp-template)** - Enhanced for instant containerized building without local development environment setup.
 
-## ⚡ Ultra-Fast Quick Start
+## 🎯 **THE GOAL: Prove We Have a Working Vehicle App**
 
-### Enhanced Build System (New!)
+**Primary Objective:** Demonstrate that the enhanced build system produces a functional vehicle app that:
+- ✅ Builds successfully from source code
+- ✅ Connects to KUKSA databroker  
+- ✅ Subscribes to vehicle signals
+- ✅ Processes and responds to signal changes
+- ✅ Runs continuously and reliably
+
+---
+
+## ⚡ **Complete Working Flow: Build → Run → Signal → Success**
+
+### **Step 1: Build Container with Proxy Support**
 ```bash
-# 1. Build the utility container (one-time setup, 3-5 minutes)
-docker build -f Dockerfile.quick -t velocitas-quick .
-
-# 2. Build with file mounting (recommended method)
-docker run -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp velocitas-quick build --verbose
-
-# 3. Run your application
-docker run -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp velocitas-quick run
-
-# 4. Test with signal validation
-docker run -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp velocitas-quick test signal-validation
+# Build the enhanced container (3-5 minutes)
+docker build -f Dockerfile.quick \
+  --build-arg HTTP_PROXY=http://127.0.0.1:3128 \
+  --build-arg HTTPS_PROXY=http://127.0.0.1:3128 \
+  --network=host \
+  -t velocitas-quick .
 ```
 
-💡 **Want to use pre-built images?** See **[PREBUILT_IMAGES.md](PREBUILT_IMAGES.md)** for instant building without local setup.
-
-### 📚 **Learning Templates & SDV Examples**
-New to Velocitas? Check out the comprehensive templates and real SDV examples:
+### **Step 2: Start KUKSA Databroker**
 ```bash
-# View the step-by-step template
-cat templates/app/src/VehicleApp.cpp
+# Option A: Using docker-compose (recommended)
+docker-compose -f docker-compose.dev.yml up vehicledatabroker -d
 
-# Try the comprehensive SDV Fleet Management example
-cp examples/FleetManagementSDV.cpp templates/app/src/VehicleApp.cpp
-docker run -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp velocitas-quick build --verbose
+# Option B: Direct docker run
+docker run -d --rm --name kuksa-databroker --network host \
+  ghcr.io/eclipse-kuksa/kuksa-databroker:main
 ```
-Available resources:
-- **Step-by-step template** with 50+ vehicle signal examples
-- **FleetManagementSDV example** - Complete automotive use case
-- **Signal validation testing** with multi-container KUKSA setup
-- **Build control flags** for customized builds
 
-## 🎯 Key Features
+### **Step 3: Build Vehicle App with Performance Optimization**
+```bash
+# OPTIMIZED BUILD: Skip dependencies and VSS for faster builds (15-30 seconds)
+docker run --rm --network host \
+  -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
+  -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
+  -v $(pwd)/scripts/velocitas-cli.sh:/scripts/velocitas-cli.sh \
+  velocitas-quick build --skip-deps --skip-vss --verbose
+
+# OR Traditional build with full dependency resolution (60-90 seconds)
+docker run --rm --network host \
+  -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
+  -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
+  velocitas-quick build --verbose
+```
+
+### **Step 4: Run Vehicle Application**
+
+#### **Option A: Build and Run in Same Container (Recommended for Development)**
+```bash
+docker run -d --network host --name vehicle-app \
+  -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
+  -e HTTP_PROXY= -e HTTPS_PROXY= -e http_proxy= -e https_proxy= \
+  -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
+  -v $(pwd)/scripts/velocitas-cli.sh:/scripts/velocitas-cli.sh \
+  velocitas-quick bash -c "build --skip-deps --skip-vss && run 300"
+```
+
+#### **Option B: Separate Build/Run with Persistent Volume (Production Workflow)**
+```bash
+# Step 1: Create persistent volume (one-time setup)
+docker volume create velocitas-build
+
+# Step 2: Build with persistent volume
+docker run --rm --network host \
+  -v velocitas-build:/quickbuild/build \
+  -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
+  -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
+  -v $(pwd)/scripts/velocitas-cli.sh:/scripts/velocitas-cli.sh \
+  velocitas-quick build --skip-deps --skip-vss --verbose
+
+# Step 3: Run with same persistent volume (reusable)
+docker run -d --network host --name vehicle-app \
+  -v velocitas-build:/quickbuild/build \
+  -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
+  -e HTTP_PROXY= -e HTTPS_PROXY= -e http_proxy= -e https_proxy= \
+  velocitas-quick run 300
+```
+
+### **Step 5: Inject Vehicle Signal & Verify**
+```bash
+# Inject speed signal to test subscription
+echo "setValue Vehicle.Speed 65.0" | docker run --rm -i --network host \
+  -e HTTP_PROXY= -e HTTPS_PROXY= -e http_proxy= -e https_proxy= \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+
+# Check vehicle app received and processed the signal
+docker logs vehicle-app --tail 20
+```
+
+**🎉 SUCCESS PROOF - Expected Result:**
+```
+INFO: 📊 Vehicle Speed: 65.00 m/s (234.0 km/h)
+WARN: ⚠️  HIGH SPEED ALERT: 234.0 km/h - Slow down!
+```
+
+---
+
+## 🎯 **Key Features**
 
 ✅ **Zero Dependencies** - No host installation required  
-✅ **Lightning Fast** - Pre-compiled dependencies (60-90 seconds total)  
+✅ **Lightning Fast** - Pre-compiled dependencies (15-30 seconds with optimization)  
 ✅ **File Mounting First** - Reliable file mounting instead of piping  
 ✅ **Unified CLI** - Single script for build, run, and test operations  
 ✅ **Enhanced Control** - Verbose logging, clean builds, skip flags  
@@ -58,38 +124,42 @@ Available resources:
 
 ---
 
-## 🚀 Enhanced Build System
+## 🚀 **Enhanced Build System - Unified CLI**
 
-The new unified CLI provides comprehensive control over the build process:
+The new unified CLI (`scripts/velocitas-cli.sh`) provides comprehensive control over the build process:
 
-### File Mounting (Recommended)
+### **Core Commands**
 ```bash
-# Mount your C++ file directly (most reliable)
-docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick build --verbose
+# Build application (recommended: use --skip-deps for speed)
+docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick build --skip-deps --skip-vss --verbose
 
-# Mount from examples directory
-docker run -v $(pwd)/examples/FleetManagementSDV.cpp:/app.cpp velocitas-quick build
+# Run application  
+docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick run [timeout]
+
+# Test application with signal validation
+docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick test signal-validation
+
+# Validate source code only
+docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick validate
+
+# Clean build artifacts
+docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick clean
+
+# Show help
+docker run velocitas-quick help
 ```
 
-### Build Control Flags
+### **Build Control Flags**
 ```bash
-# Verbose output (see all build steps)
-docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick build --verbose
-
-# Clean build (remove old artifacts)
-docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick build --clean
-
-# Skip dependencies (faster builds)
-docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick build --skip-deps
-
-# Skip VSS generation
-docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick build --skip-vss
-
-# Force rebuild even if unchanged
-docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick build --force
+--verbose      # Show detailed build output
+--clean        # Clean workspace before build  
+--skip-deps    # Skip dependency installation (3-4x faster builds)
+--skip-vss     # Skip VSS model generation
+--force        # Force rebuild even if unchanged
+--quiet        # Suppress non-essential output
 ```
 
-### Multi-Container Testing
+### **Multi-Container Testing**
 ```bash
 # Test signal injection and processing
 docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick test signal-validation
@@ -101,31 +171,87 @@ docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick test build-validation
 docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick test full-suite
 ```
 
-### Available Commands
+---
+
+## 📚 **Learning Templates & SDV Examples**
+
+### **Step-by-Step Template (VehicleApp.cpp)**
+New to Velocitas? Check out the comprehensive template with 50+ vehicle signal examples:
 ```bash
-# Build application
-docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick build
+# View the step-by-step template
+cat templates/app/src/VehicleApp.cpp
 
-# Run application (builds if needed)
-docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick run [timeout]
+# Build and test the template
+docker run -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp velocitas-quick build --verbose
+```
 
-# Test application
-docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick test [type]
+**Template Features:**
+- **50+ vehicle signal examples** with descriptions
+- **Step-by-step signal subscription** guide  
+- **Common use case patterns** (speed monitoring, fuel tracking, etc.)
+- **VSS customization** instructions
+- **Production-ready patterns** with error handling
 
-# Validate code only
-docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick validate
+### **SDV Fleet Management Example**
+Complete real-world automotive use case:
+```bash
+# Try the comprehensive SDV Fleet Management example
+cp examples/FleetManagementSDV.cpp templates/app/src/VehicleApp.cpp
+docker run -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp velocitas-quick build --verbose
+```
 
-# Clean artifacts
-docker run -v $(pwd)/MyApp.cpp:/app.cpp velocitas-quick clean
+**Example Features:**
+- **Multi-signal processing** (10 vehicle signals)
+- **Real-time decision making**
+- **Fleet management analytics**  
+- **Predictive maintenance**
+- **Driver behavior analysis**
 
-# Show help
-docker run velocitas-quick help
+---
+
+## 🧪 **Complete Test Scenarios**
+
+### **Test 1: Basic Speed Signal Processing**
+```bash
+# Test different speed values
+echo "setValue Vehicle.Speed 5.0" | docker run --rm -i --network host ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+echo "setValue Vehicle.Speed 15.0" | docker run --rm -i --network host ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+echo "setValue Vehicle.Speed 25.0" | docker run --rm -i --network host ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+echo "setValue Vehicle.Speed 35.0" | docker run --rm -i --network host ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+```
+
+**Expected Vehicle App Responses:**
+```
+INFO: 🚶 Very slow: 18.0 km/h                    # 5.0 m/s
+INFO: 🏘️  City driving speed: 54.0 km/h         # 15.0 m/s  
+INFO: 🚗 Normal highway speed: 90.0 km/h        # 25.0 m/s
+WARN: ⚠️  HIGH SPEED ALERT: 126.0 km/h          # 35.0 m/s
+```
+
+### **Test 2: Testing with Live Services**
+```bash
+# 1. Start Vehicle Data Broker
+docker-compose -f docker-compose.dev.yml up vehicledatabroker -d
+
+# 2. Run your app with services
+docker run -d --network host --name vehicle-app \
+  -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
+  -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
+  velocitas-quick run 300
+
+# 3. Test with KUKSA client (in another terminal)
+docker run -it --rm --network=host ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main
+# Inside kuksa-client: setValue Vehicle.Speed 65.0
+
+# 4. Stop services
+docker-compose -f docker-compose.dev.yml down
 ```
 
 ---
 
-## 🔧 Proxy Support (Corporate Networks)
+## 🔧 **Proxy Support (Corporate Networks)**
 
+### **Build with Proxy Support**
 ```bash
 # Build with proxy support
 docker build -f Dockerfile.quick \
@@ -135,354 +261,164 @@ docker build -f Dockerfile.quick \
   -t velocitas-quick .
 
 # Use with runtime proxy
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i \
+docker run --rm --network host \
   -e HTTP_PROXY=http://127.0.0.1:3128 \
   -e HTTPS_PROXY=http://127.0.0.1:3128 \
-  velocitas-quick
+  -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
+  velocitas-quick build --verbose
 ```
 
-## 📝 Multiple Input Methods
-
-```bash
-# Method 1: Pipe from stdin (fastest)
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick
-
-# Method 2: Mount single file
-docker run --rm -v $(pwd)/templates/app/src/VehicleApp.template.cpp:/input velocitas-quick
-
-# Method 3: Mount entire directory
-docker run --rm -v $(pwd):/input velocitas-quick
-
-# Method 4: Validation only (no build)
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick validate
-
-# Method 5: Build and run with services (smart rebuild - only rebuilds if input differs)
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i --network=host velocitas-quick run
-
-# Method 6: Run pre-built template (no input needed, fastest)
-docker run --rm --network=host velocitas-quick rerun
-
-# Method 7: Granular build steps
-docker run --rm velocitas-quick gen-model  # Step 3: Generate vehicle model only
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick compile  # Step 4: Compile only
-docker run --rm velocitas-quick finalize  # Step 5: Build summary
-```
-
-## 🎛️ Custom VSS Support
-
-```bash
-# Use custom VSS file
-docker run --rm -i \
-  -v $(pwd)/my-custom-vss.json:/vss.json \
-  -e VSS_SPEC_FILE=/vss.json \
-  velocitas-quick < templates/app/src/VehicleApp.template.cpp
-
-# Use custom VSS URL
-docker run --rm -i \
-  -e VSS_SPEC_URL=https://company.com/vehicle-signals.json \
-  velocitas-quick < templates/app/src/VehicleApp.template.cpp
-```
-
-## 🏢 Corporate Integration Examples
-
+### **Corporate Integration Examples**
 ```bash
 # Jenkins/CI Pipeline
-curl -s $BUILD_SERVER/latest/VehicleApp.cpp | \
-  docker run --rm -i -e HTTP_PROXY=$CORPORATE_PROXY velocitas-quick
+docker run --rm \
+  -v $BUILD_SOURCESDIRECTORY/src/VehicleApp.cpp:/app.cpp \
+  -e HTTP_PROXY=$CORPORATE_PROXY \
+  velocitas-quick build --skip-deps --verbose
 
-# GitLab CI with template example
-docker run --rm -i \
+# GitLab CI with custom VSS
+docker run --rm \
+  -v $(pwd)/src/VehicleApp.cpp:/app.cpp \
   -e VSS_SPEC_URL=$COMPANY_VSS_ENDPOINT \
   -e HTTP_PROXY=$CORPORATE_PROXY \
-  velocitas-quick < templates/app/src/VehicleApp.template.cpp
-
-# Azure DevOps with file mount
-docker run --rm \
-  -v $BUILD_SOURCESDIRECTORY/src:/input \
-  -e HTTPS_PROXY=$AGENT_PROXY \
-  velocitas-quick
+  velocitas-quick build --verbose
 ```
 
 ---
 
-## 🧪 Testing & Validation
-
-### Automated Testing Script
-
-```bash
-# Run comprehensive test suite (no proxy)
-./test-mode2.sh
-
-# Run tests with proxy
-./test-mode2.sh --proxy
-
-# Custom proxy and timeout
-./test-mode2.sh --proxy --proxy-host company-127.0.0.1:3128 --timeout 180
-
-# Custom output directory
-./test-mode2.sh --output my_test_results
-```
-
-The test script validates:
-- Container building with/without proxy
-- Multiple input methods (stdin, file mount, directory mount)
-- Custom VSS support
-- Validation functionality
-- Error handling
-- Build performance and reliability
-
-### Manual Testing Examples
-
-```bash
-# Test with instructive template (shows how to use vehicle signals)
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick
-
-# Test validation only
-echo 'invalid code' | docker run --rm -i velocitas-quick validate
-
-# Test with custom VSS
-docker run --rm -i \
-  -e VSS_SPEC_URL=https://raw.githubusercontent.com/COVESA/vehicle_signal_specification/main/spec/VehicleSignalSpecification.json \
-  velocitas-quick < templates/app/src/VehicleApp.template.cpp
-```
-
-### Testing with Live Services
-
-```bash
-# 1. Start Vehicle Data Broker
-docker compose -f docker-compose.dev.yml up vehicledatabroker -d
-
-# 2. Run your app with services
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i --network=host velocitas-quick run
-
-# 3. Test with KUKSA client (in another terminal)
-docker run -it --rm --network=host ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main
-# Inside kuksa-client: setValue Vehicle.Speed 65.0
-
-# 4. Stop services
-docker compose -f docker-compose.dev.yml down
-```
-
----
-
-## 🚗 Vehicle Application Examples
-
-This template includes a comprehensive **Speed Monitor & Alert System** demonstrating production-ready vehicle application development.
-
-### ✅ Speed Monitor & Alert System
-- **Real-time speed monitoring** with configurable limits
-- **Safety event detection** (hard braking, rapid acceleration)
-- **MQTT communication** for alerts and configuration
-- **Comprehensive statistics** and performance tracking
-- **Production-ready** with full error handling
-
-### Example Implementation Features
-- **Vehicle Signal Integration:** `Vehicle.Speed`, `Vehicle.Acceleration.Longitudinal`
-- **MQTT Topics:** `speedmonitor/alerts`, `speedmonitor/config`, `speedmonitor/status`  
-- **Event-Driven Architecture:** Asynchronous processing with robust error handling
-- **Configurable Thresholds:** Dynamic speed limits and alert cooldowns
-
-### Additional Examples Available
-- **Fuel Efficiency Tracker** - Consumption monitoring and optimization
-- **Maintenance Reminder System** - Proactive maintenance based on diagnostics
-- **Parking Assistant** (Tutorial) - Proximity sensor guidance
-- **Climate Control Optimizer** (Tutorial) - Intelligent HVAC management
-
----
-
-## 📁 Project Structure
+## 📁 **Project Structure**
 
 ```
 vehicle-app-cpp-template/
-├── 🚀 Quick Build Utility (Main)
+├── 🚀 Enhanced Build System
 │   ├── Dockerfile.quick             # Main utility container
-│   ├── scripts/quick-build.sh       # Entry script
-│   ├── scripts/quick-run.sh         # Build and run script
-│   ├── scripts/validate-template.sh # Validation script
+│   ├── scripts/velocitas-cli.sh     # Unified CLI script
 │   └── templates/                   # Fixed configurations & learning template
-├── 🧪 Testing & Validation
-│   ├── test-mode2.sh               # Automated test script
-│   └── test_results/               # Test output logs
+├── 🧪 Examples & Learning
+│   ├── examples/FleetManagementSDV.cpp  # Comprehensive SDV example
+│   └── templates/app/src/VehicleApp.cpp # Step-by-step learning template
 ├── 🔧 Configuration
 │   ├── conanfile.txt               # C++ dependencies
 │   ├── requirements.txt            # Python dependencies
 │   └── .velocitas.json             # Velocitas configuration
-├── 🛠️ Traditional Development (Optional)
+├── 🛠️ Development Environment
 │   ├── docker-compose.dev.yml      # Complete development stack
 │   └── config/mosquitto.conf       # MQTT configuration
-├── 🔄 CI/CD & Automation
-│   └── .github/workflows/          # GitHub Actions for builds & releases
 └── 📚 Documentation
-    ├── README.md                   # This file
+    ├── README.md                   # This unified guide
     ├── PREBUILT_IMAGES.md          # Pre-built Docker images guide
-    ├── DEVELOPER_WORKFLOW.md       # Complete development workflows
     └── NOTICE                      # License attribution
 ```
 
 ---
 
-## 🏢 Production & Enterprise Use
+## 🔄 **Build File Flow & Architecture**
 
-### CI/CD Integration
+### **Input Processing (3 Methods)**
+```bash
+# Method 1: File mounting (recommended)
+docker run -v $(pwd)/VehicleApp.cpp:/app.cpp velocitas-quick build
 
-```yaml
-# GitHub Actions Example
-- name: Build Vehicle App
-  run: |
-    docker build -f Dockerfile.quick -t builder .
-    cat src/VehicleApp.cpp | docker run --rm -i \
-      -e VSS_SPEC_URL=${{ secrets.COMPANY_VSS_URL }} \
-      -e HTTP_PROXY=${{ secrets.CORPORATE_PROXY }} \
-      builder > app-executable
+# Method 2: Directory mounting
+docker run -v $(pwd)/src:/input velocitas-quick build
 
-# Jenkins Pipeline Example  
-pipeline {
-    agent any
-    steps {
-        script {
-            sh '''
-                docker build -f Dockerfile.quick -t velocitas-quick .
-                docker run --rm -v ${WORKSPACE}/src:/input \
-                  -e HTTP_PROXY=${CORPORATE_PROXY} \
-                  velocitas-quick
-            '''
-        }
-    }
-}
+# Method 3: Stdin pipe (legacy)
+cat VehicleApp.cpp | docker run --rm -i velocitas-quick build
 ```
 
-### Corporate Network Configuration
+### **Complete Build Flow**
+```mermaid
+graph TD
+    A[STEP 1: Input Processing] --> B[STEP 2: Workspace Preparation]
+    B --> C[STEP 3: Vehicle Model Generation]
+    C --> D[STEP 4: C++ Compilation]
+    D --> E[STEP 5: Build Finalization]
+```
 
-```bash
-# Set persistent proxy environment
-export HTTP_PROXY=http://corporate-127.0.0.1:3128
-export HTTPS_PROXY=http://corporate-127.0.0.1:3128
-
-# Build with corporate settings
-docker build -f Dockerfile.quick \
-  --build-arg HTTP_PROXY=$HTTP_PROXY \
-  --build-arg HTTPS_PROXY=$HTTPS_PROXY \
-  --network=host \
-  -t velocitas-quick .
-
-# Use with company VSS specification
-docker run --rm -i \
-  -e VSS_SPEC_URL=https://company.com/vss/spec.json \
-  -e HTTP_PROXY=$HTTP_PROXY \
-  velocitas-quick < templates/app/src/VehicleApp.template.cpp
+### **Container File System Layout**
+```
+/quickbuild/                              # Main workspace
+├── app/
+│   ├── src/VehicleApp.cpp               # YOUR CODE (input processed here)
+│   └── vehicle_model/include/vehicle_model/Vehicle.hpp  # Generated from VSS
+├── build/bin/app                        # FINAL EXECUTABLE (14MB)
+└── scripts/velocitas-cli.sh             # Unified CLI
 ```
 
 ---
 
-## 🚀 Performance & Benchmarks
+## 🎛️ **Advanced Configuration**
 
-### Performance Metrics
-- **Container Build Time:** 3-5 minutes (one-time)
-- **App Build Time:** 60-90 seconds (cached dependencies)
-- **Memory Usage:** ~2GB during build, ~500MB runtime
-- **Executable Size:** ~13-15MB optimized binary
-- **Network:** Proxy-friendly with minimal external dependencies
-
-### Optimization Tips
-```bash
-# Pre-build container for CI/CD
-docker build -f Dockerfile.quick -t velocitas-quick .
-docker push your-registry/velocitas-quick:latest
-
-# Use in pipeline
-docker run --rm -i your-registry/velocitas-quick:latest < templates/app/src/VehicleApp.template.cpp
-```
-
----
-
-## 🔧 Advanced Configuration
-
-### Custom VSS Specifications
-
+### **Custom VSS Specifications**
 ```bash
 # Option 1: Mount custom VSS file
-docker run --rm -i \
+docker run --rm \
   -v $(pwd)/custom-vss.json:/vss.json \
   -e VSS_SPEC_FILE=/vss.json \
-  velocitas-quick < templates/app/src/VehicleApp.template.cpp
+  -v $(pwd)/VehicleApp.cpp:/app.cpp \
+  velocitas-quick build
 
 # Option 2: Use VSS URL (supports authentication)
-docker run --rm -i \
+docker run --rm \
   -e VSS_SPEC_URL=https://api.company.com/vss/v2.0/spec.json \
   -e VSS_AUTH_TOKEN=your-token \
-  velocitas-quick < templates/app/src/VehicleApp.template.cpp
+  -v $(pwd)/VehicleApp.cpp:/app.cpp \
+  velocitas-quick build
 ```
 
-### Build Customization
-
-```bash
-# Debug build with symbols
-docker run --rm -i -e BUILD_TYPE=Debug velocitas-quick < templates/app/src/VehicleApp.template.cpp
-
-# Custom build flags
-docker run --rm -i -e CMAKE_FLAGS="-DCUSTOM_FLAG=ON" velocitas-quick < templates/app/src/VehicleApp.template.cpp
-
-# Verbose build output (shows detailed command output)
-docker run --rm -i -e VERBOSE_BUILD=1 velocitas-quick < templates/app/src/VehicleApp.template.cpp
-
-# Skip dependency verification for fastest builds (uses pre-cached packages)
-docker run --rm -i -e SKIP_DEPS=1 velocitas-quick < templates/app/src/VehicleApp.template.cpp
-```
-
-### Available Commands
-
-```bash
-# Help and information
-docker run --rm velocitas-quick help
-
-# Validation only (fast)
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick validate
-
-# Build application (default)
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick build
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick  # same as build
-
-# Build and run application with live output (smart rebuild)
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i --network=host velocitas-quick run
-
-# Run pre-built template (no input needed, fastest)
-docker run --rm --network=host velocitas-quick rerun
-
-# Granular build commands
-docker run --rm velocitas-quick gen-model     # Generate vehicle model (Step 3)
-docker run --rm velocitas-quick model         # Alias for gen-model
-docker run --rm velocitas-quick compile       # Compile C++ app (Step 4)
-docker run --rm velocitas-quick build-cpp     # Alias for compile  
-docker run --rm velocitas-quick finalize      # Build summary (Step 5)
-```
-
-### Environment Variables
+### **Environment Variables**
 
 | Variable | Purpose | Example | Usage |
 |----------|---------|---------|-------|
+| `SDV_VEHICLEDATABROKER_ADDRESS` | KUKSA databroker location | `127.0.0.1:55555` | Vehicle signal connection |
 | `VSS_SPEC_URL` | Custom VSS specification URL | `https://company.com/vss.json` | Custom vehicle signals |
-| `VSS_SPEC_FILE` | Custom VSS file path in container | `/vss.json` | Local VSS specification |
+| `VSS_SPEC_FILE` | Custom VSS file path | `/vss.json` | Local VSS specification |
 | `HTTP_PROXY` | HTTP proxy for corporate networks | `http://proxy:3128` | Corporate firewalls |
 | `HTTPS_PROXY` | HTTPS proxy for corporate networks | `http://proxy:3128` | Corporate firewalls |
 | `BUILD_TYPE` | Build configuration | `Debug`, `Release` | Development vs production |
-| `CMAKE_FLAGS` | Additional CMake flags | `-DCUSTOM_FLAG=ON` | Custom build options |
 | `VERBOSE_BUILD` | Show detailed command output | `1` | Debugging builds |
-| `SKIP_DEPS` | Skip dependency verification | `1` | Fastest builds |
 
 ---
 
-## 🛠️ Traditional Development Environment (Optional)
+## 🚀 **Performance & Benchmarks**
 
-For users who need comprehensive development features, debugging, or educational exploration, a full development environment is available.
+### **Performance Metrics**
+- **Container Build Time:** 3-5 minutes (one-time setup)
+- **App Build Time:** 60-90 seconds (traditional) / 15-30 seconds (optimized)
+- **Memory Usage:** ~2GB during build, ~500MB runtime
+- **Executable Size:** ~14MB optimized binary
+- **Network:** Proxy-friendly with minimal external dependencies
 
-### Setup Traditional Environment
+### **Build Performance Comparison**
+```bash
+# Traditional build (60-90 seconds)
+docker run -v $(pwd)/VehicleApp.cpp:/app.cpp velocitas-quick build --verbose
+
+# Optimized build (15-30 seconds) - 3-4x faster
+docker run -v $(pwd)/VehicleApp.cpp:/app.cpp velocitas-quick build --skip-deps --skip-vss --verbose
+```
+
+### **Success Criteria Checklist**
+- ✅ Container builds without errors (3-5 min)
+- ✅ Vehicle app compiles successfully (~14M executable)
+- ✅ KUKSA databroker connects and listens on 55555
+- ✅ Vehicle app connects to databroker
+- ✅ Signal subscription establishes without errors
+- ✅ Signal injection returns "OK"
+- ✅ App processes signals according to business logic
+
+---
+
+## 🛠️ **Traditional Development Environment (Optional)**
+
+For users who need comprehensive development features, debugging, or educational exploration:
 
 ```bash
 # Build development container
 docker build -f Dockerfile.dev -t velocitas-dev .
 
 # Start runtime services
-docker compose -f docker-compose.dev.yml up mosquitto vehicledatabroker -d
+docker-compose -f docker-compose.dev.yml up mosquitto vehicledatabroker -d
 
 # Enter development environment  
 docker run -it --privileged -v $(pwd):/workspace \
@@ -495,76 +431,35 @@ build-app      # Build with CMake/Ninja
 run-app        # Run the vehicle application
 ```
 
-### Traditional Development Commands
-
-```bash
-# Code Generation & Build
-gen-model         # Generate Vehicle.hpp from VSS
-install-deps      # Install Velocitas SDK and dependencies  
-build-app         # Compile C++ application
-build-app -r      # Release build (optimized)
-
-# Runtime & Testing
-run-app           # Run the vehicle application
-check-code        # Run linting and formatting
-./build/bin/app_utests  # Execute unit tests
-
-# Development Tools  
-gen-grpc          # Generate gRPC code from proto
-vdb-cli           # Vehicle Data Broker CLI
-```
-
-**Note:** The traditional environment requires more setup and is primarily for comprehensive development, debugging, and learning scenarios.
-
 ---
 
-## 📖 Documentation & Resources
+## 🐛 **Troubleshooting**
 
-### Internal Documentation
-- **[PREBUILT_IMAGES.md](PREBUILT_IMAGES.md)** - Guide to using pre-built Docker images
-- **[BUILD_FLOW.md](BUILD_FLOW.md)** - Build file flow and architecture internals
-- **Test Results** - Stored in `test_results/` after running tests
-
-### External Resources
-- **[Velocitas Documentation](https://eclipse-velocitas.github.io/velocitas-docs/)** - Framework documentation
-- **[Vehicle Signal Specification](https://covesa.github.io/vehicle_signal_specification/)** - VSS reference  
-- **[KUKSA.val](https://github.com/eclipse/kuksa.val)** - Vehicle Data Broker
-- **[Eclipse Velocitas GitHub](https://github.com/eclipse-velocitas)** - Source code and examples
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Test your changes:
-   ```bash
-   # Test quick build utility
-   ./test-mode2.sh --proxy
-   
-   # Test with instructive template
-   cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick
-   ```
-4. Commit changes: `git commit -m 'Add amazing feature'`
-5. Push to branch: `git push origin feature/amazing-feature`
-6. Open Pull Request
-
----
-
-## 🐛 Troubleshooting
-
-### Common Issues
+### **Common Issues**
 
 **Build fails:**
 ```bash
 # Use verbose build to see detailed compilation output
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i -e VERBOSE_BUILD=1 velocitas-quick build
+docker run -v $(pwd)/VehicleApp.cpp:/app.cpp velocitas-quick build --verbose
 
 # Check input validation
-cat templates/app/src/VehicleApp.template.cpp | docker run --rm -i velocitas-quick validate
+docker run -v $(pwd)/VehicleApp.cpp:/app.cpp velocitas-quick validate
 
-# Rebuild container
-docker build --no-cache -f Dockerfile.quick -t velocitas-quick .
+# Try optimized build
+docker run -v $(pwd)/VehicleApp.cpp:/app.cpp velocitas-quick build --skip-deps --skip-vss --verbose
+```
+
+**Connection Issues:**
+```bash
+# Problem: Can't connect to databroker
+docker ps | grep kuksa-databroker
+docker logs kuksa-databroker
+
+# Problem: Subscription fails
+docker logs vehicle-app | grep -i "subscription\|error"
+
+# Solution: Verify signal injection works
+echo "getValue Vehicle.Speed" | docker run --rm -i --network host ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
 ```
 
 **Proxy connection issues:**
@@ -572,71 +467,120 @@ docker build --no-cache -f Dockerfile.quick -t velocitas-quick .
 # Test proxy connectivity
 docker run --rm -e HTTP_PROXY=http://127.0.0.1:3128 alpine wget -q --spider http://github.com
 
-# Verify proxy settings
+# Verify proxy settings in container
 docker run --rm velocitas-quick env | grep -i proxy
-```
-
-**Permission problems:**
-```bash
-# Fix file permissions
-docker run --rm -v $(pwd):/workspace --privileged velocitas-quick \
-  bash -c "chown -R $(id -u):$(id -g) /workspace"
-```
-
-**VSS specification errors:**
-```bash
-# Verify VSS URL accessibility
-curl -s $VSS_SPEC_URL | jq . > /dev/null && echo "VSS OK" || echo "VSS Failed"
-
-# Use default VSS (fallback)
-docker run --rm -i velocitas-quick < templates/app/src/VehicleApp.template.cpp  # Uses VSS 4.0 default
-```
-
-**Container size issues:**
-```bash
-# Clean Docker cache
-docker system prune -f
-
-# Remove old images
-docker rmi $(docker images -f "dangling=true" -q)
 ```
 
 ---
 
-## 📄 License
+## 📖 **Documentation & Resources**
+
+### **Internal Documentation**
+- **[PREBUILT_IMAGES.md](PREBUILT_IMAGES.md)** - Guide to using pre-built Docker images
+- **Examples Directory** - Real-world SDV applications
+- **Template Source** - Step-by-step learning template with 50+ signal examples
+
+### **External Resources**
+- **[Velocitas Documentation](https://eclipse-velocitas.github.io/velocitas-docs/)** - Framework documentation
+- **[Vehicle Signal Specification](https://covesa.github.io/vehicle_signal_specification/)** - VSS reference  
+- **[KUKSA.val](https://github.com/eclipse/kuksa.val)** - Vehicle Data Broker
+- **[Eclipse Velocitas GitHub](https://github.com/eclipse-velocitas)** - Source code and examples
+
+---
+
+## 🏆 **SUCCESS: Your Vehicle App Is Working!**
+
+**When you see this output, your vehicle app is fully functional:**
+
+```bash
+# KUKSA Databroker
+INFO: Listening on 0.0.0.0:55555
+
+# Vehicle App  
+INFO: ✅ Signal subscription completed - waiting for vehicle data...
+
+# Signal Injection
+OK
+
+# Signal Processing
+INFO: 📊 Vehicle Speed: 65.00 m/s (234.0 km/h)
+WARN: ⚠️  HIGH SPEED ALERT: 234.0 km/h - Slow down!
+```
+
+**🎉 Congratulations! You have successfully:**
+- ✅ Built a working vehicle app from source
+- ✅ Established connection to vehicle data broker  
+- ✅ Subscribed to vehicle signals
+- ✅ Processed real-time signal data
+- ✅ Implemented automotive business logic
+
+**Your vehicle app is ready for Software-Defined Vehicle development!**
+
+---
+
+## 📝 **Next Steps**
+
+1. **Customize Business Logic:** Modify signal processing in `onSignalChanged()`
+2. **Add More Signals:** Subscribe to additional VSS signals
+3. **Implement Features:** Add MQTT, databases, or external APIs
+4. **Scale Testing:** Use multiple signals and complex scenarios
+5. **Deploy Production:** Integrate with CI/CD and production environments
+
+---
+
+## 🤝 **Contributing**
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Test your changes:
+   ```bash
+   # Test with step-by-step template
+   docker run -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp velocitas-quick build --verbose
+   
+   # Test with SDV example
+   cp examples/FleetManagementSDV.cpp templates/app/src/VehicleApp.cpp
+   docker run -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp velocitas-quick test signal-validation
+   ```
+4. Commit changes: `git commit -m 'Add amazing feature'`
+5. Push to branch: `git push origin feature/amazing-feature`
+6. Open Pull Request
+
+---
+
+## 📄 **License**
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
-## 🏷️ Version Information
+## 🏷️ **Version Information**
 
-- **Template Version**: Quick Build v2.0
+- **Template Version**: Enhanced CLI v1.0.1
 - **Velocitas SDK**: >= 0.7.0
 - **Conan**: 2.15.1+
 - **Base Image**: eclipse-velocitas/devcontainer-base-images/cpp:v0.4
 
 ---
 
-## 🎯 Why This Approach?
+## 🎯 **Why This Approach?**
 
-### ✅ Advantages
+### ✅ **Advantages**
 - **Zero Setup Time** - Ready to use immediately  
 - **Corporate Ready** - Full proxy and firewall support  
 - **CI/CD Optimized** - Perfect for automated pipelines  
-- **Flexible Input** - Multiple ways to provide code  
+- **Signal Validation** - End-to-end KUKSA testing  
 - **Custom VSS** - Adapt to any vehicle specification  
 - **Reproducible** - Same environment, predictable results  
-- **Lightweight** - Minimal resource usage  
+- **Performance Optimized** - 3-4x faster builds with skip flags
 
-### 🎪 Use Cases
+### 🎪 **Use Cases**
 - **Rapid Prototyping** - Quick iteration and testing
 - **CI/CD Pipelines** - Automated building and testing
 - **Corporate Environments** - Proxy and firewall compatibility
 - **Educational** - No complex setup for learning
 - **Production Builds** - Consistent, reproducible binaries
-- **Custom VSS** - Company-specific vehicle specifications
+- **SDV Development** - Complete automotive development workflow
 
 ---
 
 **Happy Vehicle App Development! 🚗💨**
 
-*Build your Velocitas C++ vehicle apps instantly with zero setup complexity.*
+*Build your Velocitas C++ vehicle apps instantly with zero setup complexity and complete signal validation.*
