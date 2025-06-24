@@ -69,25 +69,36 @@ docker run -d --network host --name vehicle-app \
   velocitas-quick bash -c "build --skip-deps --skip-vss && run 300"
 ```
 
-#### **Option B: Separate Build/Run with Persistent Volume (Production Workflow)**
+#### **Option B: Separate Build/Run with Persistent Volumes (Production Workflow)**
 ```bash
-# Step 1: Create persistent volume (one-time setup)
-docker volume create velocitas-build
+# Step 1: Create persistent volumes (one-time setup)
+docker volume create velocitas-build     # For executables and build artifacts
+docker volume create velocitas-deps      # For dependencies and VSS models
+docker volume create velocitas-conan     # For Conan package cache
 
-# Step 2: Build with persistent volume
+# Step 2: Build with persistent volumes
 docker run --rm --network host \
   -v velocitas-build:/quickbuild/build \
+  -v velocitas-deps:/quickbuild/app/vehicle_model \
+  -v velocitas-conan:/home/vscode/.conan2 \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
   -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
   -v $(pwd)/scripts/velocitas-cli.sh:/scripts/velocitas-cli.sh \
-  velocitas-quick build --skip-deps --skip-vss --verbose
+  velocitas-quick build --verbose
 
-# Step 3: Run with same persistent volume (reusable)
+# Step 3: Run with same persistent volumes (reusable)
 docker run -d --network host --name vehicle-app \
   -v velocitas-build:/quickbuild/build \
+  -v velocitas-deps:/quickbuild/app/vehicle_model \
+  -v velocitas-conan:/home/vscode/.conan2 \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
   -e HTTP_PROXY= -e HTTPS_PROXY= -e http_proxy= -e https_proxy= \
   velocitas-quick run 300
+
+# Benefits: 
+# - Build once, run multiple times with full dependency retention
+# - Subsequent builds are much faster (dependencies cached)
+# - True separation of build and run environments
 ```
 
 ### **Step 5: Inject Vehicle Signal & Verify**
@@ -396,6 +407,10 @@ docker run -v $(pwd)/VehicleApp.cpp:/app.cpp velocitas-quick build --verbose
 
 # Optimized build (15-30 seconds) - 3-4x faster
 docker run -v $(pwd)/VehicleApp.cpp:/app.cpp velocitas-quick build --skip-deps --skip-vss --verbose
+
+# Production persistent volumes (fast rebuilds after first build)
+docker volume create velocitas-build velocitas-deps velocitas-conan
+docker run -v velocitas-build:/quickbuild/build -v velocitas-deps:/quickbuild/app/vehicle_model -v velocitas-conan:/home/vscode/.conan2 -v $(pwd)/VehicleApp.cpp:/app.cpp velocitas-quick build --verbose
 ```
 
 ### **Success Criteria Checklist**
