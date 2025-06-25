@@ -15,9 +15,17 @@ The Fleet Speed Monitor is a professional-grade vehicle application designed for
 ## 📋 Pre-Test Requirements
 
 - Docker installed and running
-- KUKSA databroker service active
+- KUKSA databroker service active via: `docker compose -f docker-compose.dev.yml up -d vehicledatabroker`
 - Network connectivity for signal injection
-- Fleet Speed Monitor application compiled
+- Velocitas-quick container image (build locally or pull pre-built):
+  ```bash
+  # Option 1: Build locally
+  docker build -f Dockerfile.quick -t velocitas-quick .
+  
+  # Option 2: Use pre-built image
+  docker pull ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:prerelease-latest
+  # Then replace 'velocitas-quick' with full image name in commands
+  ```
 
 ## 🧪 Interactive Testing Procedure
 
@@ -25,18 +33,24 @@ The Fleet Speed Monitor is a professional-grade vehicle application designed for
 
 **Terminal 1 - Build and Run Application:**
 ```bash
-# Build the Fleet Speed Monitor
-docker run --rm --network host \
-  -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
-  -v $(pwd)/examples/FleetSpeedMonitor.cpp:/app.cpp \
-  velocitas-quick build --skip-deps --verbose
+# Create persistent volume for build artifacts
+docker volume create fleet-build
 
-# Run Fleet Speed Monitor  
-docker run -d --network host --name fleet-monitor \
+# Build the Fleet Speed Monitor with persistent volume
+docker run --rm --network host \
+  -v fleet-build:/quickbuild/build \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
   -v $(pwd)/examples/FleetSpeedMonitor.cpp:/app.cpp \
+  velocitas-quick build --skip-deps --skip-vss --verbose
+
+# Run Fleet Speed Monitor using the same persistent volume
+docker run -d --network host --name fleet-monitor \
+  -v fleet-build:/quickbuild/build \
+  -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
   velocitas-quick run 300
 ```
+
+**Note:** The persistent volume approach ensures the FleetSpeedMonitor executable is properly shared between build and run containers.
 
 **Expected Build Output:**
 ```
@@ -277,8 +291,11 @@ docker stop fleet-monitor
 # Remove fleet container
 docker rm fleet-monitor
 
+# Remove persistent volume
+docker volume rm fleet-build
+
 # Stop databroker (if needed)
-docker-compose -f docker-compose.dev.yml down
+docker compose -f docker-compose.dev.yml down
 ```
 
 ## 📈 Performance Benchmarks
