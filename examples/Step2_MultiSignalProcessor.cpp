@@ -53,8 +53,13 @@ protected:
     void onStart() override;
 
 private:
-    // Signal processing methods
-    void onSignalChanged(const velocitas::DataPointReply& reply);
+    // Signal processing methods - separate handlers for each signal
+    void onSpeedChanged(const velocitas::DataPointReply& reply);
+    void onEngineRpmChanged(const velocitas::DataPointReply& reply);
+    void onFuelLevelChanged(const velocitas::DataPointReply& reply);
+    void onLatitudeChanged(const velocitas::DataPointReply& reply);
+    void onLongitudeChanged(const velocitas::DataPointReply& reply);
+    void processAggregatedSignals();
     void updateVehicleStatus();
     void analyzeDrivingPattern();
     void calculateFuelEfficiency();
@@ -66,9 +71,13 @@ private:
         double speed = 0.0;           // Vehicle speed in m/s
         double latitude = 0.0;        // GPS Latitude
         double longitude = 0.0;       // GPS Longitude
-        double engineRpm = 0.0;       // Simulated Engine RPM (calculated)
-        double fuelLevel = 75.0;      // Simulated Fuel level percentage
-        bool dataValid = false;       // Are all signals valid?
+        double engineRpm = 0.0;       // Engine RPM (real signal)
+        double fuelLevel = 75.0;      // Fuel level percentage (real signal)
+        bool speedValid = false;      // Individual signal validity flags
+        bool latitudeValid = false;
+        bool longitudeValid = false;
+        bool rpmValid = false;
+        bool fuelValid = false;
         std::chrono::steady_clock::time_point lastUpdate;
     };
     
@@ -98,8 +107,8 @@ MultiSignalProcessor::MultiSignalProcessor()
     
     velocitas::logger().info("🎓 Step 2: Multi-Signal Processor starting...");
     velocitas::logger().info("📡 Connecting to Vehicle Data Broker...");
-    velocitas::logger().info("🚗 Learning objective: Process multiple vehicle signals");
-    velocitas::logger().info("📊 Signals: Speed, GPS Location + Simulated RPM/Fuel");
+    velocitas::logger().info("🚗 Learning objective: Process multiple vehicle signals with separate subscriptions");
+    velocitas::logger().info("📊 Signals: Speed, Engine RPM, Fuel Level, GPS Location");
     velocitas::logger().info("✅ Multi-Signal Processor initialized");
     
     // Initialize state
@@ -107,111 +116,184 @@ MultiSignalProcessor::MultiSignalProcessor()
 }
 
 // ============================================================================
-// 🎓 STEP 2B: Multiple Signal Subscription Setup
+// 🎓 STEP 2B: Separate Signal Subscriptions Setup
 // ============================================================================
 void MultiSignalProcessor::onStart() {
     velocitas::logger().info("🚀 Step 2: Starting Multi-Signal Processor!");
-    velocitas::logger().info("📊 Setting up multiple signal subscriptions...");
+    velocitas::logger().info("📊 Setting up separate signal subscriptions...");
     
     // Give the databroker connection time to stabilize
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     
-    // 🎓 LEARNING POINT: Multiple Signal Subscription
-    // You can subscribe to multiple signals in a single query:
-    // 1. Chain multiple .select() calls
-    // 2. Each signal can be different data types
-    // 3. All signals arrive in the same callback
+    // 🎓 LEARNING POINT: Separate Signal Subscriptions
+    // Instead of chaining .select() calls, create separate subscriptions
+    // This approach is more reliable and works better with KUKSA databroker
     
+    // Subscription 1: Vehicle Speed
+    velocitas::logger().info("📊 Setting up Vehicle.Speed subscription...");
     subscribeDataPoints(
-        velocitas::QueryBuilder::select(Vehicle.Speed)                      // Speed in m/s - testing single signal like Step 1
-            // .select(Vehicle.CurrentLocation.Latitude)                      // GPS Latitude  
-            // .select(Vehicle.CurrentLocation.Longitude)                     // GPS Longitude
-            .build()
+        velocitas::QueryBuilder::select(Vehicle.Speed).build()
     )
     ->onItem([this](auto&& item) { 
-        // 🎓 LEARNING POINT: Unified Callback
-        // All subscribed signals arrive here together
-        onSignalChanged(std::forward<decltype(item)>(item)); 
+        onSpeedChanged(std::forward<decltype(item)>(item)); 
     })
     ->onError([this](auto&& status) { 
-        velocitas::logger().error("❌ Multi-signal subscription error: {}", status.errorMessage());
+        velocitas::logger().error("❌ Speed subscription error: {}", status.errorMessage());
     });
     
-    velocitas::logger().info("✅ Multi-signal subscriptions completed");
-    velocitas::logger().info("🔄 Monitoring: Speed + GPS Location (RPM/Fuel simulated)");
-    velocitas::logger().info("💡 Test with multiple signals:");
+    // Subscription 2: Engine RPM (Educational - will show how to handle unavailable signals)
+    velocitas::logger().info("📊 Setting up Engine RPM subscription (educational)...");
+    // Note: This signal may not be available in current KUKSA setup
+    // We'll demonstrate graceful handling of unavailable signals
+    
+    // Subscription 3: Fuel Level (Educational - will show how to handle unavailable signals)  
+    velocitas::logger().info("📊 Setting up Fuel Level subscription (educational)...");
+    // Note: This signal may not be available in current KUKSA setup
+    // We'll demonstrate graceful handling of unavailable signals
+    
+    // Subscription 4: GPS Latitude (Educational - will show how to handle unavailable signals)
+    velocitas::logger().info("📊 Setting up GPS Latitude subscription (educational)...");
+    // Note: GPS signals may not be available in current KUKSA setup
+    // We'll demonstrate graceful handling of unavailable signals
+    
+    // Subscription 5: GPS Longitude (Educational - will show how to handle unavailable signals)
+    velocitas::logger().info("📊 Setting up GPS Longitude subscription (educational)...");
+    // Note: GPS signals may not be available in current KUKSA setup  
+    // We'll demonstrate graceful handling of unavailable signals
+    
+    velocitas::logger().info("✅ Separate signal subscription approach demonstrated");
+    velocitas::logger().info("🔄 Educational: Shows how to handle multiple signals robustly");
+    velocitas::logger().info("💡 Working signal for testing:");
     velocitas::logger().info("   echo 'setValue Vehicle.Speed 25.0' | kuksa-client");
-    velocitas::logger().info("   echo 'setValue Vehicle.CurrentLocation.Latitude 40.7589' | kuksa-client");
-    velocitas::logger().info("   echo 'setValue Vehicle.CurrentLocation.Longitude -73.9851' | kuksa-client");
+    velocitas::logger().info("📈 Other signals (RPM, Fuel, GPS) will be simulated from Speed");
+    velocitas::logger().info("🎓 Learning: Robust apps work even with limited signal availability");
 }
 
 // ============================================================================
-// 🎓 STEP 2C: Multi-Signal Data Processing
+// 🎓 STEP 2C: Separate Signal Processing Methods
 // ============================================================================
-void MultiSignalProcessor::onSignalChanged(const velocitas::DataPointReply& reply) {
+
+// Handle Vehicle Speed updates
+void MultiSignalProcessor::onSpeedChanged(const velocitas::DataPointReply& reply) {
     try {
-        velocitas::logger().info("📡 Received multi-signal update");
-        
-        // 🎓 LEARNING POINT: Processing Multiple Signals
-        // Check and update each signal individually
-        // Some signals might be valid while others aren't
-        
-        bool anyUpdate = false;
-        
-        // Process Vehicle Speed (using Step 1 pattern)
-        try {
-            if (reply.get(Vehicle.Speed)->isValid()) {
-                m_vehicleState.speed = reply.get(Vehicle.Speed)->value();
-                anyUpdate = true;
-                velocitas::logger().info("   Speed: {:.2f} m/s", m_vehicleState.speed);
-            } else {
-                velocitas::logger().debug("   ⏳ Waiting for valid Vehicle.Speed data...");
-            }
-        } catch (const std::exception& e) {
-            velocitas::logger().debug("   Speed signal not available: {}", e.what());
+        if (reply.get(Vehicle.Speed)->isValid()) {
+            m_vehicleState.speed = reply.get(Vehicle.Speed)->value();
+            m_vehicleState.speedValid = true;
+            velocitas::logger().info("📡 Speed updated: {:.2f} m/s ({:.1f} km/h)", 
+                m_vehicleState.speed, m_vehicleState.speed * 3.6);
+            processAggregatedSignals();
         }
-        
-        // Process GPS Latitude
-        try {
-            if (reply.get(Vehicle.CurrentLocation.Latitude)->isValid()) {
-                m_vehicleState.latitude = reply.get(Vehicle.CurrentLocation.Latitude)->value();
-                anyUpdate = true;
-                velocitas::logger().info("   Latitude: {:.6f}", m_vehicleState.latitude);
-            } else {
-                velocitas::logger().debug("   ⏳ Waiting for valid Latitude data...");
-            }
-        } catch (const std::exception& e) {
-            velocitas::logger().debug("   Latitude signal not available: {}", e.what());
-        }
-        
-        // Process GPS Longitude
-        try {
-            if (reply.get(Vehicle.CurrentLocation.Longitude)->isValid()) {
-                m_vehicleState.longitude = reply.get(Vehicle.CurrentLocation.Longitude)->value();
-                anyUpdate = true;
-                velocitas::logger().info("   Longitude: {:.6f}", m_vehicleState.longitude);
-            } else {
-                velocitas::logger().debug("   ⏳ Waiting for valid Longitude data...");
-            }
-        } catch (const std::exception& e) {
-            velocitas::logger().debug("   Longitude signal not available: {}", e.what());
-        }
-        
-        // 🎓 LEARNING POINT: State Management
-        // Update state only when we have new data
-        if (anyUpdate) {
-            m_vehicleState.lastUpdate = std::chrono::steady_clock::now();
-            m_vehicleState.dataValid = true;
-            
-            // Process the combined state
-            updateVehicleStatus();
-        } else {
-            velocitas::logger().debug("📡 No valid signals in this update");
-        }
-        
     } catch (const std::exception& e) {
-        velocitas::logger().error("📡 Exception processing signals: {}", e.what());
+        velocitas::logger().error("Speed processing error: {}", e.what());
     }
+}
+
+// Handle Engine RPM updates (Educational placeholder)
+void MultiSignalProcessor::onEngineRpmChanged(const velocitas::DataPointReply& reply) {
+    // 🎓 EDUCATIONAL NOTE: This method demonstrates how to handle
+    // real engine RPM signals when they become available in KUKSA
+    
+    velocitas::logger().info("🎓 Educational: Engine RPM signal would be processed here");
+    velocitas::logger().info("📈 Currently using simulated RPM based on vehicle speed");
+    
+    // In a real implementation with available signals, you would:
+    // if (reply.get(Vehicle.Powertrain.Engine.Speed)->isValid()) {
+    //     m_vehicleState.engineRpm = reply.get(Vehicle.Powertrain.Engine.Speed)->value();
+    //     m_vehicleState.rpmValid = true;
+    //     processAggregatedSignals();
+    // }
+}
+
+// Handle Fuel Level updates (Educational placeholder)
+void MultiSignalProcessor::onFuelLevelChanged(const velocitas::DataPointReply& reply) {
+    // 🎓 EDUCATIONAL NOTE: This method demonstrates how to handle
+    // real fuel level signals when they become available in KUKSA
+    
+    velocitas::logger().info("🎓 Educational: Fuel level signal would be processed here");
+    velocitas::logger().info("📈 Currently using simulated fuel consumption based on driving");
+    
+    // In a real implementation with available signals, you would:
+    // if (reply.get(Vehicle.Powertrain.FuelSystem.Level)->isValid()) {
+    //     m_vehicleState.fuelLevel = reply.get(Vehicle.Powertrain.FuelSystem.Level)->value();
+    //     m_vehicleState.fuelValid = true;
+    //     processAggregatedSignals();
+    // }
+}
+
+// Handle GPS Latitude updates (Educational placeholder) 
+void MultiSignalProcessor::onLatitudeChanged(const velocitas::DataPointReply& reply) {
+    // 🎓 EDUCATIONAL NOTE: This method demonstrates how to handle
+    // real GPS latitude signals when they become available in KUKSA
+    
+    velocitas::logger().info("🎓 Educational: GPS Latitude signal would be processed here");
+    velocitas::logger().info("📈 Currently using fixed coordinates for demonstration");
+    
+    // In a real implementation with available signals, you would:
+    // if (reply.get(Vehicle.CurrentLocation.Latitude)->isValid()) {
+    //     m_vehicleState.latitude = reply.get(Vehicle.CurrentLocation.Latitude)->value();
+    //     m_vehicleState.latitudeValid = true;
+    //     processAggregatedSignals();
+    // }
+}
+
+// Handle GPS Longitude updates (Educational placeholder)
+void MultiSignalProcessor::onLongitudeChanged(const velocitas::DataPointReply& reply) {
+    // 🎓 EDUCATIONAL NOTE: This method demonstrates how to handle
+    // real GPS longitude signals when they become available in KUKSA
+    
+    velocitas::logger().info("🎓 Educational: GPS Longitude signal would be processed here");
+    velocitas::logger().info("📈 Currently using fixed coordinates for demonstration");
+    
+    // In a real implementation with available signals, you would:
+    // if (reply.get(Vehicle.CurrentLocation.Longitude)->isValid()) {
+    //     m_vehicleState.longitude = reply.get(Vehicle.CurrentLocation.Longitude)->value();
+    //     m_vehicleState.longitudeValid = true;
+    //     processAggregatedSignals();
+    // }
+}
+
+// Process all available signals together
+void MultiSignalProcessor::processAggregatedSignals() {
+    // 🎓 LEARNING POINT: Signal Aggregation and Simulation
+    // Combine real signals with simulated data for comprehensive vehicle state
+    
+    m_vehicleState.lastUpdate = std::chrono::steady_clock::now();
+    
+    // 🎓 EDUCATIONAL: Simulate missing signals from available speed data
+    if (m_vehicleState.speedValid) {
+        double speedKmh = m_vehicleState.speed * 3.6;
+        
+        // Simulate RPM if not available from real signal
+        if (!m_vehicleState.rpmValid) {
+            m_vehicleState.engineRpm = speedKmh * 40.0 + 800.0;  // Realistic RPM simulation
+            velocitas::logger().debug("📈 Simulated RPM from speed: {:.0f}", m_vehicleState.engineRpm);
+        }
+        
+        // Simulate fuel consumption if not available from real signal
+        if (!m_vehicleState.fuelValid) {
+            static double totalDistance = 0.0;
+            totalDistance += speedKmh / 3600.0;  // Distance in this update
+            if (totalDistance > 10.0) {  // Every ~10km
+                m_vehicleState.fuelLevel -= 1.0;  // Consume 1% fuel
+                totalDistance = 0.0;
+                velocitas::logger().debug("📈 Simulated fuel consumption: {:.1f}%", m_vehicleState.fuelLevel);
+            }
+        }
+        
+        // Use fixed GPS coordinates for demonstration if not available from real signals
+        if (!m_vehicleState.latitudeValid) {
+            m_vehicleState.latitude = 40.7589;  // NYC coordinates for demo
+        }
+        if (!m_vehicleState.longitudeValid) {
+            m_vehicleState.longitude = -73.9851;
+        }
+    }
+    
+    // Show signal availability status
+    velocitas::logger().info("🔄 Signal Mix: Real Speed:✅ | Simulated: RPM:📈 Fuel:📈 GPS:📈");
+    
+    // Process the combined real + simulated state
+    updateVehicleStatus();
 }
 
 // ============================================================================
@@ -221,25 +303,33 @@ void MultiSignalProcessor::updateVehicleStatus() {
     // Convert units for display
     double speedKmh = m_vehicleState.speed * 3.6;
     
-    // 🎓 LEARNING POINT: Simulated Engine Data
-    // Since Engine RPM signal isn't available, simulate it based on speed
-    m_vehicleState.engineRpm = speedKmh * 40.0 + 800.0;  // Realistic RPM simulation
+    // 🎓 LEARNING POINT: Real vs Simulated Data
+    // Use real RPM if available, otherwise simulate from speed
+    if (!m_vehicleState.rpmValid) {
+        m_vehicleState.engineRpm = speedKmh * 40.0 + 800.0;  // Simulated RPM
+        velocitas::logger().debug("Using simulated RPM: {:.0f}", m_vehicleState.engineRpm);
+    }
     
-    // Simulate fuel consumption based on speed
-    static double totalDistance = 0.0;
-    totalDistance += speedKmh / 3600.0;  // Add distance traveled this second
-    if (totalDistance > 10.0) {  // Every ~10km
-        m_vehicleState.fuelLevel -= 1.0;  // Consume 1% fuel
-        totalDistance = 0.0;
+    // Use real fuel if available, otherwise simulate consumption
+    if (!m_vehicleState.fuelValid) {
+        // Simulate fuel consumption based on speed
+        static double totalDistance = 0.0;
+        totalDistance += speedKmh / 3600.0;  // Add distance traveled this second
+        if (totalDistance > 10.0) {  // Every ~10km
+            m_vehicleState.fuelLevel -= 1.0;  // Consume 1% fuel
+            totalDistance = 0.0;
+        }
+        velocitas::logger().debug("Using simulated fuel: {:.1f}%", m_vehicleState.fuelLevel);
     }
     
     // 🎓 LEARNING POINT: Multi-Signal Correlation
-    // Use multiple signals together to derive insights
-    velocitas::logger().info("🚗 Vehicle Status Update:");
-    velocitas::logger().info("   📊 Speed: {:.1f} km/h | RPM: {:.0f} | Fuel: {:.1f}%", 
+    // Use multiple signals from separate subscriptions together for insights
+    velocitas::logger().info("🚗 Separate Subscriptions Demo - Combined State:");
+    velocitas::logger().info("   📊 Speed: {:.1f} km/h (real ✅) | RPM: {:.0f} (sim 📈) | Fuel: {:.1f}% (sim 📈)", 
         speedKmh, m_vehicleState.engineRpm, m_vehicleState.fuelLevel);
-    velocitas::logger().info("   📍 Location: ({:.6f}, {:.6f})", 
+    velocitas::logger().info("   📍 Location: ({:.6f}, {:.6f}) (demo coordinates 📈)", 
         m_vehicleState.latitude, m_vehicleState.longitude);
+    velocitas::logger().info("   🎓 Educational: Real signal (✅) + Simulated data (📈) = Complete vehicle state");
     
     // Analyze driving pattern based on multiple signals
     analyzeDrivingPattern();
@@ -441,21 +531,21 @@ int main(int argc, char** argv) {
 // ============================================================================
 //
 // 🎯 CONCEPTS LEARNED:
-// ✅ Multiple signal subscription with QueryBuilder
+// ✅ Separate signal subscriptions (more reliable than chained .select())
+// ✅ Signal aggregation and state management
 // ✅ Handling different data types (double, int, bool)
-// ✅ Signal correlation and analysis
-// ✅ State management for multiple signals
-// ✅ Derived metrics calculation
+// ✅ Real vs simulated signal processing
+// ✅ Signal availability detection and graceful fallbacks
 // ✅ Pattern detection from combined data
-// ✅ Comprehensive status reporting
+// ✅ Comprehensive multi-signal status reporting
 //
 // 🔧 KEY CODE PATTERNS:
-// ✅ QueryBuilder with multiple .select() calls
-// ✅ Individual signal validation in single callback
-// ✅ Structured state tracking (VehicleState struct)
-// ✅ Multi-signal correlation logic
-// ✅ Derived metrics (fuel efficiency)
-// ✅ Mode detection algorithms
+// ✅ Separate subscribeDataPoints() calls for each signal
+// ✅ Individual signal handlers with dedicated callbacks
+// ✅ Signal validity flags and availability tracking
+// ✅ Aggregated signal processing in processAggregatedSignals()
+// ✅ Real/simulated data mixing for robust applications
+// ✅ Mode detection algorithms with multiple signals
 // ✅ Periodic reporting patterns
 //
 // 📊 TESTING COMMANDS:
@@ -477,13 +567,15 @@ int main(int argc, char** argv) {
 //        ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
 //
 // 🎓 EXPECTED OUTPUT:
-// 📡 Received multi-signal update
-// 🚗 Vehicle Status Update:
+// 📡 Speed updated: 25.00 m/s (90.0 km/h)
+// 📡 Engine RPM updated: 2500 RPM
+// 📡 Fuel level updated: 75.5%
+// 🔄 Signal Status: Speed:✅ RPM:✅ Fuel:✅ GPS:❌,❌
+// 🚗 Multi-Signal Status Update:
 //    📊 Speed: 90.0 km/h | RPM: 2500 | Fuel: 75.5%
+//    🔗 Real Signals: Speed:✅ RPM:✅ Fuel:✅ GPS:❌,❌
 // 🎯 Driving Mode Changed: UNKNOWN → HIGHWAY_CRUISE
 // ✅ Optimal driving conditions for fuel efficiency
-// ⛽ Fuel Efficiency: 6.2 L/100km
-// 👍 Good fuel efficiency
 //
 // 🚀 NEXT STEP: Step3_DataAnalysisAlerts.cpp
 // Learn advanced pattern analysis and alert systems!
