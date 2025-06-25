@@ -203,10 +203,14 @@ DataAnalysisAlerts::DataAnalysisAlerts()
     velocitas::logger().info("📡 Connecting to Vehicle Data Broker...");
     velocitas::logger().info("📊 Learning objective: Advanced pattern analysis");
     velocitas::logger().info("🚨 Features: Multi-tier alerts, predictive analytics");
+    velocitas::logger().info("📊 Signals: Speed (real) + RPM/Fuel (simulated)");
     velocitas::logger().info("✅ Data Analysis & Alerts initialized");
     
     m_startTime = std::chrono::steady_clock::now();
     m_analytics.lastReportTime = m_startTime;
+    
+    // Initialize simulated fuel level
+    m_currentFuel = 75.0;
 }
 
 // ============================================================================
@@ -220,8 +224,8 @@ void DataAnalysisAlerts::onStart() {
     
     subscribeDataPoints(
         velocitas::QueryBuilder::select(Vehicle.Speed)
-            .select(Vehicle.Powertrain.Engine.Speed)
-            .select(Vehicle.Powertrain.FuelSystem.Level)
+            .select(Vehicle.CurrentLocation.Latitude)
+            .select(Vehicle.CurrentLocation.Longitude)
             .build()
     )
     ->onItem([this](auto&& item) { 
@@ -244,22 +248,55 @@ void DataAnalysisAlerts::onSignalChanged(const velocitas::DataPointReply& reply)
         bool dataUpdated = false;
         
         // Update current values and history
-        if (reply.get(Vehicle.Speed)->isValid()) {
-            m_currentSpeed = reply.get(Vehicle.Speed)->value();
-            m_history.addSpeed(m_currentSpeed);
-            dataUpdated = true;
+        try {
+            if (reply.get(Vehicle.Speed)->isValid()) {
+                m_currentSpeed = reply.get(Vehicle.Speed)->value();
+                m_history.addSpeed(m_currentSpeed);
+                dataUpdated = true;
+                
+                // Simulate RPM based on speed (since Engine.Speed not available)
+                double speedKmh = m_currentSpeed * 3.6;
+                m_currentRpm = speedKmh * 40.0 + 800.0;  // Realistic RPM simulation
+                m_history.addRpm(m_currentRpm);
+                
+                // Simulate fuel consumption based on driving (since FuelSystem.Level not available)
+                static double totalDistance = 0.0;
+                static auto lastTime = std::chrono::steady_clock::now();
+                auto now = std::chrono::steady_clock::now();
+                auto timeDiff = std::chrono::duration_cast<std::chrono::seconds>(now - lastTime).count();
+                
+                if (timeDiff > 0) {
+                    totalDistance += speedKmh * (timeDiff / 3600.0);  // Add distance traveled
+                    if (totalDistance > 5.0) {  // Every ~5km
+                        m_currentFuel -= 0.5;  // Consume 0.5% fuel
+                        totalDistance = 0.0;
+                    }
+                    if (m_currentFuel < 0) m_currentFuel = 0;
+                    lastTime = now;
+                }
+                m_history.addFuel(m_currentFuel);
+            }
+        } catch (...) {
+            // Speed signal not available in this update
         }
         
-        if (reply.get(Vehicle.Powertrain.Engine.Speed)->isValid()) {
-            m_currentRpm = reply.get(Vehicle.Powertrain.Engine.Speed)->value();
-            m_history.addRpm(m_currentRpm);
-            dataUpdated = true;
+        // Process GPS data for location-based analysis (future use)
+        try {
+            if (reply.get(Vehicle.CurrentLocation.Latitude)->isValid()) {
+                // Store location for future geofencing features
+                dataUpdated = true;
+            }
+        } catch (...) {
+            // Latitude signal not available
         }
         
-        if (reply.get(Vehicle.Powertrain.FuelSystem.Level)->isValid()) {
-            m_currentFuel = reply.get(Vehicle.Powertrain.FuelSystem.Level)->value();
-            m_history.addFuel(m_currentFuel);
-            dataUpdated = true;
+        try {
+            if (reply.get(Vehicle.CurrentLocation.Longitude)->isValid()) {
+                // Store location for future geofencing features  
+                dataUpdated = true;
+            }
+        } catch (...) {
+            // Longitude signal not available
         }
         
         if (dataUpdated) {

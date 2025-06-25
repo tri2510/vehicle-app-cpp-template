@@ -27,10 +27,10 @@ A basic speed monitoring application that:
 # Start KUKSA databroker
 docker compose -f docker-compose.dev.yml up -d vehicledatabroker
 
-# Create persistent volumes for faster development
-docker volume create tutorial-build
-docker volume create tutorial-deps
-docker volume create tutorial-vss
+# Create persistent volumes for Step 1 (isolated from other steps)
+docker volume create step1-build
+docker volume create step1-deps
+docker volume create step1-vss
 
 # Verify databroker is running
 docker logs velocitas-vdb --tail 5
@@ -59,11 +59,11 @@ docker build -f Dockerfile.quick -t velocitas-quick .
 
 **Using Pre-built Image (Recommended):**
 ```bash
-# Build Step 1 application with persistent storage
+# Build Step 1 application with dedicated persistent storage
 docker run --rm --network host \
-  -v tutorial-build:/quickbuild/build \
-  -v tutorial-deps:/home/vscode/.conan2 \
-  -v tutorial-vss:/quickbuild/app/vehicle_model \
+  -v step1-build:/quickbuild/build \
+  -v step1-deps:/home/vscode/.conan2 \
+  -v step1-vss:/quickbuild/app/vehicle_model \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
   -v $(pwd)/examples/Step1_BasicSpeedMonitor.cpp:/app.cpp \
   ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:prerelease-latest build --skip-deps --verbose
@@ -73,9 +73,9 @@ docker run --rm --network host \
 ```bash
 # Same command with 'velocitas-quick' instead of full image name
 docker run --rm --network host \
-  -v tutorial-build:/quickbuild/build \
-  -v tutorial-deps:/home/vscode/.conan2 \
-  -v tutorial-vss:/quickbuild/app/vehicle_model \
+  -v step1-build:/quickbuild/build \
+  -v step1-deps:/home/vscode/.conan2 \
+  -v step1-vss:/quickbuild/app/vehicle_model \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
   -v $(pwd)/examples/Step1_BasicSpeedMonitor.cpp:/app.cpp \
   velocitas-quick build --skip-deps --verbose
@@ -99,7 +99,7 @@ docker run --rm --network host \
 ```bash
 # Start the basic speed monitor
 docker run -d --network host --name step1-app \
-  -v tutorial-build:/quickbuild/build \
+  -v step1-build:/quickbuild/build \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
   ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:prerelease-latest run 60
 ```
@@ -108,7 +108,7 @@ docker run -d --network host --name step1-app \
 ```bash
 # Same command with 'velocitas-quick'
 docker run -d --network host --name step1-app \
-  -v tutorial-build:/quickbuild/build \
+  -v step1-build:/quickbuild/build \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
   velocitas-quick run 60
 ```
@@ -324,8 +324,8 @@ docker stop step1-app && docker rm step1-app
 # Optional: Stop databroker
 docker compose -f docker-compose.dev.yml down
 
-# Keep persistent volumes for next tutorial steps
-# docker volume rm tutorial-build tutorial-deps tutorial-vss
+# Keep persistent volumes for reuse (each step has its own volumes)
+# docker volume rm step1-build step1-deps step1-vss
 ```
 
 ## 🎓 Knowledge Check

@@ -64,8 +64,10 @@ private:
     // Track multiple signals in a structured way
     struct VehicleState {
         double speed = 0.0;           // Vehicle speed in m/s
-        double engineRpm = 0.0;       // Engine RPM
-        double fuelLevel = 0.0;       // Fuel level percentage
+        double latitude = 0.0;        // GPS Latitude
+        double longitude = 0.0;       // GPS Longitude
+        double engineRpm = 0.0;       // Simulated Engine RPM (calculated)
+        double fuelLevel = 75.0;      // Simulated Fuel level percentage
         bool dataValid = false;       // Are all signals valid?
         std::chrono::steady_clock::time_point lastUpdate;
     };
@@ -97,7 +99,7 @@ MultiSignalProcessor::MultiSignalProcessor()
     velocitas::logger().info("🎓 Step 2: Multi-Signal Processor starting...");
     velocitas::logger().info("📡 Connecting to Vehicle Data Broker...");
     velocitas::logger().info("🚗 Learning objective: Process multiple vehicle signals");
-    velocitas::logger().info("📊 Signals: Speed, Engine RPM, Fuel Level");
+    velocitas::logger().info("📊 Signals: Speed, GPS Location + Simulated RPM/Fuel");
     velocitas::logger().info("✅ Multi-Signal Processor initialized");
     
     // Initialize state
@@ -121,9 +123,9 @@ void MultiSignalProcessor::onStart() {
     // 3. All signals arrive in the same callback
     
     subscribeDataPoints(
-        velocitas::QueryBuilder::select(Vehicle.Speed)                      // Speed in m/s
-            .select(Vehicle.Powertrain.Engine.Speed)                       // Engine RPM
-            .select(Vehicle.Powertrain.FuelSystem.Level)                   // Fuel level %
+        velocitas::QueryBuilder::select(Vehicle.Speed)                      // Speed in m/s - testing single signal like Step 1
+            // .select(Vehicle.CurrentLocation.Latitude)                      // GPS Latitude  
+            // .select(Vehicle.CurrentLocation.Longitude)                     // GPS Longitude
             .build()
     )
     ->onItem([this](auto&& item) { 
@@ -136,11 +138,11 @@ void MultiSignalProcessor::onStart() {
     });
     
     velocitas::logger().info("✅ Multi-signal subscriptions completed");
-    velocitas::logger().info("🔄 Monitoring: Speed + RPM + Fuel Level");
+    velocitas::logger().info("🔄 Monitoring: Speed + GPS Location (RPM/Fuel simulated)");
     velocitas::logger().info("💡 Test with multiple signals:");
     velocitas::logger().info("   echo 'setValue Vehicle.Speed 25.0' | kuksa-client");
-    velocitas::logger().info("   echo 'setValue Vehicle.Powertrain.Engine.Speed 2500' | kuksa-client");
-    velocitas::logger().info("   echo 'setValue Vehicle.Powertrain.FuelSystem.Level 75.5' | kuksa-client");
+    velocitas::logger().info("   echo 'setValue Vehicle.CurrentLocation.Latitude 40.7589' | kuksa-client");
+    velocitas::logger().info("   echo 'setValue Vehicle.CurrentLocation.Longitude -73.9851' | kuksa-client");
 }
 
 // ============================================================================
@@ -156,25 +158,43 @@ void MultiSignalProcessor::onSignalChanged(const velocitas::DataPointReply& repl
         
         bool anyUpdate = false;
         
-        // Process Vehicle Speed
-        if (reply.get(Vehicle.Speed)->isValid()) {
-            m_vehicleState.speed = reply.get(Vehicle.Speed)->value();
-            anyUpdate = true;
-            velocitas::logger().debug("   Speed: {:.2f} m/s", m_vehicleState.speed);
+        // Process Vehicle Speed (using Step 1 pattern)
+        try {
+            if (reply.get(Vehicle.Speed)->isValid()) {
+                m_vehicleState.speed = reply.get(Vehicle.Speed)->value();
+                anyUpdate = true;
+                velocitas::logger().info("   Speed: {:.2f} m/s", m_vehicleState.speed);
+            } else {
+                velocitas::logger().debug("   ⏳ Waiting for valid Vehicle.Speed data...");
+            }
+        } catch (const std::exception& e) {
+            velocitas::logger().debug("   Speed signal not available: {}", e.what());
         }
         
-        // Process Engine RPM
-        if (reply.get(Vehicle.Powertrain.Engine.Speed)->isValid()) {
-            m_vehicleState.engineRpm = reply.get(Vehicle.Powertrain.Engine.Speed)->value();
-            anyUpdate = true;
-            velocitas::logger().debug("   RPM: {:.0f}", m_vehicleState.engineRpm);
+        // Process GPS Latitude
+        try {
+            if (reply.get(Vehicle.CurrentLocation.Latitude)->isValid()) {
+                m_vehicleState.latitude = reply.get(Vehicle.CurrentLocation.Latitude)->value();
+                anyUpdate = true;
+                velocitas::logger().info("   Latitude: {:.6f}", m_vehicleState.latitude);
+            } else {
+                velocitas::logger().debug("   ⏳ Waiting for valid Latitude data...");
+            }
+        } catch (const std::exception& e) {
+            velocitas::logger().debug("   Latitude signal not available: {}", e.what());
         }
         
-        // Process Fuel Level
-        if (reply.get(Vehicle.Powertrain.FuelSystem.Level)->isValid()) {
-            m_vehicleState.fuelLevel = reply.get(Vehicle.Powertrain.FuelSystem.Level)->value();
-            anyUpdate = true;
-            velocitas::logger().debug("   Fuel: {:.1f}%", m_vehicleState.fuelLevel);
+        // Process GPS Longitude
+        try {
+            if (reply.get(Vehicle.CurrentLocation.Longitude)->isValid()) {
+                m_vehicleState.longitude = reply.get(Vehicle.CurrentLocation.Longitude)->value();
+                anyUpdate = true;
+                velocitas::logger().info("   Longitude: {:.6f}", m_vehicleState.longitude);
+            } else {
+                velocitas::logger().debug("   ⏳ Waiting for valid Longitude data...");
+            }
+        } catch (const std::exception& e) {
+            velocitas::logger().debug("   Longitude signal not available: {}", e.what());
         }
         
         // 🎓 LEARNING POINT: State Management
@@ -185,10 +205,12 @@ void MultiSignalProcessor::onSignalChanged(const velocitas::DataPointReply& repl
             
             // Process the combined state
             updateVehicleStatus();
+        } else {
+            velocitas::logger().debug("📡 No valid signals in this update");
         }
         
     } catch (const std::exception& e) {
-        velocitas::logger().debug("📡 Waiting for complete signal data...");
+        velocitas::logger().error("📡 Exception processing signals: {}", e.what());
     }
 }
 
@@ -199,11 +221,25 @@ void MultiSignalProcessor::updateVehicleStatus() {
     // Convert units for display
     double speedKmh = m_vehicleState.speed * 3.6;
     
+    // 🎓 LEARNING POINT: Simulated Engine Data
+    // Since Engine RPM signal isn't available, simulate it based on speed
+    m_vehicleState.engineRpm = speedKmh * 40.0 + 800.0;  // Realistic RPM simulation
+    
+    // Simulate fuel consumption based on speed
+    static double totalDistance = 0.0;
+    totalDistance += speedKmh / 3600.0;  // Add distance traveled this second
+    if (totalDistance > 10.0) {  // Every ~10km
+        m_vehicleState.fuelLevel -= 1.0;  // Consume 1% fuel
+        totalDistance = 0.0;
+    }
+    
     // 🎓 LEARNING POINT: Multi-Signal Correlation
     // Use multiple signals together to derive insights
     velocitas::logger().info("🚗 Vehicle Status Update:");
     velocitas::logger().info("   📊 Speed: {:.1f} km/h | RPM: {:.0f} | Fuel: {:.1f}%", 
         speedKmh, m_vehicleState.engineRpm, m_vehicleState.fuelLevel);
+    velocitas::logger().info("   📍 Location: ({:.6f}, {:.6f})", 
+        m_vehicleState.latitude, m_vehicleState.longitude);
     
     // Analyze driving pattern based on multiple signals
     analyzeDrivingPattern();

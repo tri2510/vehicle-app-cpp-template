@@ -38,6 +38,7 @@
 #include <numeric>
 #include <sstream>
 #include <iomanip>
+#include <cmath>
 
 // Global Vehicle instance for accessing vehicle signals
 ::vehicle::Vehicle Vehicle;
@@ -178,6 +179,7 @@ AdvancedFleetManager::AdvancedFleetManager()
     velocitas::logger().info("📡 Connecting to Vehicle Data Broker...");
     velocitas::logger().info("🗺️  Setting up GPS zones and geofencing...");
     velocitas::logger().info("📊 Configuring fleet analytics engine...");
+    velocitas::logger().info("📊 Signals: Speed+GPS (real) + RPM/Fuel/Odometer (simulated)");
     
     // Initialize fleet tracking
     initializeSpeedZones();
@@ -188,6 +190,7 @@ AdvancedFleetManager::AdvancedFleetManager()
     std::string vehicleId = getVehicleId();
     m_fleet[vehicleId] = VehicleData{vehicleId};
     m_fleet[vehicleId].lastUpdate = m_startTime;
+    m_fleet[vehicleId].fuel = 85.0;  // Initialize with fuel level
     
     velocitas::logger().info("✅ Fleet Manager initialized for vehicle: {}", vehicleId);
     velocitas::logger().info("🏢 Ready for enterprise fleet management");
@@ -206,13 +209,8 @@ void AdvancedFleetManager::onStart() {
     // In production, each vehicle would have its own subscription
     subscribeDataPoints(
         velocitas::QueryBuilder::select(Vehicle.Speed)
-            .select(Vehicle.Powertrain.Engine.Speed)
-            .select(Vehicle.Powertrain.FuelSystem.Level)
             .select(Vehicle.CurrentLocation.Latitude)
             .select(Vehicle.CurrentLocation.Longitude)
-            .select(Vehicle.OBD.DistanceWithMIL)              // Odometer
-            .select(Vehicle.Powertrain.Engine.ECT)            // Engine temp
-            .select(Vehicle.Body.Lights.Hazard.IsSignaling)   // Hazard status
             .build()
     )
     ->onItem([this](auto&& item) { 
@@ -237,44 +235,71 @@ void AdvancedFleetManager::onSignalChanged(const velocitas::DataPointReply& repl
         bool updated = false;
         
         // Update vehicle data from signals
-        if (reply.get(Vehicle.Speed)->isValid()) {
-            vehicle.speed = reply.get(Vehicle.Speed)->value() * 3.6;  // Convert to km/h
-            updated = true;
-        }
-        
-        if (reply.get(Vehicle.Powertrain.Engine.Speed)->isValid()) {
-            vehicle.rpm = reply.get(Vehicle.Powertrain.Engine.Speed)->value();
-            updated = true;
-        }
-        
-        if (reply.get(Vehicle.Powertrain.FuelSystem.Level)->isValid()) {
-            double previousFuel = vehicle.fuel;
-            vehicle.fuel = reply.get(Vehicle.Powertrain.FuelSystem.Level)->value();
-            if (previousFuel > vehicle.fuel) {
-                vehicle.totalFuelConsumed += (previousFuel - vehicle.fuel);
+        try {
+            if (reply.get(Vehicle.Speed)->isValid()) {
+                vehicle.speed = reply.get(Vehicle.Speed)->value() * 3.6;  // Convert to km/h
+                updated = true;
+                
+                // Simulate RPM based on speed (since Engine.Speed not available)
+                vehicle.rpm = vehicle.speed * 40.0 + 800.0;  // Realistic RPM simulation
+                
+                // Simulate fuel consumption based on driving
+                static double totalDistance = 0.0;
+                static auto lastTime = std::chrono::steady_clock::now();
+                auto now = std::chrono::steady_clock::now();
+                auto timeDiff = std::chrono::duration_cast<std::chrono::seconds>(now - lastTime).count();
+                
+                if (timeDiff > 0) {
+                    totalDistance += vehicle.speed * (timeDiff / 3600.0);  // Add distance traveled
+                    if (totalDistance > 10.0) {  // Every ~10km
+                        vehicle.fuel -= 1.0;  // Consume 1% fuel
+                        totalDistance = 0.0;
+                    }
+                    if (vehicle.fuel < 0) vehicle.fuel = 0;
+                    lastTime = now;
+                }
+                
+                // Simulate odometer increment
+                vehicle.odometer += vehicle.speed * (timeDiff / 3600.0);
             }
-            updated = true;
+        } catch (...) {
+            // Speed signal not available
         }
         
-        if (reply.get(Vehicle.CurrentLocation.Latitude)->isValid() &&
-            reply.get(Vehicle.CurrentLocation.Longitude)->isValid()) {
-            double prevLat = vehicle.latitude;
-            double prevLon = vehicle.longitude;
-            vehicle.latitude = reply.get(Vehicle.CurrentLocation.Latitude)->value();
-            vehicle.longitude = reply.get(Vehicle.CurrentLocation.Longitude)->value();
-            
-            // Calculate distance traveled
-            if (prevLat != 0 && prevLon != 0) {
-                double distance = calculateDistance(prevLat, prevLon, 
-                                                  vehicle.latitude, vehicle.longitude);
-                vehicle.totalDistance += distance;
+        try {
+            if (reply.get(Vehicle.CurrentLocation.Latitude)->isValid()) {
+                double prevLat = vehicle.latitude;
+                double prevLon = vehicle.longitude;
+                vehicle.latitude = reply.get(Vehicle.CurrentLocation.Latitude)->value();
+                
+                // Calculate distance traveled if we have both coordinates
+                if (prevLat != 0 && prevLon != 0 && vehicle.longitude != 0) {
+                    double distance = calculateDistance(prevLat, prevLon, 
+                                                      vehicle.latitude, vehicle.longitude);
+                    vehicle.totalDistance += distance;
+                }
+                updated = true;
             }
-            updated = true;
+        } catch (...) {
+            // Latitude signal not available
         }
         
-        if (reply.get(Vehicle.OBD.DistanceWithMIL)->isValid()) {
-            vehicle.odometer = reply.get(Vehicle.OBD.DistanceWithMIL)->value();
-            updated = true;
+        try {
+            if (reply.get(Vehicle.CurrentLocation.Longitude)->isValid()) {
+                double prevLat = vehicle.latitude;
+                double prevLon = vehicle.longitude;
+                vehicle.longitude = reply.get(Vehicle.CurrentLocation.Longitude)->value();
+                
+                // Calculate distance traveled if we have both coordinates
+                if (prevLat != 0 && prevLon != 0 && vehicle.latitude != 0) {
+                    double distance = calculateDistance(prevLat, prevLon, 
+                                                      vehicle.latitude, vehicle.longitude);
+                    vehicle.totalDistance += distance;
+                }
+                updated = true;
+            }
+        } catch (...) {
+            // Longitude signal not available
         }
         
         if (updated) {
@@ -615,7 +640,7 @@ void AdvancedFleetManager::initializeSpeedZones() {
     velocitas::logger().info("🗺️  Loaded {} GPS speed zones", m_speedZones.size());
 }
 
-SpeedZone* AdvancedFleetManager::getCurrentZone(double lat, double lon) {
+AdvancedFleetManager::SpeedZone* AdvancedFleetManager::getCurrentZone(double lat, double lon) {
     for (auto& zone : m_speedZones) {
         if (isInGeofence(lat, lon, zone)) {
             return &zone;
@@ -624,7 +649,7 @@ SpeedZone* AdvancedFleetManager::getCurrentZone(double lat, double lon) {
     return nullptr;
 }
 
-bool AdvancedFleetManager::isInGeofence(double lat, double lon, const SpeedZone& zone) {
+bool AdvancedFleetManager::isInGeofence(double lat, double lon, const AdvancedFleetManager::SpeedZone& zone) {
     return lat >= zone.minLat && lat <= zone.maxLat &&
            lon >= zone.minLon && lon <= zone.maxLon;
 }

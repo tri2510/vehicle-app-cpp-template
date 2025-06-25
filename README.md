@@ -289,6 +289,7 @@ If you encounter version conflicts (e.g., `ERROR: Version conflict: Conflict bet
 
 ## 📖 Documentation
 
+- **[CLI_USER_GUIDE.md](CLI_USER_GUIDE.md)** - Complete CLI reference & advanced usage guide
 - **[TEST_INSTRUCTIONS.md](TEST_INSTRUCTIONS.md)** - Detailed interactive testing guide
 - **[examples/](examples/)** - Real-world SDV applications  
 - **[Velocitas Documentation](https://eclipse-velocitas.github.io/velocitas-docs/)** - Framework documentation

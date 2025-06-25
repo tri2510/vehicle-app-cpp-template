@@ -28,10 +28,10 @@ An advanced analytics application that:
 # Ensure KUKSA databroker is running
 docker ps | grep velocitas-vdb || docker compose -f docker-compose.dev.yml up -d vehicledatabroker
 
-# Use existing persistent volumes or create new ones
-docker volume ls | grep tutorial-build || docker volume create tutorial-build
-docker volume ls | grep tutorial-deps || docker volume create tutorial-deps  
-docker volume ls | grep tutorial-vss || docker volume create tutorial-vss
+# Create dedicated persistent volumes for Step 3 (isolated from other steps)
+docker volume ls | grep step3-build || docker volume create step3-build
+docker volume ls | grep step3-deps || docker volume create step3-deps  
+docker volume ls | grep step3-vss || docker volume create step3-vss
 ```
 
 **Container Image:**
@@ -48,9 +48,9 @@ docker volume ls | grep tutorial-vss || docker volume create tutorial-vss
 ```bash
 # Build Step 3 application with analytics capabilities
 docker run --rm --network host \
-  -v tutorial-build:/quickbuild/build \
-  -v tutorial-deps:/home/vscode/.conan2 \
-  -v tutorial-vss:/quickbuild/app/vehicle_model \
+  -v step3-build:/quickbuild/build \
+  -v step3-deps:/home/vscode/.conan2 \
+  -v step3-vss:/quickbuild/app/vehicle_model \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
   -v $(pwd)/examples/Step3_DataAnalysisAlerts.cpp:/app.cpp \
   ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:prerelease-latest build --skip-deps --verbose
@@ -71,7 +71,7 @@ docker run --rm --network host \
 ```bash
 # Start analytics app with extended runtime for testing
 docker run -d --network host --name step3-app \
-  -v tutorial-build:/quickbuild/build \
+  -v step3-build:/quickbuild/build \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
   ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:prerelease-latest run 180
 ```
@@ -372,8 +372,8 @@ docker logs step3-app | grep "Starting Data Analysis"
 # Stop the analytics application
 docker stop step3-app && docker rm step3-app
 
-# Optional: Clean up volumes if done with tutorials
-# docker volume rm tutorial-build tutorial-deps tutorial-vss
+# Optional: Clean up volumes if done with Step 3
+# docker volume rm step3-build step3-deps step3-vss
 ```
 
 ## 🎓 Knowledge Check

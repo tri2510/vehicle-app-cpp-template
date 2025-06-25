@@ -28,10 +28,10 @@ A complete fleet management application that:
 # Ensure KUKSA databroker is running
 docker ps | grep velocitas-vdb || docker compose -f docker-compose.dev.yml up -d vehicledatabroker
 
-# Use existing persistent volumes
-docker volume ls | grep tutorial-build || docker volume create tutorial-build
-docker volume ls | grep tutorial-deps || docker volume create tutorial-deps  
-docker volume ls | grep tutorial-vss || docker volume create tutorial-vss
+# Create dedicated persistent volumes for Step 4 (isolated from other steps)
+docker volume ls | grep step4-build || docker volume create step4-build
+docker volume ls | grep step4-deps || docker volume create step4-deps  
+docker volume ls | grep step4-vss || docker volume create step4-vss
 ```
 
 **Container Image:**
@@ -47,9 +47,9 @@ docker volume ls | grep tutorial-vss || docker volume create tutorial-vss
 ```bash
 # Build Step 4 fleet management application
 docker run --rm --network host \
-  -v tutorial-build:/quickbuild/build \
-  -v tutorial-deps:/home/vscode/.conan2 \
-  -v tutorial-vss:/quickbuild/app/vehicle_model \
+  -v step4-build:/quickbuild/build \
+  -v step4-deps:/home/vscode/.conan2 \
+  -v step4-vss:/quickbuild/app/vehicle_model \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
   -v $(pwd)/examples/Step4_AdvancedFleetManager.cpp:/app.cpp \
   ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:prerelease-latest build --skip-deps --verbose
@@ -70,7 +70,7 @@ docker run --rm --network host \
 ```bash
 # Start fleet manager with extended runtime
 docker run -d --network host --name step4-app \
-  -v tutorial-build:/quickbuild/build \
+  -v step4-build:/quickbuild/build \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
   ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:prerelease-latest run 300
 ```
@@ -413,8 +413,8 @@ docker stop step4-app && docker rm step4-app
 # Stop databroker if finished
 docker compose -f docker-compose.dev.yml down
 
-# Remove tutorial volumes if completely done
-docker volume rm tutorial-build tutorial-deps tutorial-vss
+# Remove Step 4 volumes if completely done
+docker volume rm step4-build step4-deps step4-vss
 ```
 
 ## 🎓 Final Knowledge Check
