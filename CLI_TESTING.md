@@ -4,6 +4,8 @@
 
 This document provides step-by-step procedures to test all Velocitas CLI functionality with reusable commands for validation and regression testing.
 
+**✅ Updated for v1.0.1** - Includes fixed --skip-deps flag parsing and enhanced build system reliability.
+
 ## 📋 Prerequisites
 
 - Docker installed and running
@@ -18,7 +20,7 @@ This document provides step-by-step procedures to test all Velocitas CLI functio
 **Start KUKSA Databroker:**
 ```bash
 # Start databroker service
-docker-compose -f docker-compose.dev.yml up -d vehicledatabroker
+docker compose -f docker-compose.dev.yml up -d vehicledatabroker
 
 # Verify databroker is running
 docker ps | grep velocitas-vdb
@@ -142,10 +144,18 @@ clean
 
 ### Step 5: Build Command Testing
 
-**Test Basic Build:**
+**Test Build with Persistent Volumes (Recommended):**
 ```bash
-# Test build with mounted source file
+# Create persistent volumes first
+docker volume create vehicle-build
+docker volume create vehicle-deps  
+docker volume create vehicle-vss
+
+# Test full build with persistent storage
 docker run --rm --network host \
+  -v vehicle-build:/quickbuild/build \
+  -v vehicle-deps:/home/vscode/.conan2 \
+  -v vehicle-vss:/quickbuild/app/vehicle_model \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
   -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
   velocitas-quick build --verbose
@@ -153,8 +163,10 @@ docker run --rm --network host \
 
 **Expected Output:**
 ```
+🔧 BUILD DEBUG - Skip Deps: false
+🔧 BUILD DEBUG - Skip VSS: false
+🔧 BUILD DEBUG - Verbose: true
 ✅ [SUCCESS] Source validated: /app.cpp (339 lines)
-✅ [SUCCESS] VSS specification downloaded
 ✅ [SUCCESS] Vehicle model generated successfully
 ✅ [SUCCESS] Dependencies installed/verified successfully
 ✅ [SUCCESS] C++ compilation completed successfully
@@ -163,10 +175,13 @@ docker run --rm --network host \
 🎉 Build completed successfully!
 ```
 
-**Test Build with Skip Flags:**
+**Test Optimized Build with Skip Flags:**
 ```bash
-# Test optimized build with skip flags
+# Test with cached dependencies (much faster)
 docker run --rm --network host \
+  -v vehicle-build:/quickbuild/build \
+  -v vehicle-deps:/home/vscode/.conan2 \
+  -v vehicle-vss:/quickbuild/app/vehicle_model \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
   -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
   velocitas-quick build --skip-deps --skip-vss --verbose
@@ -174,17 +189,48 @@ docker run --rm --network host \
 
 **Expected Output:**
 ```
+🔧 BUILD DEBUG - Skip Deps: true
+🔧 BUILD DEBUG - Skip VSS: true
 ℹ️  [INFO] ⏭️  Skipping dependency installation (--skip-deps flag)
 ℹ️  [INFO] 💡 Using pre-cached dependencies
+ℹ️  [INFO] ✅ Vehicle model exists, skipping (use --force to regenerate)
 ✅ [SUCCESS] C++ compilation completed successfully
 📍 Executable: /quickbuild/build/bin/app
 📏 Size: 14M
+```
+
+**Test Source Change Detection:**
+```bash
+# Modify source file to test change detection
+sed -i 's/Vehicle Speed:/MODIFIED Speed:/g' templates/app/src/VehicleApp.cpp
+
+# Build with change detection
+docker run --rm --network host \
+  -v vehicle-build:/quickbuild/build \
+  -v vehicle-deps:/home/vscode/.conan2 \
+  -v vehicle-vss:/quickbuild/app/vehicle_model \
+  -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
+  -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
+  velocitas-quick build --skip-deps --verbose
+
+# Restore original file
+sed -i 's/MODIFIED Speed:/Vehicle Speed:/g' templates/app/src/VehicleApp.cpp
+```
+
+**Expected Output:**
+```
+ℹ️  [INFO] 🔄 Source file changed - forcing recompilation
+ℹ️  [INFO] 🧹 Cleaning build artifacts for fresh compilation...
+✅ [SUCCESS] C++ compilation completed successfully
 ```
 
 **Test Force Rebuild:**
 ```bash
 # Test force rebuild flag
 docker run --rm --network host \
+  -v vehicle-build:/quickbuild/build \
+  -v vehicle-deps:/home/vscode/.conan2 \
+  -v vehicle-vss:/quickbuild/app/vehicle_model \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
   -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
   velocitas-quick build --force --verbose
@@ -192,12 +238,14 @@ docker run --rm --network host \
 
 **✅ Success Criteria:**
 - Source file validation working
-- VSS model generation operational
+- VSS model generation operational  
 - Dependency management functional
 - C++ compilation successful
 - Executable produced (~14MB)
-- Skip flags reduce build time
+- Skip flags reduce build time significantly
+- Source change detection triggers recompilation
 - Force flag triggers complete rebuild
+- Persistent volumes retain dependencies and VSS models
 
 ### Step 6: Test Command Testing
 
@@ -238,12 +286,13 @@ docker run --rm --network host \
 
 ### Step 7: Run Command Testing
 
-**Test Application Execution:**
+**Test Run with Existing Build:**
 ```bash
-# Test run command with timeout
+# Test run using existing executable from persistent volume
 docker run -d --network host --name cli-test-app \
+  -v vehicle-build:/quickbuild/build \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
-  -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
+  -e HTTP_PROXY= -e HTTPS_PROXY= -e http_proxy= -e https_proxy= \
   velocitas-quick run 60
 ```
 
@@ -258,6 +307,8 @@ docker logs cli-test-app --follow --tail 10
 
 **Expected Logs:**
 ```
+✅ [SUCCESS] ✅ Using existing executable
+📍 Executable: /quickbuild/build/bin/app (14M)
 🚀 Vehicle Application started!
 📊 Setting up signal subscriptions...
 ✅ Signal subscriptions completed
@@ -268,8 +319,9 @@ App is running.
 
 **Test Signal Injection:**
 ```bash
-# Test signal processing
+# Test signal processing (without proxy to avoid connection issues)
 echo "setValue Vehicle.Speed 25.0" | docker run --rm -i --network host \
+  -e HTTP_PROXY= -e HTTPS_PROXY= -e http_proxy= -e https_proxy= \
   ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
 
 # Check application response
@@ -284,10 +336,11 @@ docker logs cli-test-app --tail 5
 ```
 
 **✅ Success Criteria:**
-- Application starts successfully
-- Signal subscriptions complete
+- Application starts successfully using existing executable
+- No rebuild triggered when running existing app
+- Signal subscriptions complete without errors
 - Signal processing functional
-- Proper signal response logged
+- Proper signal response logged with converted units (m/s to km/h)
 
 ### Step 8: Edge Case Testing
 
@@ -325,7 +378,10 @@ docker stop cli-test-app 2>/dev/null || true
 docker rm cli-test-app 2>/dev/null || true
 
 # Stop databroker
-docker-compose -f docker-compose.dev.yml down
+docker compose -f docker-compose.dev.yml down
+
+# Clean up persistent volumes (optional)
+docker volume rm vehicle-build vehicle-deps vehicle-vss 2>/dev/null || true
 ```
 
 ## 📊 CLI Test Results Summary
@@ -339,38 +395,74 @@ docker-compose -f docker-compose.dev.yml down
 - **run**: ✅ Application execution and signal processing
 
 ### ⚙️ Options Tested Successfully:
-- **--verbose**: ✅ Detailed debug output
-- **--skip-deps**: ✅ Dependency caching optimization
-- **--skip-vss**: ✅ VSS generation bypass
+- **--verbose**: ✅ Detailed debug output and flag verification
+- **--skip-deps**: ✅ Fixed! Now properly skips dependency installation
+- **--skip-vss**: ✅ VSS generation bypass working
 - **--force**: ✅ Complete rebuild trigger
 - **--clean**: ✅ Workspace cleanup
+- **Persistent volumes**: ✅ Dependencies, VSS, and executables retained
 
 ### 🎯 Performance Metrics:
-- **Full build**: 60-90 seconds
-- **Optimized build**: 15-30 seconds (--skip-deps --skip-vss)
-- **Executable size**: ~14MB
+- **Full build**: 60-90 seconds (first time)
+- **Optimized build**: 15-30 seconds (--skip-deps --skip-vss with persistent volumes)
+- **Run existing**: 2-3 seconds (no rebuild)
+- **Executable size**: ~14MB optimized
 - **Signal response**: <100ms
 
-### 🔧 CLI Issues Identified:
-- ✅ **Built-in template**: Requires mounted file for validation
+### 🔧 CLI Issues Identified and Fixed:
+- ✅ **--skip-deps flag**: Fixed argument parsing - now properly skips dependencies
+- ✅ **Source change detection**: Enhanced timestamp validation for persistent volumes
+- ✅ **Built-in template**: Requires mounted file for validation (by design)
 - ✅ **Error handling**: Graceful failures with helpful messages
-- ✅ **VSS signals**: Limited to working signal paths
-- ✅ **Network dependency**: Requires databroker for full testing
+- ✅ **VSS signals**: Working with Vehicle.Speed signal path
+- ✅ **Network dependency**: Requires databroker for full testing (by design)
+- ✅ **Debug output**: Comprehensive argument parsing and flag verification
 
 ## 🚀 Rerun Quick Commands
 
-**Full CLI Test Suite:**
+**Full CLI Test Suite with Persistent Volumes:**
 ```bash
-# Complete CLI validation in one command sequence
-docker-compose -f docker-compose.dev.yml up -d vehicledatabroker && \
+# Complete CLI validation with enhanced build system
+docker compose -f docker-compose.dev.yml up -d vehicledatabroker && \
+docker volume create vehicle-build && docker volume create vehicle-deps && docker volume create vehicle-vss && \
 docker run --rm velocitas-quick help && \
 docker run --rm -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp velocitas-quick validate --verbose && \
-docker run --rm velocitas-quick clean --verbose && \
-docker run --rm --network host -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp velocitas-quick build --skip-deps --verbose && \
-docker run --rm --network host -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp velocitas-quick test build-validation --verbose && \
-echo "✅ All CLI tests completed successfully!"
+docker run --rm --network host \
+  -v vehicle-build:/quickbuild/build \
+  -v vehicle-deps:/home/vscode/.conan2 \
+  -v vehicle-vss:/quickbuild/app/vehicle_model \
+  -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
+  -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
+  velocitas-quick build --verbose && \
+docker run --rm --network host \
+  -v vehicle-build:/quickbuild/build \
+  -v vehicle-deps:/home/vscode/.conan2 \
+  -v vehicle-vss:/quickbuild/app/vehicle_model \
+  -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
+  -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
+  velocitas-quick build --skip-deps --skip-vss --verbose && \
+echo "✅ All CLI tests completed successfully with enhanced build system!"
+```
+
+**Quick --skip-deps Verification:**
+```bash
+# Test the fixed --skip-deps flag specifically
+docker volume create vehicle-deps-test && \
+docker run --rm --network host \
+  -v vehicle-deps-test:/home/vscode/.conan2 \
+  -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
+  velocitas-quick build --skip-deps --verbose 2>&1 | grep -E "(Skip Deps|Skipping dependency)" && \
+echo "✅ --skip-deps flag working correctly!"
 ```
 
 ---
 
-**✅ CLI Testing Complete - All major commands validated and documented for reusable testing**
+**✅ CLI Testing Complete - Enhanced v1.0.1 with fixed --skip-deps flag and improved build system reliability**
+
+## 🎯 Key Improvements in v1.0.1
+
+- ✅ **Fixed --skip-deps Flag**: Argument parsing now correctly processes --skip-deps
+- ✅ **Enhanced Source Detection**: Intelligent timestamp validation for persistent volumes  
+- ✅ **Debug Visibility**: Comprehensive argument parsing and flag verification output
+- ✅ **Persistent Volume Support**: Full retention of dependencies, VSS models, and executables
+- ✅ **Performance Optimization**: Significant build time reduction with proper caching
