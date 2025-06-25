@@ -108,6 +108,83 @@ INFO: 🚗 Vehicle Speed: 234.0 km/h (65.00 m/s)
 WARN: ⚠️ HIGH SPEED WARNING: 234.0 km/h
 ```
 
+## 📁 **File Mapping & Mount System**
+
+The build system supports mounting external files into the container to customize your vehicle application. Here's the complete mapping:
+
+### **Source Code Mapping**
+| Host File | Container Path | Purpose | Required |
+|-----------|----------------|---------|----------|
+| `$(pwd)/templates/app/src/VehicleApp.cpp` | `/app.cpp` | Your vehicle application source code | ✅ Yes |
+| `$(pwd)/examples/FleetSpeedMonitor.cpp` | `/app.cpp` | Alternative example application | Optional |
+| `$(pwd)/custom/MyApp.cpp` | `/app.cpp` | Your custom application | Optional |
+
+### **Configuration Mapping**
+| Host File | Container Path | Purpose | Required |
+|-----------|----------------|---------|----------|
+| `$(pwd)/templates/conanfile.txt` | `/quickbuild/conanfile.txt` | C++ dependencies configuration | Optional |
+| `$(pwd)/custom-vss.json` | `/vss.json` | Custom vehicle signal specification | Optional |
+| `$(pwd)/custom/AppManifest.json` | `/quickbuild/app/AppManifest.json` | Application metadata | Optional |
+
+### **Persistent Storage Mapping**
+| Docker Volume | Container Path | Purpose | Benefit |
+|---------------|----------------|---------|---------|
+| `vehicle-build` | `/quickbuild/build` | Compiled executables & build artifacts | Reuse executables between runs |
+| `vehicle-deps` | `/home/vscode/.conan2` | Conan C++ dependencies cache | Skip dependency downloads |
+| `vehicle-vss` | `/quickbuild/app/vehicle_model` | Generated VSS models | Skip VSS generation |
+
+### **Complete Mount Example**
+```bash
+# Full example with all possible mounts
+docker run --rm --network host \
+  -v vehicle-build:/quickbuild/build \
+  -v vehicle-deps:/home/vscode/.conan2 \
+  -v vehicle-vss:/quickbuild/app/vehicle_model \
+  -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
+  -v $(pwd)/templates/conanfile.txt:/quickbuild/conanfile.txt \
+  -v $(pwd)/custom-vss.json:/vss.json \
+  -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
+  -e VSS_SPEC_FILE=/vss.json \
+  velocitas-quick build --verbose
+```
+
+### **Common Use Cases**
+
+**1. Basic Development (Minimal Mounts):**
+```bash
+docker run --rm --network host \
+  -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
+  velocitas-quick build
+```
+
+**2. Production Development (With Caching):**
+```bash
+docker run --rm --network host \
+  -v vehicle-build:/quickbuild/build \
+  -v vehicle-deps:/home/vscode/.conan2 \
+  -v vehicle-vss:/quickbuild/app/vehicle_model \
+  -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
+  velocitas-quick build --skip-deps
+```
+
+**3. Custom Dependencies:**
+```bash
+docker run --rm --network host \
+  -v vehicle-build:/quickbuild/build \
+  -v vehicle-deps:/home/vscode/.conan2 \
+  -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
+  -v $(pwd)/templates/conanfile.txt:/quickbuild/conanfile.txt \
+  velocitas-quick build
+```
+
+**4. Different Application:**
+```bash
+docker run --rm --network host \
+  -v vehicle-build:/quickbuild/build \
+  -v $(pwd)/examples/FleetSpeedMonitor.cpp:/app.cpp \
+  velocitas-quick build --skip-deps
+```
+
 ## 🛠️ **Advanced Usage**
 
 ### Build Options
@@ -174,6 +251,41 @@ docker run --rm --network host \
   -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
   velocitas-quick build
 ```
+
+### Custom Dependencies (conanfile.txt)
+```bash
+# When modifying templates/conanfile.txt, mount it to use custom dependencies
+docker run --rm --network host \
+  -v vehicle-build:/quickbuild/build \
+  -v vehicle-deps:/home/vscode/.conan2 \
+  -v vehicle-vss:/quickbuild/app/vehicle_model \
+  -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
+  -v $(pwd)/templates/conanfile.txt:/quickbuild/conanfile.txt \
+  velocitas-quick build --verbose
+
+# Example: Adding spdlog logging library to conanfile.txt
+# [requires]
+# fmt/10.2.1
+# nlohmann_json/3.11.3
+# spdlog/1.13.0
+# vehicle-model/generated
+# vehicle-app-sdk/0.7.0
+
+# Clean rebuild after dependency changes (recommended)
+docker run --rm --network host \
+  -v vehicle-build:/quickbuild/build \
+  -v vehicle-deps:/home/vscode/.conan2 \
+  -v vehicle-vss:/quickbuild/app/vehicle_model \
+  -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
+  -v $(pwd)/templates/conanfile.txt:/quickbuild/conanfile.txt \
+  velocitas-quick build --clean --force
+```
+
+**⚠️ Dependency Version Conflicts:**
+If you encounter version conflicts (e.g., `ERROR: Version conflict: Conflict between fmt/10.2.1 and fmt/11.1.1`), check dependency compatibility:
+- Use `conan graph info` to inspect dependency trees
+- Adjust versions in conanfile.txt to resolve conflicts
+- Some libraries may require specific versions of their dependencies
 
 ## 📖 Documentation
 
