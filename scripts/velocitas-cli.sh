@@ -381,6 +381,31 @@ compile_application() {
     
     cd "$WORKSPACE"
     
+    # Check if we need to force recompilation due to source changes
+    local force_compile=false
+    local executable_path="$BUILD_DIR/bin/app"
+    
+    if [ -f "$executable_path" ] && [ -f "$APP_SOURCE" ]; then
+        local source_timestamp=$(stat -c %Y "$APP_SOURCE" 2>/dev/null || echo "0")
+        local executable_timestamp=$(stat -c %Y "$executable_path" 2>/dev/null || echo "0")
+        
+        if [ "$source_timestamp" -gt "$executable_timestamp" ]; then
+            log_info "🔄 Source file changed - forcing recompilation"
+            force_compile=true
+        fi
+    fi
+    
+    # Force clean build if source changed or --force flag used
+    if [ "$force_compile" = true ] || [ "$FORCE_REBUILD" = true ]; then
+        log_info "🧹 Cleaning build artifacts for fresh compilation..."
+        # Remove the executable to force recompilation
+        rm -f "$executable_path"
+        # Clean build artifacts that might prevent recompilation
+        rm -f "$BUILD_DIR/CMakeCache.txt" 2>/dev/null || true
+        rm -f "$BUILD_DIR/.ninja_deps" 2>/dev/null || true
+        rm -f "$BUILD_DIR/.ninja_log" 2>/dev/null || true
+    fi
+    
     local build_cmd="velocitas exec build-system build -r"
     # Note: build-system doesn't support --verbose flag, our verbosity is handled by run_command
     
@@ -418,15 +443,35 @@ verify_build_output() {
         return 1
     fi
     
-    # Check if executable is recent (within last 5 minutes)
-    local file_age=$(stat -c %Y "$executable_path" 2>/dev/null || echo "0")
-    local current_time=$(date +%s)
-    local age_seconds=$((current_time - file_age))
+    # Check if executable was updated since source preparation
+    # Compare executable timestamp with source file timestamp
+    local source_timestamp=""
+    local executable_timestamp=$(stat -c %Y "$executable_path" 2>/dev/null || echo "0")
     
-    if [ $age_seconds -gt 300 ]; then
-        log_error "Executable found but appears old (${age_seconds}s)"
-        log_error "This may indicate a failed build using cached binary"
-        return 1
+    if [ -f "$APP_SOURCE" ]; then
+        source_timestamp=$(stat -c %Y "$APP_SOURCE" 2>/dev/null || echo "0")
+        
+        # If source is newer than executable, compilation should have updated executable
+        if [ "$source_timestamp" -gt "$executable_timestamp" ] && [ "$FORCE_REBUILD" = false ]; then
+            log_error "Source file is newer than executable - compilation may have failed"
+            log_info "Source timestamp: $(date -d @$source_timestamp)"
+            log_info "Executable timestamp: $(date -d @$executable_timestamp)"
+            log_info "💡 Try using --force to ensure fresh rebuild"
+            return 1
+        fi
+    fi
+    
+    # For persistent volumes, if --force is used, executable should be recent
+    if [ "$FORCE_REBUILD" = true ]; then
+        local current_time=$(date +%s)
+        local age_seconds=$((current_time - executable_timestamp))
+        
+        # With --force, executable should be recent (within 10 minutes is reasonable for persistent volumes)
+        if [ $age_seconds -gt 600 ]; then
+            log_error "Forced rebuild requested but executable appears old (${age_seconds}s)"
+            log_error "This indicates compilation may not have actually run"
+            return 1
+        fi
     fi
     
     # Display executable info
@@ -830,6 +875,11 @@ handle_build() {
     log_info "🚀 Velocitas Build System"
     log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     log_info "🏗️  Building vehicle application from source"
+    
+    # DEBUG: Check if flags are properly set
+    log_info "🔧 BUILD DEBUG - Skip Deps: $SKIP_DEPS"
+    log_info "🔧 BUILD DEBUG - Skip VSS: $SKIP_VSS"
+    log_info "🔧 BUILD DEBUG - Verbose: $VERBOSE"
     echo ""
     
     if build_application; then
@@ -990,7 +1040,10 @@ parse_arguments() {
     command=""
     args=()
     
+    echo "🔧 PARSE DEBUG: Received $# arguments: $*" >&2
+    
     while [[ $# -gt 0 ]]; do
+        echo "🔧 PARSE DEBUG: Processing argument: '$1'" >&2
         case $1 in
             --verbose)
                 VERBOSE=true
@@ -1003,6 +1056,11 @@ parse_arguments() {
             --skip-deps)
                 SKIP_DEPS=true
                 echo "🔧 DEBUG: Set SKIP_DEPS=true" >&2
+                shift
+                ;;
+            --skip-deps=*)
+                SKIP_DEPS=true
+                echo "🔧 DEBUG: Set SKIP_DEPS=true (with =)" >&2
                 shift
                 ;;
             --skip-vss)
@@ -1024,6 +1082,7 @@ parse_arguments() {
                 ;;
             build|run|test|validate|clean|help)
                 command="$1"
+                echo "🔧 DEBUG: Set command=$command" >&2
                 shift
                 ;;
             *)
@@ -1046,19 +1105,18 @@ parse_arguments() {
 # ============================================================================
 
 main() {
+    echo "🔧 MAIN DEBUG: main() called with $# arguments: $*" >&2
     # Parse arguments directly (not in subshell to preserve variables)
     parse_arguments "$@"
-    local command="$command"
-    local args="$args"
     
     # Default command
     if [ -z "$command" ]; then
         command="build"
     fi
     
-    # Log startup info
+    # Log startup info (always show for debugging)
     log_info "🔧 Debug - Command: $command"
-    log_info "🔧 Debug - Arguments: $args"
+    log_info "🔧 Debug - Arguments: ${args[*]}"
     log_info "🔧 Debug - Verbose: $VERBOSE"
     log_info "🔧 Debug - Clean: $CLEAN"
     log_info "🔧 Debug - Skip Deps: $SKIP_DEPS"
