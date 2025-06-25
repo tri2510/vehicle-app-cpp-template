@@ -140,6 +140,11 @@ echo "setValue Vehicle.Speed 65.0" | docker run --rm -i --network host \
 - **Security cleanup** of sensitive information
 - **Performance optimization** with build flags
 
+## 🔧 Docker Workflow Recommendations
+
+### Workflow Best Practices:
+- Always perform docker by detached mode and monitor it outside using docker command
+
 ## 📁 Current Project Structure
 
 ```

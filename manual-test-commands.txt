@@ -1,0 +1,40 @@
+# Manual Fleet Speed Monitor Testing Commands
+
+## Method 1: Single KUKSA Client Session (RECOMMENDED)
+# Open interactive KUKSA client:
+docker run --rm -it --network host ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+
+# Then run these commands INSIDE the kuksa-client session:
+setValue Vehicle.CurrentLocation.Latitude 40.7128
+setValue Vehicle.CurrentLocation.Longitude -74.0060
+setValue Vehicle.Speed 15.0
+
+## Method 2: Rapid Sequential Commands (what we just tried)
+./test-fleet-signals.sh
+
+## Method 3: Manual One-by-One Testing
+# Set GPS coordinates first:
+echo "setValue Vehicle.CurrentLocation.Latitude 40.7128" | docker run --rm -i --network host ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+echo "setValue Vehicle.CurrentLocation.Longitude -74.0060" | docker run --rm -i --network host ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+
+# Then test different speeds:
+echo "setValue Vehicle.Speed 15.0" | docker run --rm -i --network host ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+echo "setValue Vehicle.Speed 25.0" | docker run --rm -i --network host ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+echo "setValue Vehicle.Speed 40.0" | docker run --rm -i --network host ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+
+## Expected Fleet Responses:
+# 🚚 Fleet Vehicle Speed: 54.0 km/h (15.00 m/s)
+# 🏘️  Fleet City Speed: 54.0 km/h  
+# 📝 Fleet Event: CITY_DRIVING at 54.0 km/h
+
+## Method 4: Test with Basic Vehicle App (simpler)
+# If FleetSpeedMonitor is too complex, test with basic template:
+docker stop fleet-monitor; docker rm fleet-monitor
+docker run -d --network host --name vehicle-app \
+  -v fleet-build:/quickbuild/build \
+  -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
+  -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
+  velocitas-quick run 300
+
+# Then test with simple speed:
+echo "setValue Vehicle.Speed 15.0" | docker run --rm -i --network host ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555

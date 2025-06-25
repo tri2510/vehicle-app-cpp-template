@@ -24,21 +24,25 @@ docker build -f Dockerfile.quick -t velocitas-quick .
 docker-compose -f docker-compose.dev.yml up -d vehicledatabroker
 ```
 
-**Step 3: Create Persistent Volume**
+**Step 3: Create Persistent Volumes**
 ```bash
-# Clean any existing volume and create fresh persistent volume
-docker volume rm vehicle-build 2>/dev/null || true
-docker volume create vehicle-build
+# Clean any existing volumes and create fresh persistent volumes
+docker volume rm vehicle-build vehicle-deps vehicle-vss 2>/dev/null || true
+docker volume create vehicle-build      # For executables
+docker volume create vehicle-deps       # For Conan dependencies
+docker volume create vehicle-vss        # For VSS models
 ```
 
 **Step 4: Build Vehicle App**
 ```bash
-# Build with persistent volume (15-30 seconds)
+# Build with persistent volumes (60-90s first time, 15-30s subsequent)
 docker run --rm --network host \
   -v vehicle-build:/quickbuild/build \
+  -v vehicle-deps:/home/vscode/.conan2 \
+  -v vehicle-vss:/quickbuild/app/vehicle_model \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
   -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
-  velocitas-quick build --skip-deps --skip-vss --verbose
+  velocitas-quick build --verbose
 ```
 
 **Step 5: Run Vehicle App**
@@ -58,21 +62,25 @@ docker run -d --network host --name vehicle-app \
 docker-compose -f docker-compose.dev.yml up -d vehicledatabroker
 ```
 
-**Step 2: Create Persistent Volume**
+**Step 2: Create Persistent Volumes**
 ```bash
-# Clean any existing volume and create fresh persistent volume
-docker volume rm vehicle-build 2>/dev/null || true
-docker volume create vehicle-build
+# Clean any existing volumes and create fresh persistent volumes
+docker volume rm vehicle-build vehicle-deps vehicle-vss 2>/dev/null || true
+docker volume create vehicle-build      # For executables
+docker volume create vehicle-deps       # For Conan dependencies
+docker volume create vehicle-vss        # For VSS models
 ```
 
 **Step 3: Build Vehicle App**
 ```bash
-# Build with pre-built image (60-90 seconds)
+# Build with pre-built image and persistent volumes (60-90s first time, 15-30s subsequent)
 docker run --rm --network host \
   -v vehicle-build:/quickbuild/build \
+  -v vehicle-deps:/home/vscode/.conan2 \
+  -v vehicle-vss:/quickbuild/app/vehicle_model \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
   -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
-  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:prerelease-latest build --skip-deps --skip-vss --verbose
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:prerelease-latest build --verbose
 ```
 
 **Step 4: Run Vehicle App**
@@ -107,14 +115,24 @@ WARN: ⚠️ HIGH SPEED WARNING: 234.0 km/h
 # Verbose build output
 docker run --rm --network host \
   -v vehicle-build:/quickbuild/build \
+  -v vehicle-deps:/home/vscode/.conan2 \
+  -v vehicle-vss:/quickbuild/app/vehicle_model \
   -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
   velocitas-quick build --verbose
 
-# Clean rebuild  
+# Clean rebuild (forces fresh dependency and VSS installation)
+docker run --rm --network host \
+  -v vehicle-build:/quickbuild/build \
+  -v vehicle-deps:/home/vscode/.conan2 \
+  -v vehicle-vss:/quickbuild/app/vehicle_model \
+  -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
+  velocitas-quick build --clean --force
+
+# Fast build (skip deps/VSS, use only if already installed)
 docker run --rm --network host \
   -v vehicle-build:/quickbuild/build \
   -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
-  velocitas-quick build --clean --force
+  velocitas-quick build --skip-deps --skip-vss --verbose
 
 # Validate source only
 docker run --rm -i \
@@ -129,6 +147,8 @@ docker run --rm --network host \
   -e HTTP_PROXY=http://127.0.0.1:3128 \
   -e HTTPS_PROXY=http://127.0.0.1:3128 \
   -v vehicle-build:/quickbuild/build \
+  -v vehicle-deps:/home/vscode/.conan2 \
+  -v vehicle-vss:/quickbuild/app/vehicle_model \
   -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
   velocitas-quick build
 ```
@@ -139,6 +159,8 @@ docker run --rm --network host \
 docker run --rm --network host \
   -e VSS_SPEC_URL=https://company.com/vss.json \
   -v vehicle-build:/quickbuild/build \
+  -v vehicle-deps:/home/vscode/.conan2 \
+  -v vehicle-vss:/quickbuild/app/vehicle_model \
   -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
   velocitas-quick build
 
@@ -147,6 +169,8 @@ docker run --rm --network host \
   -v $(pwd)/custom-vss.json:/vss.json \
   -e VSS_SPEC_FILE=/vss.json \
   -v vehicle-build:/quickbuild/build \
+  -v vehicle-deps:/home/vscode/.conan2 \
+  -v vehicle-vss:/quickbuild/app/vehicle_model \
   -v $(pwd)/templates/app/src/VehicleApp.cpp:/app.cpp \
   velocitas-quick build
 ```
@@ -162,10 +186,11 @@ docker run --rm --network host \
 | Metric | Self-Build | Pre-built Image |
 |--------|------------|-----------------|
 | **Setup Time** | 3-5 minutes | 0 seconds |
-| **Build Time** | 15-30 seconds | 60-90 seconds |
+| **First Build** | 60-90 seconds | 60-90 seconds |
+| **Subsequent Builds** | 15-30 seconds | 15-30 seconds |
 | **Executable Size** | ~14MB optimized | ~14MB optimized |
 | **Memory Usage** | ~500MB runtime | ~500MB runtime |
-| **Disk Space** | ~2.5GB (local) | ~2.5GB (cached) |
+| **Disk Space** | ~2.5GB + volumes | ~2.5GB + volumes |
 
 ## 🛠️ Features
 ✅ Zero dependencies ✅ Docker-compose ready ✅ Signal validation ✅ VSS 4.0 support ✅ Pre-built images ✅ Corporate proxy support
@@ -183,8 +208,8 @@ WARN: ⚠️ HIGH SPEED WARNING: 234.0 km/h
 docker-compose -f docker-compose.dev.yml down
 docker stop vehicle-app && docker rm vehicle-app
 
-# Remove persistent volume
-docker volume rm vehicle-build
+# Remove persistent volumes
+docker volume rm vehicle-build vehicle-deps vehicle-vss
 ```
 
 ---
