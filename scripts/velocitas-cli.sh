@@ -286,7 +286,56 @@ configure_vss() {
         local velocitas_project=$(find /home/vscode/.velocitas/projects -maxdepth 1 -type d 2>/dev/null | head -2 | tail -1)
         if [ -n "$velocitas_project" ] && [ -d "$velocitas_project" ]; then
             log_debug "Copying custom VSS to velocitas project: $velocitas_project"
-            cp "$VSS_SPEC_FILE" "$velocitas_project/vspec.json"
+            log_info "🔧 ENHANCED DEBUG: Entered enhanced copy section"
+            
+            # Pre-flight checks
+            if [ ! -f "$VSS_SPEC_FILE" ]; then
+                log_error "❌ Source VSS file not found: $VSS_SPEC_FILE"
+                return 1
+            fi
+            
+            if [ ! -r "$VSS_SPEC_FILE" ]; then
+                log_error "❌ Source VSS file not readable: $VSS_SPEC_FILE"
+                return 1
+            fi
+            
+            local source_size=$(wc -l < "$VSS_SPEC_FILE" 2>/dev/null || echo "0")
+            if [ "$source_size" = "0" ]; then
+                log_error "❌ Source VSS file is empty: $VSS_SPEC_FILE"
+                return 1
+            fi
+            
+            log_debug "✅ Source file verified: $VSS_SPEC_FILE ($source_size lines)"
+            log_debug "Target: $velocitas_project/vspec.json"
+            
+            # Ensure target directory exists and is writable
+            mkdir -p "$(dirname "$velocitas_project/vspec.json")" || {
+                log_error "❌ Cannot create target directory"
+                return 1
+            }
+            
+            # Perform copy with detailed verification
+            log_debug "Executing copy operation..."
+            if cp "$VSS_SPEC_FILE" "$velocitas_project/vspec.json"; then
+                log_debug "Copy command succeeded, verifying result..."
+                
+                # Verify copy worked by checking file exists and has content
+                if [ -f "$velocitas_project/vspec.json" ]; then
+                    local copied_size=$(wc -l < "$velocitas_project/vspec.json" 2>/dev/null || echo "0")
+                    if [ "$copied_size" -gt "0" ] && [ "$copied_size" = "$source_size" ]; then
+                        log_info "✅ Custom VSS copied successfully ($copied_size lines)"
+                    else
+                        log_error "❌ Copy verification failed: expected $source_size lines, got $copied_size lines"
+                        return 1
+                    fi
+                else
+                    log_error "❌ Target file does not exist after copy"
+                    return 1
+                fi
+            else
+                log_error "❌ Copy command failed (exit code: $?)"
+                return 1
+            fi
             
             if command -v jq >/dev/null 2>&1; then
                 jq --arg vss_path "file://$velocitas_project/vspec.json" \
@@ -344,15 +393,101 @@ generate_model() {
     
     cd "$WORKSPACE"
     
-    if ! run_command "velocitas exec vehicle-signal-interface download-vspec" \
-                     "VSS specification downloaded" \
-                     "Failed to download VSS specification"; then
-        return 1
+    # CRITICAL FIX: Copy custom VSS BEFORE download-vspec to prevent conflicts
+    log_debug "🔧 PRE-DOWNLOAD FIX: Ensuring custom VSS is in place before download-vspec..."
+    if [ -n "$VSS_SPEC_FILE" ] && [ -f "$VSS_SPEC_FILE" ]; then
+        local velocitas_project=$(find /home/vscode/.velocitas/projects -maxdepth 1 -type d 2>/dev/null | head -2 | tail -1)
+        if [ -n "$velocitas_project" ] && [ -d "$velocitas_project" ]; then
+            log_info "🔄 Ensuring custom VSS is in place before download-vspec..."
+            cp "$VSS_SPEC_FILE" "$velocitas_project/vspec.json"
+            if [ -f "$velocitas_project/vspec.json" ]; then
+                local line_count=$(wc -l < "$velocitas_project/vspec.json")
+                log_info "✅ Custom VSS pre-positioned successfully ($line_count lines)"
+            fi
+        fi
+    fi
+    
+    # Skip download-vspec if custom VSS is available - it overwrites our custom file
+    if [ -n "$VSS_SPEC_FILE" ] && [ -f "$VSS_SPEC_FILE" ]; then
+        log_info "🚀 Skipping download-vspec - using custom VSS file instead"
+        log_info "✅ Custom VSS specification ready"
+    else
+        if ! run_command "velocitas exec vehicle-signal-interface download-vspec" \
+                         "VSS specification downloaded" \
+                         "Failed to download VSS specification"; then
+            return 1
+        fi
+    fi
+    
+    # CRITICAL FIX: Final custom VSS verification before generate-model
+    log_info "🔧 FINAL VSS CHECK: Ensuring custom VSS is ready for model generation..."
+    if [ -n "$VSS_SPEC_FILE" ] && [ -f "$VSS_SPEC_FILE" ]; then
+        local velocitas_project=$(find /home/vscode/.velocitas/projects -maxdepth 1 -type d 2>/dev/null | head -2 | tail -1)
+        if [ -n "$velocitas_project" ] && [ -d "$velocitas_project" ]; then
+            # Force copy custom VSS one final time right before generate-model
+            log_info "🔄 Final custom VSS copy before model generation..."
+            cp "$VSS_SPEC_FILE" "$velocitas_project/vspec.json"
+            
+            # Comprehensive verification
+            if [ -f "$velocitas_project/vspec.json" ]; then
+                local source_size=$(wc -l < "$VSS_SPEC_FILE")
+                local target_size=$(wc -l < "$velocitas_project/vspec.json")
+                log_info "📊 VSS verification: source=$source_size lines, target=$target_size lines"
+                
+                # Check content match
+                if grep -q "Tutorial" "$velocitas_project/vspec.json"; then
+                    log_info "✅ Tutorial signals confirmed in VSS file"
+                else
+                    log_error "❌ Tutorial signals NOT found in VSS file!"
+                    log_debug "VSS content preview:"
+                    head -c 100 "$velocitas_project/vspec.json" | log_debug
+                fi
+                
+                # Make file read-only to prevent overwrites
+                chmod 444 "$velocitas_project/vspec.json"
+                log_info "🔒 VSS file protected from overwrites"
+            else
+                log_error "❌ VSS file missing after copy"
+            fi
+        fi
     fi
     
     if ! run_command "velocitas exec vehicle-signal-interface generate-model" \
                      "Vehicle model generated successfully" \
                      "Failed to generate vehicle model"; then
+        return 1
+    fi
+    
+    # CRITICAL FIX: Ensure the generated vehicle model is available for compilation
+    log_info "📦 Ensuring generated vehicle model is available for build system..."
+    
+    # Copy the generated vehicle model to the workspace for compilation
+    local velocitas_project=$(find /home/vscode/.velocitas/projects -maxdepth 1 -type d 2>/dev/null | head -2 | tail -1)
+    if [ -n "$velocitas_project" ] && [ -d "$velocitas_project/vehicle_model" ]; then
+        log_info "🔄 Copying generated vehicle model to workspace..."
+        rm -rf "$WORKSPACE/app/vehicle_model" 2>/dev/null || true
+        cp -r "$velocitas_project/vehicle_model" "$WORKSPACE/app/" || {
+            log_error "❌ Failed to copy vehicle model to workspace"
+            return 1
+        }
+        
+        # Verify the copy worked and contains Tutorial signals
+        if [ -d "$WORKSPACE/app/vehicle_model" ]; then
+            local header_count=$(find "$WORKSPACE/app/vehicle_model" -name "*.hpp" | wc -l)
+            log_info "✅ Vehicle model copied successfully ($header_count headers)"
+            
+            # Check for Tutorial signals specifically
+            if find "$WORKSPACE/app/vehicle_model" -name "*.hpp" -exec grep -l "Tutorial" {} \; 2>/dev/null | head -1 >/dev/null; then
+                log_info "✅ Tutorial signals confirmed in copied vehicle model"
+            else
+                log_warning "⚠️  Tutorial signals not found in copied vehicle model"
+            fi
+        else
+            log_error "❌ Vehicle model copy failed"
+            return 1
+        fi
+    else
+        log_error "❌ Generated vehicle model not found in velocitas project"
         return 1
     fi
 }
@@ -526,7 +661,18 @@ check_runtime_services() {
     fi
     
     # Check Vehicle Data Broker (only if not already configured)
-    if [ -z "$SDV_VEHICLEDATABROKER_ADDRESS" ] || [ "$SDV_VEHICLEDATABROKER_ADDRESS" = "127.0.0.1:55555" ]; then
+    if [ -z "$SDV_VEHICLEDATABROKER_ADDRESS" ]; then
+        # No address configured, use default and check availability
+        if ! nc -z 127.0.0.1 55555 2>/dev/null; then
+            log_warning "Vehicle Data Broker not available (127.0.0.1:55555)"
+            log_info "   📡 App will run in simulation mode"
+            export SDV_VEHICLEDATABROKER_ADDRESS="disabled"
+        else
+            log_success "Vehicle Data Broker available (127.0.0.1:55555)"
+            export SDV_VEHICLEDATABROKER_ADDRESS="127.0.0.1:55555"
+        fi
+    elif [ "$SDV_VEHICLEDATABROKER_ADDRESS" = "127.0.0.1:55555" ]; then
+        # Default address configured, check if available
         if ! nc -z 127.0.0.1 55555 2>/dev/null; then
             log_warning "Vehicle Data Broker not available (127.0.0.1:55555)"
             log_info "   📡 App will run in simulation mode"
@@ -535,7 +681,16 @@ check_runtime_services() {
             log_success "Vehicle Data Broker available (127.0.0.1:55555)"
         fi
     else
+        # Custom address configured, preserve it and just log
         log_info "🌐 Using configured VDB address: $SDV_VEHICLEDATABROKER_ADDRESS"
+        # Don't override user-configured address, just warn if unreachable
+        local vdb_host=$(echo "$SDV_VEHICLEDATABROKER_ADDRESS" | cut -d: -f1)
+        local vdb_port=$(echo "$SDV_VEHICLEDATABROKER_ADDRESS" | cut -d: -f2)
+        if ! nc -z "$vdb_host" "$vdb_port" 2>/dev/null; then
+            log_warning "⚠️  Configured VDB address may not be reachable: $SDV_VEHICLEDATABROKER_ADDRESS"
+        else
+            log_success "✅ Configured VDB address is reachable: $SDV_VEHICLEDATABROKER_ADDRESS"
+        fi
     fi
 }
 
@@ -858,7 +1013,18 @@ build_application() {
         log_info "⏭️  Skipping vehicle model generation (--skip-vss flag)"
     else
         log_info "🏗️  STEP 4/6: Vehicle model generation..."
+        
+        # Check if vehicle model needs regeneration for custom VSS
+        local needs_regeneration=false
         if [ ! -d "$WORKSPACE/app/vehicle_model" ] || [ "$FORCE_REBUILD" = true ]; then
+            needs_regeneration=true
+        elif [ -n "$VSS_SPEC_FILE" ] || [ -n "$VSS_SPEC_URL" ]; then
+            # Custom VSS detected - always regenerate to ensure model matches
+            log_info "🔄 Custom VSS detected - forcing vehicle model regeneration"
+            needs_regeneration=true
+        fi
+        
+        if [ "$needs_regeneration" = true ]; then
             generate_model
         else
             log_info "✅ Vehicle model exists, skipping (use --force to regenerate)"
