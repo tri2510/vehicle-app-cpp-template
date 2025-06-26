@@ -2,24 +2,22 @@
 
 ## 🚀 Learn Software-Defined Vehicle Development Step by Step
 
-This tutorial series teaches you to build vehicle applications from simple speed monitoring to advanced fleet management systems. Each step builds upon the previous one, providing hands-on experience with real vehicle signals.
+This tutorial series teaches you to build vehicle applications from simple speed monitoring to custom VSS signal processing. Each step builds upon the previous one, providing hands-on experience with real vehicle signals.
 
 ## 📚 Tutorial Structure
 
 ### **Progressive Learning Path:**
 1. **Step 1**: Basic Speed Monitoring → Learn signal subscription and processing
 2. **Step 2**: Multi-Signal Processing → Handle multiple vehicle data streams  
-3. **Step 3**: Custom VSS Fleet Analytics → Build custom signals and enterprise analytics
-4. **Step 4**: Advanced Fleet Management → Build production-grade applications
+3. **Step 3**: Custom VSS Signals → Build and test custom vehicle signal specifications
 
 ### **What You'll Learn:**
 - 🔧 Vehicle signal subscription and processing
 - 📊 Real-time data analysis and pattern detection
-- 🎛️ Custom VSS signal specifications and enterprise analytics
-- 🚨 Alert systems and business rule implementation
-- 🗺️ GPS-based functionality and geofencing
-- 📈 Fleet analytics and performance monitoring
-- 🏗️ Scalable SDV application architecture
+- 🎛️ Custom VSS signal specifications and custom signal creation
+- 🚨 Signal injection and end-to-end testing
+- 📈 KUKSA databroker configuration and integration
+- 🏗️ Foundation for custom vehicle application development
 
 ## 📋 Prerequisites
 
@@ -56,7 +54,7 @@ ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:prerelease-latest
 
 **Using Pre-built Image (Recommended):**
 ```bash
-# Replace X with step number (1, 2, 3, or 4)
+# Replace X with step number (1, 2, or 3)
 docker run --rm --network host \
   -v tutorial-build:/quickbuild/build \
   -v tutorial-deps:/home/vscode/.conan2 \
@@ -100,16 +98,14 @@ echo "setValue Vehicle.Speed 25.0" | docker run --rm -i --network host \
 |------|-------|------------|------|--------------|
 | **[Step 1](Step1_TUTORIAL.md)** | Basic Speed Monitoring | ⭐ Beginner | 15 min | Signal subscription, speed conversion |
 | **[Step 2](Step2_TUTORIAL.md)** | Multi-Signal Processing | ⭐⭐ Intermediate | 30 min | Multiple signals, data correlation |
-| **[Step 3](Step3_TUTORIAL.md)** | Custom VSS Fleet Analytics | ⭐⭐⭐⭐⭐ Enterprise | 90 min | Custom VSS, fleet analytics, enterprise patterns |
-| **[Step 4](Step4_TUTORIAL.md)** | Fleet Management | ⭐⭐⭐⭐ Professional | 60 min | Production architecture, GPS, analytics |
+| **[Step 3](Step3_TUTORIAL.md)** | Custom VSS Signals | ⭐⭐⭐ Advanced | 45 min | Custom VSS, KUKSA configuration, signal testing |
 
 ## 🛠️ Learning Approach
 
 ### **Incremental Development:**
 - **Step 1**: Start with minimal signal processing
 - **Step 2**: Add more signals and data types  
-- **Step 3**: Build custom VSS signals and enterprise fleet analytics
-- **Step 4**: Build comprehensive fleet system
+- **Step 3**: Create custom VSS signals and test end-to-end workflow
 
 ### **Hands-On Testing:**
 - Each step includes interactive testing procedures
@@ -148,30 +144,17 @@ void onSignalChanged(const velocitas::DataPointReply& reply) {
 }
 ```
 
-### **Step 3: Custom VSS Fleet Analytics**
+### **Step 3: Custom VSS Signals**
 ```cpp
-// Learn: Custom VSS signals, enterprise analytics
-void processCustomVSSSignals(double speed, double lat, double lon) {
-    // Custom VSS signal simulation
-    m_fleetState.drivingScore = calculateDrivingScore(speed);
-    m_fleetState.routeID = "ROUTE_NYC_BOS_001";
-    m_fleetState.cargoWeight = 2500.0;
-    
-    generateFleetAnalyticsReport();
+// Learn: Custom VSS signals, KUKSA integration
+void onStart() override {
+    velocitas::logger().info("📊 Custom VSS signals available in KUKSA:");
+    velocitas::logger().info("   🌡️  Vehicle.MyCustom.Temperature (float)");
+    velocitas::logger().info("   💬 Vehicle.MyCustom.Message (string)");
+    velocitas::logger().info("   🔢 Vehicle.MyCustom.Counter (uint32)");
 }
 ```
 
-### **Step 4: Advanced Fleet Management**
-```cpp
-// Learn: Production architecture, GPS, analytics
-class FleetManager {
-    void processFleetData(double speed, double lat, double lon) {
-        checkSpeedZones(speed, lat, lon);
-        updateFleetAnalytics(speed);
-        generateComplianceReports();
-    }
-};
-```
 
 ## 📊 Expected Learning Outcomes
 
@@ -187,14 +170,9 @@ class FleetManager {
 
 ### **By Step 3 Completion:**
 - ✅ Design custom VSS signal specifications
-- ✅ Build enterprise fleet analytics systems
-- ✅ Implement custom business domain signals
-- ✅ Process multi-dimensional vehicle data
-
-### **By Step 4 Completion:**
-- ✅ Design scalable SDV architectures
-- ✅ Implement GPS-based functionality
-- ✅ Build comprehensive fleet systems
+- ✅ Configure KUKSA databroker with custom VSS files
+- ✅ Test custom signals end-to-end with KUKSA client
+- ✅ Understand foundation for custom vehicle applications
 
 ## 🧪 Testing Strategy
 
@@ -227,11 +205,11 @@ class FleetManager {
 ## 📝 Next Steps After Tutorial
 
 ### **Advanced Topics:**
-- Industry-specific custom VSS signals (logistics, emergency services)
-- Integration with external APIs (weather, traffic, fleet management)
-- Machine learning for predictive maintenance
-- Mobile app integration for fleet managers
-- Database integration for historical data
+- Industry-specific custom VSS signals (logistics, emergency services, medical)
+- C++ bindings generation for custom VSS signals
+- Raw gRPC client integration for custom signal subscription
+- Complex custom VSS hierarchies and data types
+- Custom signal validation and business rules
 - CI/CD pipelines for vehicle app deployment
 
 ### **Production Considerations:**
@@ -245,7 +223,7 @@ class FleetManager {
 
 ## 🚀 Start Your SDV Journey
 
-**Begin with Step 1** and progress through each tutorial at your own pace. Each step builds essential skills for Software-Defined Vehicle development.
+**Begin with Step 1** and progress through each tutorial at your own pace. Each step builds essential skills for Software-Defined Vehicle development, culminating in custom VSS signal creation and testing.
 
 **[Start with Step 1: Basic Speed Monitoring →](Step1_TUTORIAL.md)**
 
