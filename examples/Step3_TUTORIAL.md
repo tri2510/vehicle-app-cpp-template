@@ -11,10 +11,32 @@ In this advanced tutorial, you will master:
 
 ## 📋 Prerequisites
 
+**Required Setup:**
+```bash
+# Ensure KUKSA databroker is running
+docker ps | grep velocitas-vdb || docker compose -f docker-compose.dev.yml up -d vehicledatabroker
+
+# Create fresh persistent volumes for Step 3 (isolated from other steps)
+docker volume rm step3-build step3-deps step3-vss 2>/dev/null || true
+docker volume create step3-build
+docker volume create step3-deps  
+docker volume create step3-vss
+```
+
+**Container Image Options:**
+```bash
+# Option A: Use pre-built image (RECOMMENDED - instant start!)
+# Throughout this tutorial, we'll use:
+# ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:prerelease-latest
+
+# Option B: Build locally (if you haven't already)
+docker build -f Dockerfile.quick -t velocitas-quick .
+```
+
+**Learning Prerequisites:**
 - ✅ Completed Step 1 & Step 2 tutorials
 - ✅ Understanding of standard VSS signals
 - ✅ Basic knowledge of fleet management concepts
-- ✅ KUKSA Databroker running and accessible
 
 ## 🏗️ Architecture Overview
 
@@ -74,47 +96,76 @@ Our custom VSS extends the standard specification with **5 new signal branches**
 
 ## 🚀 Quick Start
 
-### Step 1: Build with Custom VSS
+### **Phase 1: Build Custom VSS Fleet Application**
 
 ```bash
-# Build container with custom VSS specification
-docker build -f Dockerfile.quick \
-  --build-arg HTTP_PROXY=http://127.0.0.1:3128 \
-  --build-arg HTTPS_PROXY=http://127.0.0.1:3128 \
-  --network=host \
-  -t velocitas-quick .
-```
-
-### Step 2: Start KUKSA Databroker
-
-```bash
-# Start vehicle data broker
-docker run -d --rm --name kuksa-databroker --network host \
-  ghcr.io/eclipse-kuksa/kuksa-databroker:main
-```
-
-### Step 3: Build Custom VSS Fleet Application
-
-```bash
-# Build with custom VSS specification
+# Build with custom VSS specification and persistent volumes
 docker run --rm --network host \
+  -v step3-build:/quickbuild/build \
+  -v step3-deps:/home/vscode/.conan2 \
+  -v step3-vss:/quickbuild/app/vehicle_model \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
   -e VSS_SPEC_FILE=/custom_vss.json \
   -v $(pwd)/examples/Step3_FleetAnalytics.cpp:/app.cpp \
   -v $(pwd)/examples/custom_fleet_vss.json:/custom_vss.json \
-  velocitas-quick build --verbose
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:prerelease-latest build --verbose
 ```
 
-### Step 4: Run Fleet Analytics Application
+**Expected Build Output:**
+```
+✅ [SUCCESS] C++ compilation completed successfully
+📍 Executable: /quickbuild/build/bin/app
+📏 Size: ~15M (with custom VSS)
+🎉 Custom VSS Fleet Analytics build completed!
+```
+
+### **Phase 2: Run Fleet Analytics Application**
 
 ```bash
-# Run fleet analytics with custom VSS
-docker run -d --network host --name fleet-analytics \
+# Run fleet analytics with custom VSS and persistent volumes
+docker run -d --network host --name step3-fleet-analytics \
+  -v step3-build:/quickbuild/build \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
   -e VSS_SPEC_FILE=/custom_vss.json \
   -v $(pwd)/examples/Step3_FleetAnalytics.cpp:/app.cpp \
   -v $(pwd)/examples/custom_fleet_vss.json:/custom_vss.json \
-  velocitas-quick run 300
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:prerelease-latest run 300
+```
+
+**Expected Runtime Output:**
+```
+🎓 Step 3: Custom VSS Fleet Analytics starting...
+📡 Connecting to Vehicle Data Broker...
+✅ Custom VSS Fleet Analytics initialized
+🚀 Step 3: Starting Custom VSS Fleet Analytics!
+📊 Custom VSS signals: Fleet, Analytics, Operations, Cargo, Environmental
+🔄 Educational: Real Speed + Simulated Custom VSS signals
+```
+
+### **Phase 3: Faster Subsequent Builds (Optional)**
+
+After the first build, use `--skip-deps` for much faster rebuilds:
+
+```bash
+# Stop previous container
+docker stop step3-fleet-analytics && docker rm step3-fleet-analytics
+
+# Fast rebuild (15-30 seconds instead of 2-3 minutes)
+docker run --rm --network host \
+  -v step3-build:/quickbuild/build \
+  -v step3-deps:/home/vscode/.conan2 \
+  -v step3-vss:/quickbuild/app/vehicle_model \
+  -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
+  -e VSS_SPEC_FILE=/custom_vss.json \
+  -v $(pwd)/examples/Step3_FleetAnalytics.cpp:/app.cpp \
+  -v $(pwd)/examples/custom_fleet_vss.json:/custom_vss.json \
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:prerelease-latest build --skip-deps --verbose
+
+# Run with optimized container
+docker run -d --network host --name step3-fleet-analytics \
+  -v step3-build:/quickbuild/build \
+  -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
+  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:prerelease-latest run 300
 ```
 
 ## 📊 Testing Custom VSS Signals
@@ -127,7 +178,7 @@ echo "setValue Vehicle.Speed 25.0" | docker run --rm -i --network host \
   ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
 
 # Check fleet analytics logs
-docker logs fleet-analytics --tail 10
+docker logs step3-fleet-analytics --tail 10
 ```
 
 **Expected Output:**
@@ -145,7 +196,7 @@ echo "setValue Vehicle.Speed 40.0" | docker run --rm -i --network host \
   ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
 
 # Check for performance warnings
-docker logs fleet-analytics --tail 15 | grep -E "(WARNING|performance|Score)"
+docker logs step3-fleet-analytics --tail 15 | grep -E "(WARNING|performance|Score)"
 ```
 
 **Expected Output:**
@@ -162,7 +213,7 @@ echo "setValue Vehicle.Exterior.AirTemperature -30.0" | docker run --rm -i --net
   ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
 
 # Check cargo temperature alerts
-docker logs fleet-analytics --tail 10 | grep -E "(CARGO|temperature|CRITICAL)"
+docker logs step3-fleet-analytics --tail 10 | grep -E "(CARGO|temperature|CRITICAL)"
 ```
 
 **Expected Output:**
@@ -182,7 +233,7 @@ echo "setValue Vehicle.CurrentLocation.Longitude -73.9851" | docker run --rm -i 
   ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
 
 # Check route optimization metrics
-docker logs fleet-analytics --tail 10 | grep -E "(Route|GPS|optimization)"
+docker logs step3-fleet-analytics --tail 10 | grep -E "(Route|GPS|optimization)"
 ```
 
 **Expected Output:**
@@ -199,7 +250,7 @@ echo "setValue Vehicle.Exterior.AirTemperature 35.0" | docker run --rm -i --netw
   ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
 
 # Check environmental analytics
-docker logs fleet-analytics --tail 10 | grep -E "(Environment|AQI|Noise|Road)"
+docker logs step3-fleet-analytics --tail 10 | grep -E "(Environment|AQI|Noise|Road)"
 ```
 
 **Expected Output:**
@@ -247,7 +298,7 @@ Every 45 seconds, the application generates a comprehensive fleet report:
 # For this tutorial, the app simulates priority based on cargo type
 
 # Monitor dispatch priority changes
-docker logs fleet-analytics --tail 20 | grep -E "(Priority|Dispatch|EMERGENCY)"
+docker logs step3-fleet-analytics --tail 20 | grep -E "(Priority|Dispatch|EMERGENCY)"
 ```
 
 ### Scenario 2: Multi-Driver Performance Comparison
@@ -261,7 +312,7 @@ for speed in 20 35 15 40 25 45 10; do
 done
 
 # Check driver score trends
-docker logs fleet-analytics | grep "Driver Score" | tail -10
+docker logs step3-fleet-analytics | grep "Driver Score" | tail -10
 ```
 
 ### Scenario 3: Environmental Compliance Testing
@@ -277,7 +328,7 @@ echo "setValue Vehicle.Speed 30.0" | docker run --rm -i --network host \
   ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555  # Highway (lower AQI)
 
 # Check environmental metrics
-docker logs fleet-analytics --tail 15 | grep -E "(AQI|Environment|POOR_AIR)"
+docker logs step3-fleet-analytics --tail 15 | grep -E "(AQI|Environment|POOR_AIR)"
 ```
 
 ## 🎓 Learning Outcomes
