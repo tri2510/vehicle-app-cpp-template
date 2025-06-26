@@ -2,30 +2,34 @@
   "Vehicle": {
     "type": "branch",
     "description": "High-level vehicle data.",
-    "Speed": {
-      "type": "sensor",
-      "datatype": "float",
-      "description": "Vehicle speed",
-      "unit": "m/s"
-    },
-    "MyCustom": {
-      "type": "branch", 
-      "description": "Simple custom signals for testing",
-      "Temperature": {
+    "children": {
+      "Speed": {
         "type": "sensor",
         "datatype": "float",
-        "description": "Custom temperature sensor",
-        "unit": "celsius"
+        "description": "Vehicle speed",
+        "unit": "m/s"
       },
-      "Message": {
-        "type": "sensor",
-        "datatype": "string", 
-        "description": "Custom message signal"
-      },
-      "Counter": {
-        "type": "sensor",
-        "datatype": "uint32",
-        "description": "Custom counter signal"
+      "MyCustom": {
+        "type": "branch", 
+        "description": "Simple custom signals for testing",
+        "children": {
+          "Temperature": {
+            "type": "sensor",
+            "datatype": "float",
+            "description": "Custom temperature sensor",
+            "unit": "celsius"
+          },
+          "Message": {
+            "type": "sensor",
+            "datatype": "string", 
+            "description": "Custom message signal"
+          },
+          "Counter": {
+            "type": "sensor",
+            "datatype": "uint32",
+            "description": "Custom counter signal"
+          }
+        }
       }
     }
   }
