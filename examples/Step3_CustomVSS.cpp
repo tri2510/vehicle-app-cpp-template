@@ -1,22 +1,23 @@
 // ============================================================================
-// 🎓 STEP 3: SIMPLE CUSTOM VSS - Real Custom Signal Testing
+// 🎓 STEP 3: CUSTOM VSS INTEGRATION - Professional Signal Specification
 // ============================================================================
 // 
 // 📋 LEARNING OBJECTIVES:
 // In this tutorial step, you will learn:
-// - How to create and load custom VSS specifications into KUKSA
-// - Subscribe to custom VSS signals using raw paths
-// - Process real custom signals injected via KUKSA client
-// - Build end-to-end custom VSS applications
+// - How to subscribe to custom VSS signals using Velocitas SDK
+// - Process Vehicle.Tutorial.* custom signal hierarchy in real-time
+// - Handle complex custom signal data with validation
+// - Build comprehensive custom VSS applications
 //
 // 🎯 WHAT YOU'LL BUILD:
-// A simple custom VSS application that:
-// - Subscribes to Vehicle.MyCustom.Temperature (custom signal)
-// - Subscribes to Vehicle.MyCustom.Message (custom signal)
-// - Subscribes to Vehicle.MyCustom.Counter (custom signal)
-// - Processes real custom signals from KUKSA databroker
+// A custom VSS integration application that:
+// - Connects to KUKSA Vehicle Data Broker with custom VSS
+// - Subscribes to Vehicle.Tutorial.DriverBehavior.Score signal
+// - Subscribes to Vehicle.Tutorial.Fleet.Status signal  
+// - Subscribes to Vehicle.Tutorial.Diagnostics.SystemHealth signal
+// - Processes and analyzes custom signal data
 //
-// 💡 DIFFICULTY: ⭐⭐⭐ Advanced (45 minutes)
+// 💡 DIFFICULTY: ⭐⭐⭐⭐ Expert (60 minutes)
 // ============================================================================
 
 #include "sdk/VehicleApp.h"
@@ -24,150 +25,300 @@
 #include "sdk/Logger.h"
 #include "sdk/QueryBuilder.h"
 #include "sdk/vdb/IVehicleDataBrokerClient.h"
+#include "vehicle/Vehicle.hpp"
 #include <fmt/format.h>
 #include <csignal>
 #include <memory>
 #include <thread>
 #include <chrono>
 
+// Global Vehicle instance for accessing vehicle signals
+::vehicle::Vehicle Vehicle;
+
 /**
- * @brief Step 3: Simple Custom VSS Application
+ * @brief Step 3: Custom VSS Integration Application
  * 
- * 🎓 TUTORIAL: This application demonstrates real custom VSS signals:
- * - Direct subscription to custom VSS signals
- * - Processing custom signal data from KUKSA
- * - End-to-end custom VSS testing
+ * 🎓 TUTORIAL: This application demonstrates custom VSS integration:
+ * - Custom signal subscription using generated Vehicle model
+ * - Processing Vehicle.Tutorial.* hierarchy signals
+ * - Advanced signal validation and analytics
+ * - Production-ready custom VSS patterns
  */
-class SimpleCustomVSS : public velocitas::VehicleApp {
+class CustomVSSIntegration : public velocitas::VehicleApp {
 public:
-    SimpleCustomVSS();
+    CustomVSSIntegration();
 
 protected:
     void onStart() override;
 
 private:
     void onSignalChanged(const velocitas::DataPointReply& reply);
+    void processDriverBehaviorScore(uint8_t score);
+    void processFleetStatus(const std::string& status);
+    void processSystemHealth(uint8_t health);
+    std::string interpretDriverScore(uint8_t score);
+    std::string interpretFleetStatus(const std::string& status);
+    std::string interpretSystemHealth(uint8_t health);
     
-    // Custom signal state
-    struct CustomSignalState {
-        double temperature = 0.0;
-        std::string message = "";
-        uint32_t counter = 0;
-        bool temperatureValid = false;
-        bool messageValid = false;
-        bool counterValid = false;
+    // Tutorial signal state tracking
+    struct TutorialSignalState {
+        uint8_t driverScore = 0;
+        std::string fleetStatus = "";
+        uint8_t systemHealth = 100;
+        bool driverScoreValid = false;
+        bool fleetStatusValid = false;
+        bool systemHealthValid = false;
+        int totalSignalsReceived = 0;
     };
     
-    CustomSignalState m_customState;
-    
-    void processCustomSignals();
-    void logCustomState();
+    TutorialSignalState m_tutorialState;
 };
 
 // ============================================================================
-// 🎓 STEP 3A: Simple Custom VSS Initialization
+// 🎓 STEP 3A: Custom VSS Application Initialization
 // ============================================================================
-SimpleCustomVSS::SimpleCustomVSS()
+CustomVSSIntegration::CustomVSSIntegration()
     : velocitas::VehicleApp(velocitas::IVehicleDataBrokerClient::createInstance("vehicledatabroker")) {
     
-    velocitas::logger().info("🎓 Step 3: Simple Custom VSS starting...");
+    velocitas::logger().info("🎓 Step 3: Custom VSS Integration starting...");
     velocitas::logger().info("📡 Connecting to Vehicle Data Broker...");
-    velocitas::logger().info("🚗 Learning objective: Process real custom VSS signals");
-    velocitas::logger().info("📊 Custom Signals: Vehicle.MyCustom.Temperature, Message, Counter");
-    velocitas::logger().info("✅ Simple Custom VSS initialized");
+    velocitas::logger().info("🚗 Learning objective: Process Vehicle.Tutorial.* custom signals");
+    velocitas::logger().info("📊 Custom VSS: DriverBehavior, Fleet, Diagnostics branches");
+    velocitas::logger().info("✅ Custom VSS Integration initialized");
 }
 
 // ============================================================================
-// 🎓 STEP 3B: Custom VSS Signal Subscriptions
+// 🎓 STEP 3B: Custom VSS Signal Subscription Setup
 // ============================================================================
-void SimpleCustomVSS::onStart() {
-    velocitas::logger().info("🚀 Step 3: Starting Simple Custom VSS!");
-    velocitas::logger().info("📊 Setting up custom VSS signal subscriptions...");
+void CustomVSSIntegration::onStart() {
+    velocitas::logger().info("🚀 Step 3: Starting Custom VSS Integration!");
+    velocitas::logger().info("📊 Setting up Vehicle.Tutorial.* signal subscriptions...");
     
     // Give the databroker connection time to stabilize
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     
     // 🎓 LEARNING POINT: Custom VSS Signal Subscription
-    // Subscribe to custom signals using raw signal paths
-    // Note: We use raw signal paths since we don't have generated Vehicle model for custom signals
+    // Subscribe to custom signals using the generated Vehicle model
+    // The Vehicle model was generated from Step3_CustomVSS.json
     
-    // Subscribe to Vehicle.Speed (standard signal for reference)
-    velocitas::logger().info("📊 Subscribing to Vehicle.Speed (standard reference)...");
+    // Subscribe to Driver Behavior Score
+    velocitas::logger().info("📊 Subscribing to Vehicle.Tutorial.DriverBehavior.Score...");
     
     subscribeDataPoints(
-        velocitas::QueryBuilder::select(::Vehicle.Speed).build()
+        velocitas::QueryBuilder::select(Vehicle.Tutorial.DriverBehavior.Score)
+            .build()
     )
     ->onItem([this](auto&& item) { 
-        velocitas::logger().info("📡 Received Vehicle.Speed update: {:.1f} m/s", 
-            item.get(::Vehicle.Speed)->value());
+        onSignalChanged(std::forward<decltype(item)>(item)); 
     })
     ->onError([this](auto&& status) { 
-        velocitas::logger().error("❌ Speed subscription error: {}", status.errorMessage());
+        velocitas::logger().error("❌ DriverBehavior.Score subscription error: {}", status.errorMessage());
     });
     
-    // 🎓 LEARNING POINT: Custom VSS Signal Demonstration
-    // Custom signals are available in KUKSA but require raw gRPC client access
-    // For this demo, we'll show how they can be tested via KUKSA client
+    // Subscribe to Fleet Status
+    velocitas::logger().info("📊 Subscribing to Vehicle.Tutorial.Fleet.Status...");
     
-    velocitas::logger().info("📊 Custom VSS signals available in KUKSA:");
-    velocitas::logger().info("   🌡️  Vehicle.MyCustom.Temperature (float)");
-    velocitas::logger().info("   💬 Vehicle.MyCustom.Message (string)");
-    velocitas::logger().info("   🔢 Vehicle.MyCustom.Counter (uint32)");
-    velocitas::logger().info("");
-    velocitas::logger().info("🧪 Test custom signals with KUKSA client:");
-    velocitas::logger().info("   echo 'setValue Vehicle.MyCustom.Temperature 25.5' | kuksa-client");
-    velocitas::logger().info("   echo 'setValue Vehicle.MyCustom.Message \"Hello Custom VSS!\"' | kuksa-client");  
-    velocitas::logger().info("   echo 'setValue Vehicle.MyCustom.Counter 42' | kuksa-client");
-    velocitas::logger().info("");
-    velocitas::logger().info("💡 This demo shows Vehicle.Speed processing + Custom VSS availability");
-    velocitas::logger().info("✅ Custom VSS signals configured and available in KUKSA");
+    subscribeDataPoints(
+        velocitas::QueryBuilder::select(Vehicle.Tutorial.Fleet.Status)
+            .build()
+    )
+    ->onItem([this](auto&& item) { 
+        onSignalChanged(std::forward<decltype(item)>(item)); 
+    })
+    ->onError([this](auto&& status) { 
+        velocitas::logger().error("❌ Fleet.Status subscription error: {}", status.errorMessage());
+    });
+    
+    // Subscribe to System Health
+    velocitas::logger().info("📊 Subscribing to Vehicle.Tutorial.Diagnostics.SystemHealth...");
+    
+    subscribeDataPoints(
+        velocitas::QueryBuilder::select(Vehicle.Tutorial.Diagnostics.SystemHealth)
+            .build()
+    )
+    ->onItem([this](auto&& item) { 
+        onSignalChanged(std::forward<decltype(item)>(item)); 
+    })
+    ->onError([this](auto&& status) { 
+        velocitas::logger().error("❌ Diagnostics.SystemHealth subscription error: {}", status.errorMessage());
+    });
+    
+    velocitas::logger().info("✅ Custom VSS signal subscriptions completed");
+    velocitas::logger().info("🔄 Waiting for custom VSS data from vehicle...");
+    velocitas::logger().info("💡 Test with custom signal injection:");
+    velocitas::logger().info("   echo 'setValue Vehicle.Tutorial.DriverBehavior.Score 85' | kuksa-client");
+    velocitas::logger().info("   echo 'setValue Vehicle.Tutorial.Fleet.Status \"DRIVING\"' | kuksa-client");
+    velocitas::logger().info("   echo 'setValue Vehicle.Tutorial.Diagnostics.SystemHealth 95' | kuksa-client");
 }
 
 // ============================================================================
-// 🎓 STEP 3C: Signal Processing Demonstration
+// 🎓 STEP 3C: Custom VSS Signal Data Processing
 // ============================================================================
-void SimpleCustomVSS::processCustomSignals() {
-    // This demo focuses on showing Vehicle.Speed processing while
-    // demonstrating that custom VSS signals are available in KUKSA
-    velocitas::logger().info("🎯 Demo: Custom VSS signals ready for processing!");
-    velocitas::logger().info("📊 KUKSA has loaded our custom VSS specification");
-    velocitas::logger().info("✅ Production apps can subscribe to custom signals via raw gRPC");
+void CustomVSSIntegration::onSignalChanged(const velocitas::DataPointReply& reply) {
+    try {
+        velocitas::logger().info("📡 Received custom VSS signal data");
+        m_tutorialState.totalSignalsReceived++;
+        
+        // 🎓 LEARNING POINT: Custom Signal Validation and Processing
+        // Process Driver Behavior Score
+        if (reply.get(Vehicle.Tutorial.DriverBehavior.Score)->isValid()) {
+            uint8_t score = reply.get(Vehicle.Tutorial.DriverBehavior.Score)->value();
+            m_tutorialState.driverScore = score;
+            m_tutorialState.driverScoreValid = true;
+            processDriverBehaviorScore(score);
+        }
+        
+        // Process Fleet Status
+        if (reply.get(Vehicle.Tutorial.Fleet.Status)->isValid()) {
+            std::string status = reply.get(Vehicle.Tutorial.Fleet.Status)->value();
+            m_tutorialState.fleetStatus = status;
+            m_tutorialState.fleetStatusValid = true;
+            processFleetStatus(status);
+        }
+        
+        // Process System Health
+        if (reply.get(Vehicle.Tutorial.Diagnostics.SystemHealth)->isValid()) {
+            uint8_t health = reply.get(Vehicle.Tutorial.Diagnostics.SystemHealth)->value();
+            m_tutorialState.systemHealth = health;
+            m_tutorialState.systemHealthValid = true;
+            processSystemHealth(health);
+        }
+        
+        // Log tutorial analytics
+        velocitas::logger().info("📊 Tutorial Analytics: {} signals received", m_tutorialState.totalSignalsReceived);
+        velocitas::logger().info("✅ Valid Signals - Driver: {}, Fleet: {}, Diagnostics: {}", 
+            m_tutorialState.driverScoreValid ? "✓" : "✗",
+            m_tutorialState.fleetStatusValid ? "✓" : "✗", 
+            m_tutorialState.systemHealthValid ? "✓" : "✗");
+        
+    } catch (const std::exception& e) {
+        velocitas::logger().debug("📡 Processing custom VSS signal data...");
+    }
 }
 
-void SimpleCustomVSS::logCustomState() {
-    velocitas::logger().info("📊 === CUSTOM VSS DEMO STATUS ===");
-    velocitas::logger().info("🌡️  Vehicle.MyCustom.Temperature: Available in KUKSA");
-    velocitas::logger().info("💬 Vehicle.MyCustom.Message: Available in KUKSA");
-    velocitas::logger().info("🔢 Vehicle.MyCustom.Counter: Available in KUKSA");
-    velocitas::logger().info("🎉 Custom VSS specification successfully loaded!");
-    velocitas::logger().info("==============================");
+// ============================================================================
+// 🎓 STEP 3D: Driver Behavior Signal Processing
+// ============================================================================
+void CustomVSSIntegration::processDriverBehaviorScore(uint8_t score) {
+    // 🎓 LEARNING POINT: Custom Signal Business Logic
+    std::string interpretation = interpretDriverScore(score);
+    velocitas::logger().info("🎯 Driver Behavior Score: {} - {}", score, interpretation);
+    
+    // 🎓 LEARNING POINT: Conditional Processing for Custom Signals
+    if (score >= 90) {
+        velocitas::logger().info("🏆 EXCELLENT Driver Performance: {} - Top tier driver!", score);
+    } else if (score >= 80) {
+        velocitas::logger().info("✅ GOOD Driver Performance: {} - Above average driving", score);
+    } else if (score >= 70) {
+        velocitas::logger().info("📊 AVERAGE Driver Performance: {} - Standard driving behavior", score);
+    } else if (score >= 60) {
+        velocitas::logger().warn("⚠️  NEEDS IMPROVEMENT: {} - Driver coaching recommended", score);
+    } else {
+        velocitas::logger().warn("🚨 HIGH RISK DRIVER: {} - Immediate intervention required!", score);
+    }
 }
 
 // ============================================================================
-// 🎓 STEP 3D: Application Entry Point
+// 🎓 STEP 3E: Fleet Management Signal Processing
+// ============================================================================
+void CustomVSSIntegration::processFleetStatus(const std::string& status) {
+    // 🎓 LEARNING POINT: String Signal Processing
+    std::string interpretation = interpretFleetStatus(status);
+    velocitas::logger().info("🚛 Fleet Status: {} - {}", status, interpretation);
+    
+    // 🎓 LEARNING POINT: String-based Conditional Logic
+    if (status == "IDLE") {
+        velocitas::logger().info("🟢 Vehicle available for dispatch");
+    } else if (status == "DRIVING") {
+        velocitas::logger().info("🚗 Vehicle in active use - monitoring performance");
+    } else if (status == "MAINTENANCE") {
+        velocitas::logger().warn("🔧 Vehicle undergoing service - unavailable for dispatch");
+    } else if (status == "EMERGENCY") {
+        velocitas::logger().error("🚨 EMERGENCY STATUS: Vehicle requires immediate attention!");
+    } else {
+        velocitas::logger().warn("❓ Unknown fleet status: {}", status);
+    }
+}
+
+// ============================================================================
+// 🎓 STEP 3F: Diagnostic Signal Processing
+// ============================================================================
+void CustomVSSIntegration::processSystemHealth(uint8_t health) {
+    // 🎓 LEARNING POINT: Health Percentage Processing
+    std::string interpretation = interpretSystemHealth(health);
+    velocitas::logger().info("💊 System Health: {}% - {}", health, interpretation);
+    
+    // 🎓 LEARNING POINT: Health Threshold Analysis
+    if (health >= 95) {
+        velocitas::logger().info("🟢 EXCELLENT System Health: {}% - All systems optimal", health);
+    } else if (health >= 85) {
+        velocitas::logger().info("✅ GOOD System Health: {}% - Minor optimization possible", health);
+    } else if (health >= 70) {
+        velocitas::logger().warn("🟡 MODERATE System Health: {}% - Monitor closely", health);
+    } else if (health >= 50) {
+        velocitas::logger().warn("🟠 LOW System Health: {}% - Maintenance recommended", health);
+    } else {
+        velocitas::logger().error("🔴 CRITICAL System Health: {}% - Immediate inspection required!", health);
+    }
+}
+
+// ============================================================================
+// 🎓 STEP 3G: Helper Functions for Signal Interpretation
+// ============================================================================
+std::string CustomVSSIntegration::interpretDriverScore(uint8_t score) {
+    // 🎓 LEARNING POINT: Signal Value Interpretation
+    if (score >= 90) return "Excellent Driver";
+    else if (score >= 80) return "Good Driver";
+    else if (score >= 70) return "Average Driver";
+    else if (score >= 60) return "Needs Improvement";
+    else return "High Risk Driver";
+}
+
+std::string CustomVSSIntegration::interpretFleetStatus(const std::string& status) {
+    // 🎓 LEARNING POINT: String Signal Mapping
+    if (status == "IDLE") return "Vehicle available for dispatch";
+    else if (status == "DRIVING") return "Vehicle in active use";
+    else if (status == "MAINTENANCE") return "Vehicle undergoing service";
+    else if (status == "EMERGENCY") return "Vehicle requires immediate attention";
+    else return "Unknown status";
+}
+
+std::string CustomVSSIntegration::interpretSystemHealth(uint8_t health) {
+    // 🎓 LEARNING POINT: Health Status Categorization
+    if (health >= 95) return "Optimal condition";
+    else if (health >= 85) return "Good condition";
+    else if (health >= 70) return "Acceptable condition";
+    else if (health >= 50) return "Poor condition";
+    else return "Critical condition";
+}
+
+// ============================================================================
+// 🎓 STEP 3H: Application Entry Point
 // ============================================================================
 
-std::unique_ptr<SimpleCustomVSS> customApp;
+std::unique_ptr<CustomVSSIntegration> customVssApp;
 
 void signalHandler(int signal) {
-    velocitas::logger().info("🛑 Shutting down Simple Custom VSS (signal: {})", signal);
-    if (customApp) {
-        customApp->stop();
+    velocitas::logger().info("🛑 Shutting down Custom VSS Integration (signal: {})", signal);
+    if (customVssApp) {
+        customVssApp->stop();
     }
 }
 
 int main(int argc, char** argv) {
+    // Set up signal handling for graceful shutdown
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
     
-    velocitas::logger().info("🎓 Step 3: Starting Simple Custom VSS Tutorial");
-    velocitas::logger().info("🎯 Learning Goal: Real custom VSS signal processing");
-    velocitas::logger().info("🔧 Custom Signals: Temperature, Message, Counter");
+    velocitas::logger().info("🎓 Step 3: Starting Custom VSS Integration Tutorial");
+    velocitas::logger().info("🎯 Learning Goal: Master custom VSS signal processing");
+    velocitas::logger().info("📊 Custom Signals: Vehicle.Tutorial.* hierarchy");
     velocitas::logger().info("💡 Press Ctrl+C to stop");
     
     try {
-        customApp = std::make_unique<SimpleCustomVSS>();
-        customApp->run();
+        // Create and start the custom VSS integration
+        customVssApp = std::make_unique<CustomVSSIntegration>();
+        customVssApp->run();
         
     } catch (const std::exception& e) {
         velocitas::logger().error("💥 Application error: {}", e.what());
@@ -177,8 +328,8 @@ int main(int argc, char** argv) {
         return 1;
     }
     
-    velocitas::logger().info("👋 Step 3: Simple Custom VSS completed");
-    velocitas::logger().info("🎓 You successfully processed real custom VSS signals!");
+    velocitas::logger().info("👋 Step 3: Custom VSS Integration completed");
+    velocitas::logger().info("🎓 You successfully processed custom VSS signals!");
     return 0;
 }
 
@@ -187,46 +338,51 @@ int main(int argc, char** argv) {
 // ============================================================================
 //
 // 🎯 CONCEPTS LEARNED:
-// ✅ Custom VSS specification creation
-// ✅ KUKSA databroker custom VSS loading
-// ✅ Raw signal path subscription for custom signals
-// ✅ Real custom signal processing from KUKSA
-// ✅ End-to-end custom VSS testing
+// ✅ Custom VSS signal subscription using generated Vehicle model
+// ✅ Processing Vehicle.Tutorial.* hierarchical signals
+// ✅ Custom signal validation and error handling
+// ✅ String and numeric custom signal processing
+// ✅ Business logic implementation for custom signals
+// ✅ Production-ready custom VSS integration patterns
 //
 // 🔧 KEY CODE PATTERNS:
-// ✅ Raw signal subscription: getDataBrokerClient()->subscribeDatapoints()
-// ✅ Custom signal path format: "Vehicle.MyCustom.SignalName"
-// ✅ Signal response processing: datapoint.name() and datapoint.value()
-// ✅ Type-specific value access: float_value(), string_value(), uint32_value()
+// ✅ Vehicle.Tutorial.DriverBehavior.Score subscription
+// ✅ Vehicle.Tutorial.Fleet.Status string processing
+// ✅ Vehicle.Tutorial.Diagnostics.SystemHealth monitoring
+// ✅ Custom signal validation: reply.get(Vehicle.Tutorial.*)->isValid()
+// ✅ Type-specific value extraction: ->value() for uint8_t and string
+// ✅ Conditional business logic based on custom signal ranges
 //
 // 📊 TESTING COMMANDS:
-// Setup KUKSA with Custom VSS:
-//   docker run -d --name kuksa-custom --network host \
-//     -v $(pwd)/examples/simple_custom_vss.json:/vss.json \
-//     ghcr.io/eclipse-kuksa/kuksa-databroker:main \
-//     --address 0.0.0.0 --port 55555 --insecure --vss /vss.json
+// Build with Custom VSS:
+// docker run --rm --network host \
+//   -v step3-build:/quickbuild/build \
+//   -v step3-deps:/home/vscode/.conan2 \
+//   -v step3-vss:/quickbuild/app/vehicle_model \
+//   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
+//   -e VSS_SPEC_FILE=/custom_vss.json \
+//   -v $(pwd)/examples/Step3_CustomVSS.cpp:/app.cpp \
+//   -v $(pwd)/examples/Step3_CustomVSS.json:/custom_vss.json \
+//   velocitas-quick build --verbose --force
 //
-// Build and Run:
-//   docker run --rm --network host \
-//     -v $(pwd)/examples/Step3_SimpleCustomVSS.cpp:/app.cpp \
-//     velocitas-quick build --skip-deps --verbose
-//   
-//   docker run -d --network host --name simple-custom-vss \
-//     velocitas-quick run 120
+// Run Application:
+// docker run -d --network host --name step3-custom-vss \
+//   -v step3-build:/quickbuild/build \
+//   velocitas-quick run 180
 //
 // Test Custom Signals:
-//   echo "setValue Vehicle.MyCustom.Temperature 35.5" | kuksa-client
-//   echo "setValue Vehicle.MyCustom.Message \"ALERT: System Check\"" | kuksa-client  
-//   echo "setValue Vehicle.MyCustom.Counter 150" | kuksa-client
+// echo "setValue Vehicle.Tutorial.DriverBehavior.Score 85" | kuksa-client
+// echo "setValue Vehicle.Tutorial.Fleet.Status \"DRIVING\"" | kuksa-client  
+// echo "setValue Vehicle.Tutorial.Diagnostics.SystemHealth 95" | kuksa-client
 //
 // 🎓 EXPECTED OUTPUT:
-// 🌡️  Custom Temperature: 35.5°C
-// 🔥 HIGH CUSTOM TEMPERATURE: 35.5°C
-// 💬 Custom Message: 'ALERT: System Check'
-// 🚨 ALERT in custom message: 'ALERT: System Check'
-// 🔢 Custom Counter: 150
-// 📊 HIGH CUSTOM COUNTER: 150
-// 🎉 Custom VSS signals working!
+// 📡 Received custom VSS signal data
+// 🎯 Driver Behavior Score: 85 - Good Driver
+// ✅ GOOD Driver Performance: 85 - Above average driving
+// 🚛 Fleet Status: DRIVING - Vehicle in active use
+// 🚗 Vehicle in active use - monitoring performance
+// 💊 System Health: 95% - Optimal condition
+// 🟢 EXCELLENT System Health: 95% - All systems optimal
 //
-// 🏆 CONGRATULATIONS! You've built a working custom VSS application!
+// 🏆 CONGRATULATIONS! You've mastered custom VSS integration!
 // ============================================================================

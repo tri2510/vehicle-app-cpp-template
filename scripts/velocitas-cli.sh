@@ -282,12 +282,30 @@ configure_vss() {
         log_info "Using custom VSS file: $VSS_SPEC_FILE"
         cp "$VSS_SPEC_FILE" "$WORKSPACE/custom-vss.json"
         
-        if command -v jq >/dev/null 2>&1; then
-            jq --arg vss_path "file:///quickbuild/custom-vss.json" \
-               '.interfaces[0].config.src = $vss_path' \
-               "$manifest_file" > "$manifest_file.tmp" && \
-               mv "$manifest_file.tmp" "$manifest_file"
-            vss_updated=true
+        # Copy custom VSS to velocitas project directory immediately
+        local velocitas_project=$(find /home/vscode/.velocitas/projects -maxdepth 1 -type d 2>/dev/null | head -2 | tail -1)
+        if [ -n "$velocitas_project" ] && [ -d "$velocitas_project" ]; then
+            log_debug "Copying custom VSS to velocitas project: $velocitas_project"
+            cp "$VSS_SPEC_FILE" "$velocitas_project/vspec.json"
+            
+            if command -v jq >/dev/null 2>&1; then
+                jq --arg vss_path "file://$velocitas_project/vspec.json" \
+                   '.interfaces[0].config.src = $vss_path' \
+                   "$manifest_file" > "$manifest_file.tmp" && \
+                   mv "$manifest_file.tmp" "$manifest_file"
+                vss_updated=true
+                log_info "VSS source: file://$velocitas_project/vspec.json"
+            fi
+        else
+            log_warning "Velocitas project directory not found, using fallback path"
+            if command -v jq >/dev/null 2>&1; then
+                jq --arg vss_path "file://$WORKSPACE/custom-vss.json" \
+                   '.interfaces[0].config.src = $vss_path' \
+                   "$manifest_file" > "$manifest_file.tmp" && \
+                   mv "$manifest_file.tmp" "$manifest_file"
+                vss_updated=true
+                log_info "VSS source: file://$WORKSPACE/custom-vss.json"
+            fi
         fi
         
     elif [ -n "$VSS_SPEC_URL" ]; then

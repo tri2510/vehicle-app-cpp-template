@@ -1,0 +1,241 @@
+{
+  "Vehicle": {
+    "type": "branch",
+    "description": "High-level vehicle data.",
+    "comment": "The vehicle branch is the top-level branch for all vehicle signals and attributes.",
+    "uuid": "ccc825f94139544dbb5f4bfd033bce6e",
+    "children": {
+      "Speed": {
+        "datatype": "float",
+        "description": "Vehicle speed.",
+        "max": 300,
+        "min": -100,
+        "type": "sensor",
+        "unit": "km/h",
+        "uuid": "efe50798638d55fab18ab7d43cc490e9"
+      },
+      "TotalDistance": {
+        "datatype": "float", 
+        "description": "Odometer reading, total distance traveled by the vehicle during its lifetime.",
+        "type": "sensor",
+        "unit": "km",
+        "uuid": "2e8c5ff8d39b5be4aab7e2c3b88c1bc4"
+      },
+      "TripMeterReading": {
+        "datatype": "float",
+        "description": "Current trip meter reading.",
+        "type": "sensor", 
+        "unit": "km",
+        "uuid": "aa8c2f2c46a05a8599c0f7c2d3ff5ffd"
+      },
+      "CurrentLocation": {
+        "type": "branch",
+        "description": "The current latitude and longitude of the vehicle.",
+        "uuid": "cd8e2ca9a6125ef8b6c4f72ca8b19b74",
+        "children": {
+          "Latitude": {
+            "datatype": "double",
+            "description": "Current latitude of vehicle in WGS 84 geodetic coordinates, as measured at the position of GNSS receiver antenna.",
+            "max": 90,
+            "min": -90,
+            "type": "sensor",
+            "unit": "degrees",
+            "uuid": "7f5e64f541545bb8bb0b5213b83a7d2e"
+          },
+          "Longitude": {
+            "datatype": "double", 
+            "description": "Current longitude of vehicle in WGS 84 geodetic coordinates, as measured at the position of GNSS receiver antenna.",
+            "max": 180,
+            "min": -180,
+            "type": "sensor", 
+            "unit": "degrees",
+            "uuid": "99c8e6cb3a2052c8b5b2dfc7a2d8f9aa"
+          }
+        }
+      },
+      "Powertrain": {
+        "type": "branch",
+        "description": "Powertrain data for battery electric vehicles.",
+        "uuid": "cd8e2d1c77125ef8b6c4f72ca8b19b74",
+        "children": {
+          "FuelSystem": {
+            "type": "branch", 
+            "description": "Fuel system data.",
+            "uuid": "aad137c05da3540d8c6a6b6e15b98cef",
+            "children": {
+              "Level": {
+                "datatype": "uint8",
+                "description": "Level in fuel tank as percent of capacity. 0 = empty. 100 = full.",
+                "max": 100,
+                "type": "sensor",
+                "unit": "percent", 
+                "uuid": "5a8c2ca9a6125ef8b6c4f72ca8b19b74"
+              },
+              "Range": {
+                "datatype": "uint32",
+                "description": "Remaining range in fuel tank expressed in kilometers.",
+                "type": "sensor",
+                "unit": "km",
+                "uuid": "7f5e64f541545bb8bb0b5213b83a7d9f"
+              }
+            }
+          }
+        }
+      },
+      "Cabin": {
+        "type": "branch",
+        "description": "All signals related to the vehicle cabin.",
+        "uuid": "c4a6ef2b93265ef8b6c4f72ca8b19b74",
+        "children": {
+          "HVAC": {
+            "type": "branch",
+            "description": "Climate control system.",
+            "uuid": "d2e7af3c15235ef8b6c4f72ca8b19b74", 
+            "children": {
+              "Station": {
+                "type": "branch",
+                "description": "HVAC station signals.",
+                "uuid": "e3f8b04d27325ef8b6c4f72ca8b19b74",
+                "children": {
+                  "Row1": {
+                    "type": "branch",
+                    "description": "HVAC for first row.",
+                    "uuid": "f4a9c15e39425ef8b6c4f72ca8b19b74",
+                    "children": {
+                      "Left": {
+                        "type": "branch", 
+                        "description": "HVAC for left side of first row.",
+                        "uuid": "a5badc6f4b535ef8b6c4f72ca8b19b74",
+                        "children": {
+                          "Temperature": {
+                            "datatype": "int8",
+                            "description": "Temperature",
+                            "max": 50,
+                            "min": -50,
+                            "type": "actuator",
+                            "unit": "celsius",
+                            "uuid": "b6cb1d805d645ef8b6c4f72ca8b19b74"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Tutorial": {
+        "type": "branch", 
+        "description": "Custom signals for Step 3 tutorial demonstrations.",
+        "uuid": "12345678-1234-5678-9abc-123456789abc",
+        "children": {
+          "DriverBehavior": {
+            "type": "branch",
+            "description": "Driver behavior analysis signals.",
+            "uuid": "23456789-2345-6789-abcd-23456789abcd",
+            "children": {
+              "Score": {
+                "datatype": "uint8",
+                "description": "Driver behavior score from 0-100. Higher values indicate better driving behavior.",
+                "max": 100,
+                "min": 0,
+                "type": "sensor",
+                "unit": "percent",
+                "uuid": "34567890-3456-789a-bcde-3456789abcde"
+              },
+              "AggressiveEvents": {
+                "datatype": "uint32",
+                "description": "Count of aggressive driving events (hard braking, acceleration, cornering).",
+                "type": "sensor",
+                "uuid": "45678901-4567-89ab-cdef-456789abcdef"
+              },
+              "SmoothDrivingTime": {
+                "datatype": "float",
+                "description": "Percentage of trip time spent driving smoothly.",
+                "max": 100,
+                "min": 0,
+                "type": "sensor",
+                "unit": "percent",
+                "uuid": "56789012-5678-9abc-def0-56789abcdef0"
+              }
+            }
+          },
+          "Fleet": {
+            "type": "branch",
+            "description": "Fleet management and tracking signals.",
+            "uuid": "67890123-6789-abcd-ef01-6789abcdef01",
+            "children": {
+              "VehicleId": {
+                "datatype": "string",
+                "description": "Unique identifier for this vehicle in the fleet.",
+                "type": "attribute",
+                "uuid": "78901234-789a-bcde-f012-789abcdef012"
+              },
+              "Status": {
+                "datatype": "string",
+                "description": "Current operational status of the vehicle.",
+                "allowed": ["IDLE", "DRIVING", "MAINTENANCE", "EMERGENCY"],
+                "type": "sensor",
+                "uuid": "89012345-89ab-cdef-0123-89abcdef0123"
+              },
+              "Efficiency": {
+                "type": "branch",
+                "description": "Vehicle efficiency metrics.",
+                "uuid": "90123456-90ab-cdef-0123-90abcdef0123",
+                "children": {
+                  "FuelConsumption": {
+                    "datatype": "float",
+                    "description": "Average fuel consumption for current trip in liters per 100km.",
+                    "type": "sensor",
+                    "unit": "l/100km",
+                    "uuid": "01234567-01ab-cdef-0123-01abcdef0123"
+                  },
+                  "EcoScore": {
+                    "datatype": "uint8",
+                    "description": "Eco-driving score from 0-100. Higher values indicate more efficient driving.",
+                    "max": 100,
+                    "min": 0,
+                    "type": "sensor",
+                    "unit": "percent",
+                    "uuid": "12345678-12ab-cdef-0123-12abcdef0123"
+                  }
+                }
+              }
+            }
+          },
+          "Diagnostics": {
+            "type": "branch",
+            "description": "Custom diagnostic and monitoring signals.",
+            "uuid": "23456789-23ab-cdef-0123-23abcdef0123",
+            "children": {
+              "SystemHealth": {
+                "datatype": "uint8",
+                "description": "Overall system health percentage. 100 = perfect health, 0 = critical issues.",
+                "max": 100,
+                "min": 0,
+                "type": "sensor",
+                "unit": "percent",
+                "uuid": "34567890-34ab-cdef-0123-34abcdef0123"
+              },
+              "MaintenanceRequired": {
+                "datatype": "boolean",
+                "description": "Indicates if maintenance is required. True = maintenance needed.",
+                "type": "sensor",
+                "uuid": "45678901-45ab-cdef-0123-45abcdef0123"
+              },
+              "AlertLevel": {
+                "datatype": "string",
+                "description": "Current system alert level.",
+                "allowed": ["NORMAL", "WARNING", "CRITICAL"],
+                "type": "sensor",
+                "uuid": "56789012-56ab-cdef-0123-56abcdef0123"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
