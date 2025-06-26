@@ -9,12 +9,13 @@ This tutorial series teaches you to build vehicle applications from simple speed
 ### **Progressive Learning Path:**
 1. **Step 1**: Basic Speed Monitoring → Learn signal subscription and processing
 2. **Step 2**: Multi-Signal Processing → Handle multiple vehicle data streams  
-3. **Step 3**: Data Analysis & Alerts → Implement business logic and notifications
+3. **Step 3**: Custom VSS Fleet Analytics → Build custom signals and enterprise analytics
 4. **Step 4**: Advanced Fleet Management → Build production-grade applications
 
 ### **What You'll Learn:**
 - 🔧 Vehicle signal subscription and processing
 - 📊 Real-time data analysis and pattern detection
+- 🎛️ Custom VSS signal specifications and enterprise analytics
 - 🚨 Alert systems and business rule implementation
 - 🗺️ GPS-based functionality and geofencing
 - 📈 Fleet analytics and performance monitoring
@@ -99,7 +100,7 @@ echo "setValue Vehicle.Speed 25.0" | docker run --rm -i --network host \
 |------|-------|------------|------|--------------|
 | **[Step 1](Step1_TUTORIAL.md)** | Basic Speed Monitoring | ⭐ Beginner | 15 min | Signal subscription, speed conversion |
 | **[Step 2](Step2_TUTORIAL.md)** | Multi-Signal Processing | ⭐⭐ Intermediate | 30 min | Multiple signals, data correlation |
-| **[Step 3](Step3_TUTORIAL.md)** | Data Analysis & Alerts | ⭐⭐⭐ Advanced | 45 min | Business logic, alerts, pattern analysis |
+| **[Step 3](Step3_TUTORIAL.md)** | Custom VSS Fleet Analytics | ⭐⭐⭐⭐⭐ Enterprise | 90 min | Custom VSS, fleet analytics, enterprise patterns |
 | **[Step 4](Step4_TUTORIAL.md)** | Fleet Management | ⭐⭐⭐⭐ Professional | 60 min | Production architecture, GPS, analytics |
 
 ## 🛠️ Learning Approach
@@ -107,7 +108,7 @@ echo "setValue Vehicle.Speed 25.0" | docker run --rm -i --network host \
 ### **Incremental Development:**
 - **Step 1**: Start with minimal signal processing
 - **Step 2**: Add more signals and data types  
-- **Step 3**: Implement business rules and alerts
+- **Step 3**: Build custom VSS signals and enterprise fleet analytics
 - **Step 4**: Build comprehensive fleet system
 
 ### **Hands-On Testing:**
@@ -147,14 +148,16 @@ void onSignalChanged(const velocitas::DataPointReply& reply) {
 }
 ```
 
-### **Step 3: Data Analysis & Alerts**
+### **Step 3: Custom VSS Fleet Analytics**
 ```cpp
-// Learn: Business logic, pattern detection
-void analyzeSpeedPattern(double speed) {
-    if (detectErraticDriving(speed)) {
-        generateAlert("ERRATIC_DRIVING", speed);
-    }
-    updatePerformanceMetrics(speed);
+// Learn: Custom VSS signals, enterprise analytics
+void processCustomVSSSignals(double speed, double lat, double lon) {
+    // Custom VSS signal simulation
+    m_fleetState.drivingScore = calculateDrivingScore(speed);
+    m_fleetState.routeID = "ROUTE_NYC_BOS_001";
+    m_fleetState.cargoWeight = 2500.0;
+    
+    generateFleetAnalyticsReport();
 }
 ```
 
@@ -183,9 +186,10 @@ class FleetManager {
 - ✅ Implement efficient data processing
 
 ### **By Step 3 Completion:**
-- ✅ Implement business rules and alerts
-- ✅ Detect patterns in vehicle data
-- ✅ Build production-ready logic
+- ✅ Design custom VSS signal specifications
+- ✅ Build enterprise fleet analytics systems
+- ✅ Implement custom business domain signals
+- ✅ Process multi-dimensional vehicle data
 
 ### **By Step 4 Completion:**
 - ✅ Design scalable SDV architectures
@@ -223,7 +227,7 @@ class FleetManager {
 ## 📝 Next Steps After Tutorial
 
 ### **Advanced Topics:**
-- Custom vehicle signal specifications
+- Industry-specific custom VSS signals (logistics, emergency services)
 - Integration with external APIs (weather, traffic, fleet management)
 - Machine learning for predictive maintenance
 - Mobile app integration for fleet managers

@@ -1,419 +1,336 @@
-# 🎓 Step 3: Data Analysis & Alerts Tutorial
+# 🎓 Step 3: Fleet Analytics with Custom VSS Tutorial
 
-## 📚 Learning Objectives
+## 🎯 Learning Objectives
 
-In this advanced step, you'll master sophisticated vehicle data analytics:
-
-- **Historical Analysis**: Implement rolling windows for trend detection
-- **Pattern Recognition**: Detect harsh braking, rapid acceleration, erratic driving
-- **Alert Framework**: Build multi-tier alert system with priorities
-- **Predictive Analytics**: Anticipate maintenance needs and fuel consumption
-
-**Difficulty**: ⭐⭐⭐ Advanced | **Time**: 45 minutes
-
-## 🎯 What You'll Build
-
-An advanced analytics application that:
-- Tracks historical data with 50-point rolling windows
-- Detects complex driving patterns using statistical analysis
-- Implements INFO/WARNING/CRITICAL/EMERGENCY alert levels
-- Calculates driver behavior scores
-- Generates predictive maintenance recommendations
-- Produces comprehensive vehicle health reports
+In this advanced tutorial, you will master:
+- **Custom VSS Signal Creation** - Design and implement custom Vehicle Signal Specification
+- **Enterprise Fleet Management** - Build production-ready fleet management systems
+- **Multi-dimensional Analytics** - Process driver, route, cargo, and environmental data
+- **Custom Business Logic** - Implement domain-specific vehicle intelligence
+- **Advanced Signal Processing** - Handle complex custom signal architectures
 
 ## 📋 Prerequisites
 
-**Required Setup:**
-```bash
-# Ensure KUKSA databroker is running
-docker ps | grep velocitas-vdb || docker compose -f docker-compose.dev.yml up -d vehicledatabroker
+- ✅ Completed Step 1 & Step 2 tutorials
+- ✅ Understanding of standard VSS signals
+- ✅ Basic knowledge of fleet management concepts
+- ✅ KUKSA Databroker running and accessible
 
-# Create dedicated persistent volumes for Step 3 (isolated from other steps)
-docker volume ls | grep step3-build || docker volume create step3-build
-docker volume ls | grep step3-deps || docker volume create step3-deps  
-docker volume ls | grep step3-vss || docker volume create step3-vss
+## 🏗️ Architecture Overview
+
+This tutorial demonstrates a **3-tier custom VSS architecture**:
+
+1. **Standard VSS Layer** - Reliable base signals (Speed, Location, Temperature)
+2. **Custom VSS Layer** - Business-specific signals (Fleet, Analytics, Operations, Cargo)
+3. **Application Layer** - Enterprise fleet management logic
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Fleet Analytics Application               │
+├─────────────────────────────────────────────────────────────┤
+│  Custom VSS Signals (Fleet Management + Analytics + Cargo)  │
+├─────────────────────────────────────────────────────────────┤
+│           Standard VSS Signals (Speed, GPS, Temp)           │
+├─────────────────────────────────────────────────────────────┤
+│                    KUKSA Databroker                        │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-**Container Image:**
+## 🔧 Custom VSS Specification
+
+Our custom VSS extends the standard specification with **5 new signal branches**:
+
+### 1. **Fleet Management Signals**
+- `Vehicle.FleetManagement.FleetID` - Fleet identifier
+- `Vehicle.FleetManagement.DriverID` - Driver authentication
+- `Vehicle.FleetManagement.RouteID` - Route assignment
+- `Vehicle.FleetManagement.TripID` - Trip session tracking
+- `Vehicle.FleetManagement.VehicleStatus` - Operational status
+- `Vehicle.FleetManagement.DispatchPriority` - Priority level (1-10)
+
+### 2. **Analytics Signals**
+- `Vehicle.Analytics.DrivingScore` - Real-time performance (0-100)
+- `Vehicle.Analytics.EcoEfficiency` - Fuel efficiency score
+- `Vehicle.Analytics.SafetyRating` - Safety compliance rating
+- `Vehicle.Analytics.AlertLevel` - System alert level (0-4)
+- `Vehicle.Analytics.MaintenanceScore` - Predictive maintenance
+
+### 3. **Operations Signals**
+- `Vehicle.Operations.RouteOptimization.TimeEfficiency` - Route time performance
+- `Vehicle.Operations.RouteOptimization.FuelEfficiency` - Route fuel performance
+- `Vehicle.Operations.RouteOptimization.TrafficFactor` - Traffic impact
+- `Vehicle.Operations.Communication.*` - Fleet communication metrics
+
+### 4. **Cargo Monitoring Signals**
+- `Vehicle.CustomSensors.CargoStatus.LoadWeight` - Cargo weight (kg)
+- `Vehicle.CustomSensors.CargoStatus.LoadPercentage` - Capacity utilization
+- `Vehicle.CustomSensors.CargoStatus.CargoType` - Cargo classification
+- `Vehicle.CustomSensors.CargoStatus.CargoTemperature` - Cargo temperature
+
+### 5. **Environmental Signals**
+- `Vehicle.CustomSensors.Environmental.AirQualityIndex` - Local AQI
+- `Vehicle.CustomSensors.Environmental.NoiseLevel` - Ambient noise
+- `Vehicle.CustomSensors.Environmental.RoadCondition` - Surface conditions
+
+## 🚀 Quick Start
+
+### Step 1: Build with Custom VSS
+
 ```bash
-# We'll use the pre-built image throughout this tutorial:
-# ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:prerelease-latest
+# Build container with custom VSS specification
+docker build -f Dockerfile.quick \
+  --build-arg HTTP_PROXY=http://127.0.0.1:3128 \
+  --build-arg HTTPS_PROXY=http://127.0.0.1:3128 \
+  --network=host \
+  -t velocitas-quick .
 ```
 
-## 🧪 Step-by-Step Tutorial
+### Step 2: Start KUKSA Databroker
 
-### **Phase 1: Build the Analytics Application**
-
-**Using Pre-built Image:**
 ```bash
-# Build Step 3 application with analytics capabilities
+# Start vehicle data broker
+docker run -d --rm --name kuksa-databroker --network host \
+  ghcr.io/eclipse-kuksa/kuksa-databroker:main
+```
+
+### Step 3: Build Custom VSS Fleet Application
+
+```bash
+# Build with custom VSS specification
 docker run --rm --network host \
-  -v step3-build:/quickbuild/build \
-  -v step3-deps:/home/vscode/.conan2 \
-  -v step3-vss:/quickbuild/app/vehicle_model \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
-  -v $(pwd)/examples/Step3_DataAnalysisAlerts.cpp:/app.cpp \
-  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:prerelease-latest build --skip-deps --verbose
+  -e VSS_SPEC_FILE=/custom_vss.json \
+  -v $(pwd)/examples/Step3_FleetAnalytics.cpp:/app.cpp \
+  -v $(pwd)/examples/custom_fleet_vss.json:/custom_vss.json \
+  velocitas-quick build --verbose
 ```
 
-**Expected Build Output:**
-```
-✅ [SUCCESS] Source validated: /app.cpp (620 lines)
-✅ [SUCCESS] Vehicle model exists, skipping
-✅ [SUCCESS] C++ compilation completed successfully
-📍 Executable: /quickbuild/build/bin/app
-📏 Size: 14M
-🎉 Build completed successfully!
-```
-
-### **Phase 2: Run the Application**
+### Step 4: Run Fleet Analytics Application
 
 ```bash
-# Start analytics app with extended runtime for testing
-docker run -d --network host --name step3-app \
-  -v step3-build:/quickbuild/build \
+# Run fleet analytics with custom VSS
+docker run -d --network host --name fleet-analytics \
   -e SDV_VEHICLEDATABROKER_ADDRESS=127.0.0.1:55555 \
-  ghcr.io/tri2510/vehicle-app-cpp-template/velocitas-quick:prerelease-latest run 180
+  -e VSS_SPEC_FILE=/custom_vss.json \
+  -v $(pwd)/examples/Step3_FleetAnalytics.cpp:/app.cpp \
+  -v $(pwd)/examples/custom_fleet_vss.json:/custom_vss.json \
+  velocitas-quick run 300
 ```
 
-**Monitor Application:**
+## 📊 Testing Custom VSS Signals
+
+### Test 1: Fleet Driver Performance Analysis
+
 ```bash
-# Watch analytics and alerts in real-time
-docker logs step3-app --follow
+# Test excellent driving performance
+echo "setValue Vehicle.Speed 25.0" | docker run --rm -i --network host \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+
+# Check fleet analytics logs
+docker logs fleet-analytics --tail 10
 ```
 
-**Expected Startup Logs:**
+**Expected Output:**
 ```
-🎓 Step 3: Starting Data Analysis & Alerts Tutorial
-🎯 Learning Goal: Master advanced analytics & alerts
-📊 Features: Pattern detection, predictive analytics
-🎓 Step 3: Data Analysis & Alerts starting...
-📊 Learning objective: Advanced pattern analysis
-🚨 Features: Multi-tier alerts, predictive analytics
-✅ Data Analysis & Alerts initialized
-🚀 Step 3: Starting Data Analysis & Alerts!
-📊 Initializing historical data tracking...
-✅ Analytics signal subscriptions active
-🔄 Collecting data for pattern analysis...
-💡 Generate varied driving patterns to see analytics!
+📊 Custom VSS Update: Driver Score 89.2% | Eco Efficiency 94.1% | Priority 5
+👤 Driver DRIVER_12345: Score 89.2% | Safety 95.0% | Eco 94.1%
+⭐ Performance Rating: Good
 ```
 
-### **Phase 3: Pattern Detection Testing**
+### Test 2: High-Speed Performance Penalty
 
-**Test 1: Normal Driving Baseline**
 ```bash
-# Establish normal driving pattern
-for speed in 20 22 24 25 23 22 24; do
+# Test high-speed driving (performance penalty)
+echo "setValue Vehicle.Speed 40.0" | docker run --rm -i --network host \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+
+# Check for performance warnings
+docker logs fleet-analytics --tail 15 | grep -E "(WARNING|performance|Score)"
+```
+
+**Expected Output:**
+```
+📊 Custom VSS Update: Driver Score 85.2% | Eco Efficiency 88.1% | Priority 5
+⚠️  [WARNING|DRIVER_ANALYTICS] Driver DRIVER_12345 performance below threshold: 72.3%
+```
+
+### Test 3: Cargo Temperature Monitoring
+
+```bash
+# Test extreme cold affecting cargo
+echo "setValue Vehicle.Exterior.AirTemperature -30.0" | docker run --rm -i --network host \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+
+# Check cargo temperature alerts
+docker logs fleet-analytics --tail 10 | grep -E "(CARGO|temperature|CRITICAL)"
+```
+
+**Expected Output:**
+```
+📦 Cargo ELECTRONICS: 2500kg (75.0%) | Temp -15.0°C
+🚨 [CRITICAL|CARGO] Cargo temperature out of range: -15.0°C (Safe: -20.0°C to 25.0°C)
+```
+
+### Test 4: GPS Route Tracking
+
+```bash
+# Set GPS coordinates (New York City - Times Square)
+echo "setValue Vehicle.CurrentLocation.Latitude 40.7589" | docker run --rm -i --network host \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+
+echo "setValue Vehicle.CurrentLocation.Longitude -73.9851" | docker run --rm -i --network host \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+
+# Check route optimization metrics
+docker logs fleet-analytics --tail 10 | grep -E "(Route|GPS|optimization)"
+```
+
+**Expected Output:**
+```
+🗺️  Route ROUTE_NYC_BOS_001: Time Eff 96.7% | Fuel Eff 92.1% | Traffic 1.0x
+📍 Route: ROUTE_NYC_BOS_001 | GPS: (40.758900, -73.985100)
+```
+
+### Test 5: Environmental Impact Monitoring
+
+```bash
+# Test high temperature impact
+echo "setValue Vehicle.Exterior.AirTemperature 35.0" | docker run --rm -i --network host \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+
+# Check environmental analytics
+docker logs fleet-analytics --tail 10 | grep -E "(Environment|AQI|Noise|Road)"
+```
+
+**Expected Output:**
+```
+🌍 Environment: AQI 65 | Noise 73.5dB | Road DRY
+🌡️  Air Temp: 35.0°C | AQI: 65 | Noise: 73.5dB | Road: DRY
+```
+
+## 📊 Comprehensive Fleet Dashboard
+
+Every 45 seconds, the application generates a comprehensive fleet report:
+
+```
+📊 ========== CUSTOM VSS FLEET ANALYTICS DASHBOARD ==========
+🏢 === FLEET OVERVIEW ===
+🚛 Fleet ID: FLEET_ALPHA_001 | Trip: TRIP_1719376800 | Status: ACTIVE
+📊 KPIs: Trips 3 | Alerts 7 | Priority Dispatches 1 | Maintenance Events 0
+⭐ Fleet Averages: Speed 89.4 km/h | Driving Score 87.2% | Fuel Efficiency 91.8%
+
+👤 === DRIVER ANALYTICS ===
+🆔 Driver: DRIVER_12345 | Score: 87.2% | Safety: 95.0% | Eco: 91.8%
+⭐ Performance Rating: Good
+
+🗺️  === ROUTE OPTIMIZATION ===
+📍 Route: ROUTE_NYC_BOS_001 | GPS: (40.758900, -73.985100)
+⏱️  Time Efficiency: 96.7% | Fuel Efficiency: 91.8% | Traffic Factor: 1.0x
+📶 Communication: Signal 97% | Data 12.5MB | Priority 5
+
+📦 === CARGO OPERATIONS ===
+🏷️  Type: ELECTRONICS | Weight: 2500kg | Capacity: 75.0%
+🌡️  Temperature: 25.5°C | Total Handled: 250000kg
+
+🌍 === ENVIRONMENTAL IMPACT ===
+🌡️  Air Temp: 35.0°C | AQI: 65 | Noise: 73.5dB | Road: DRY
+============================================================
+```
+
+## 🔧 Advanced Testing Scenarios
+
+### Scenario 1: Fleet Dispatch Priority Testing
+
+```bash
+# Simulate medical emergency cargo (high priority)
+# This would require custom VSS signal injection in production
+# For this tutorial, the app simulates priority based on cargo type
+
+# Monitor dispatch priority changes
+docker logs fleet-analytics --tail 20 | grep -E "(Priority|Dispatch|EMERGENCY)"
+```
+
+### Scenario 2: Multi-Driver Performance Comparison
+
+```bash
+# Test different speed patterns to see driver scoring
+for speed in 20 35 15 40 25 45 10; do
   echo "setValue Vehicle.Speed $speed.0" | docker run --rm -i --network host \
-    ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
-  echo "setValue Vehicle.Powertrain.Engine.Speed $((speed * 100))" | docker run --rm -i --network host \
-    ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
-  sleep 1
-done
-
-# Set fuel level
-echo "setValue Vehicle.Powertrain.FuelSystem.Level 65.0" | docker run --rm -i --network host \
-  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
-```
-
-**Expected Normal Driving Output:**
-```
-📊 Current: Speed 86.4 km/h | RPM 2400 | Fuel 65.0%
-✅ Stable driving pattern detected
-```
-
-**Test 2: Harsh Braking Detection**
-```bash
-# Simulate harsh braking event
-echo "setValue Vehicle.Speed 30.0" | docker run --rm -i --network host \
-  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
-sleep 2
-echo "setValue Vehicle.Speed 5.0" | docker run --rm -i --network host \
-  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
-
-# Check harsh braking alert
-docker logs step3-app --tail 10
-```
-
-**Expected Harsh Braking Alert:**
-```
-📊 Current: Speed 18.0 km/h | RPM 2400 | Fuel 65.0%
-🚨 HARSH BRAKING: -12.5 m/s² (threshold: -5.0)
-⚠️  [WARNING] Harsh braking detected: -12.5 m/s²
-```
-
-**Test 3: Rapid Acceleration Detection**
-```bash
-# Simulate rapid acceleration
-echo "setValue Vehicle.Speed 10.0" | docker run --rm -i --network host \
-  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
-sleep 1
-echo "setValue Vehicle.Speed 35.0" | docker run --rm -i --network host \
-  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
-
-# Check acceleration alert
-docker logs step3-app --tail 10
-```
-
-**Expected Rapid Acceleration Alert:**
-```
-📊 Current: Speed 126.0 km/h | RPM 2400 | Fuel 65.0%
-⚡ RAPID ACCELERATION: 25.0 m/s² (threshold: 4.0)
-⚠️  [WARNING] Rapid acceleration: 25.0 m/s²
-```
-
-**Test 4: Erratic Driving Pattern**
-```bash
-# Generate erratic speed changes
-for speed in 10 30 15 40 20 45 10 35 25; do
-  echo "setValue Vehicle.Speed $speed.0" | docker run --rm -i --network host \
-    ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
-  sleep 2
-done
-
-# Check erratic driving detection
-docker logs step3-app --tail 15
-```
-
-**Expected Erratic Driving Alert:**
-```
-📊 Current: Speed 90.0 km/h | RPM 2400 | Fuel 65.0%
-🔄 ERRATIC DRIVING: Speed variance 22.7 km/h exceeds threshold
-🚨 [CRITICAL] Erratic driving pattern detected. Speed variance: 22.7 km/h
-```
-
-**Test 5: Low Fuel Predictive Alert**
-```bash
-# Set low fuel and monitor consumption
-echo "setValue Vehicle.Powertrain.FuelSystem.Level 25.0" | docker run --rm -i --network host \
-  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
-
-# Simulate fuel consumption
-for fuel in 24 23 22 20 18 16; do
-  echo "setValue Vehicle.Powertrain.FuelSystem.Level $fuel.0" | docker run --rm -i --network host \
     ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
   sleep 3
 done
 
-# Check predictive fuel alert
-docker logs step3-app --tail 10
+# Check driver score trends
+docker logs fleet-analytics | grep "Driver Score" | tail -10
 ```
 
-**Expected Predictive Alert:**
-```
-📊 Current: Speed 90.0 km/h | RPM 2400 | Fuel 16.0%
-🚨 [CRITICAL] Fuel critically low! Estimated 24 minutes remaining
-```
-
-**Test 6: Engine Anomaly Detection**
-```bash
-# Normal RPM pattern
-echo "setValue Vehicle.Powertrain.Engine.Speed 2500" | docker run --rm -i --network host \
-  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
-
-# Sudden RPM spike (anomaly)
-echo "setValue Vehicle.Powertrain.Engine.Speed 5500" | docker run --rm -i --network host \
-  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
-
-# Check engine anomaly alert
-docker logs step3-app --tail 10
-```
-
-**Expected Engine Anomaly Alert:**
-```
-📊 Current: Speed 90.0 km/h | RPM 5500 | Fuel 16.0%
-🔧 ENGINE ANOMALY: RPM deviation 3.2σ from normal
-⚠️  [WARNING] Engine RPM anomaly detected: 3.2 std deviations
-```
-
-**Test 7: Driver Behavior Report**
-```bash
-# Wait for periodic report (every 30 seconds)
-# Or generate more events to trigger report
-sleep 35
-
-# Check driver behavior report
-docker logs step3-app --tail 20 | grep -A 10 "DRIVER BEHAVIOR"
-```
-
-**Expected Driver Report:**
-```
-📋 === DRIVER BEHAVIOR REPORT ===
-🏁 Driver Score: 84.5/100
-🚨 Harsh Braking Events: 2
-⚡ Rapid Acceleration Events: 3
-🔄 Erratic Driving Events: 1
-⭐ Overall Rating: Good
-================================
-```
-
-## 🔍 Code Analysis & Advanced Patterns
-
-### **Key Patterns You Learned:**
-
-**1. Rolling Window Data Structure:**
-```cpp
-struct HistoricalData {
-    std::deque<DataPoint> speed;
-    std::deque<DataPoint> rpm;
-    const size_t maxSize = 50;  // Keep last 50 points
-    
-    void addDataPoint(std::deque<DataPoint>& container, double value) {
-        container.push_back({value, std::chrono::steady_clock::now()});
-        if (container.size() > maxSize) {
-            container.pop_front();
-        }
-    }
-};
-```
-
-**2. Statistical Analysis:**
-```cpp
-double calculateStandardDeviation(const std::deque<DataPoint>& data) {
-    double mean = std::accumulate(values.begin(), values.end(), 0.0) / values.size();
-    double variance = 0.0;
-    for (double value : values) {
-        variance += std::pow(value - mean, 2);
-    }
-    return std::sqrt(variance / values.size());
-}
-```
-
-**3. Multi-Tier Alert System:**
-```cpp
-enum class AlertPriority {
-    INFO = 0,
-    WARNING = 1,
-    CRITICAL = 2,
-    EMERGENCY = 3
-};
-
-void createAlert(const std::string& id, const std::string& message,
-                AlertPriority priority, double value);
-```
-
-**4. Acceleration Calculation:**
-```cpp
-void calculateAcceleration() {
-    if (speed.size() >= 2) {
-        auto timeDiff = duration_cast<milliseconds>(
-            latest.timestamp - previous.timestamp).count() / 1000.0;
-        double accel = (latest.value - previous.value) / timeDiff;
-    }
-}
-```
-
-**5. Anomaly Detection (Z-Score):**
-```cpp
-double detectAnomaly(double value, const std::deque<DataPoint>& history) {
-    double mean = calculateMean(history);
-    double stdDev = calculateStandardDeviation(history);
-    return (value - mean) / stdDev;  // Z-score
-}
-```
-
-## ✅ Success Criteria Validation
-
-### **✅ Pattern Detection:**
-- **PASS**: Harsh braking detection with threshold -5.0 m/s²
-- **PASS**: Rapid acceleration detection with threshold 4.0 m/s²
-- **PASS**: Erratic driving pattern analysis using variance
-- **PASS**: Engine anomaly detection using Z-score
-
-### **✅ Alert System:**
-- **PASS**: Multi-tier alerts (INFO/WARNING/CRITICAL/EMERGENCY)
-- **PASS**: Alert aging and automatic removal after 5 minutes
-- **PASS**: Priority-based alert processing
-- **PASS**: Contextual alert messages with values
-
-### **✅ Analytics Features:**
-- **PASS**: Rolling window data storage (50 points)
-- **PASS**: Statistical calculations (mean, std dev, trend)
-- **PASS**: Driver behavior scoring system
-- **PASS**: Predictive fuel consumption alerts
-- **PASS**: Periodic reporting (30-second intervals)
-
-## 📊 Performance Benchmarks
-
-| Metric | Expected Value | Your Result |
-|--------|----------------|-------------|
-| **Build Time** | 15-30 seconds | ⏱️ _____ |
-| **Memory Usage** | ~100-150MB | 💾 _____ |
-| **Alert Response** | <200ms | ⚡ _____ |
-| **Pattern Detection** | <500ms | 🔍 _____ |
-| **Report Generation** | <100ms | 📊 _____ |
-
-## 🐛 Troubleshooting
-
-### **Issue 1: No Pattern Detection**
-```bash
-# Ensure enough data points collected (minimum 5-10)
-# Generate more signal updates before expecting patterns
-```
-
-### **Issue 2: No Reports Generated**
-```bash
-# Reports generate every 30 seconds
-# Check time since app start:
-docker logs step3-app | grep "Starting Data Analysis"
-```
-
-### **Issue 3: Alerts Not Appearing**
-```bash
-# Verify thresholds are being exceeded
-# Harsh braking: > 5 m/s² deceleration
-# Rapid accel: > 4 m/s² acceleration
-# Check current values in logs
-```
-
-## 🧹 Cleanup
+### Scenario 3: Environmental Compliance Testing
 
 ```bash
-# Stop the analytics application
-docker stop step3-app && docker rm step3-app
+# Test air quality impact (simulated based on speed)
+echo "setValue Vehicle.Speed 5.0" | docker run --rm -i --network host \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555  # City driving (higher AQI)
 
-# Optional: Clean up volumes if done with Step 3
-# docker volume rm step3-build step3-deps step3-vss
+sleep 5
+
+echo "setValue Vehicle.Speed 30.0" | docker run --rm -i --network host \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555  # Highway (lower AQI)
+
+# Check environmental metrics
+docker logs fleet-analytics --tail 15 | grep -E "(AQI|Environment|POOR_AIR)"
 ```
 
-## 🎓 Knowledge Check
+## 🎓 Learning Outcomes
 
-**Before proceeding to Step 4, ensure you understand:**
+After completing this tutorial, you will have learned:
 
-1. **Rolling Windows**: Using `std::deque` for fixed-size historical data
-2. **Statistical Analysis**: Calculating mean, standard deviation, trends
-3. **Pattern Detection**: Identifying harsh events and erratic behavior
-4. **Alert Management**: Multi-tier system with priority levels
-5. **Predictive Analytics**: Using trends to anticipate future states
-6. **Driver Scoring**: Quantifying behavior with penalty system
+### ✅ **Custom VSS Signal Architecture**
+- How to define custom VSS specifications in JSON format
+- Organizing signals into logical business domains
+- Extending standard VSS with enterprise-specific signals
 
-## 🚀 What's Next?
+### ✅ **Enterprise Fleet Management Patterns**
+- Multi-dimensional vehicle analytics (driver, route, cargo, environment)
+- Real-time fleet operations monitoring
+- Advanced KPI calculation and reporting
 
-**Ready for Step 4?** You'll build a production-ready fleet management system:
+### ✅ **Production-Ready Application Development**
+- Handling multiple signal subscriptions efficiently
+- Implementing complex business logic with custom signals
+- Building comprehensive alerting and reporting systems
 
-- **GPS Integration**: Location-based speed zones and geofencing
-- **Fleet Analytics**: Multi-vehicle tracking and comparison
-- **Compliance Reporting**: Regulatory compliance automation
-- **REST API**: External system integration
-- **Dashboard Ready**: Real-time fleet visualization data
+### ✅ **Custom VSS Integration Techniques**
+- Using environment variables for custom VSS specifications
+- Combining standard and custom signals in one application
+- Simulating custom signals for development and testing
 
-**[Continue to Step 4: Advanced Fleet Management →](Step4_TUTORIAL.md)**
+## 🔄 Next Steps
 
----
+### **Production Deployment**
+1. **Deploy Custom VSS to KUKSA** - Load your custom VSS specification into production KUKSA instances
+2. **Implement Real Signal Sources** - Replace simulation with actual custom signal sources
+3. **Scale to Multi-Vehicle** - Extend to handle multiple vehicles in your fleet
+4. **Integrate with Business Systems** - Connect to ERP, dispatch, and analytics platforms
 
-## 📈 Step 3 Completion Checklist
+### **Advanced Customization**
+1. **Industry-Specific Signals** - Create signals for your specific industry (logistics, emergency services, etc.)
+2. **Regulatory Compliance** - Add signals for compliance monitoring (DOT, environmental regulations)
+3. **Predictive Analytics** - Implement machine learning with custom signal data
+4. **Real-time Dashboards** - Build web dashboards consuming custom VSS data
 
-- ✅ Built Step3_DataAnalysisAlerts application successfully
-- ✅ Implemented rolling window historical tracking
-- ✅ Detected harsh braking and rapid acceleration events
-- ✅ Identified erratic driving patterns using variance
-- ✅ Created multi-tier alert system with priorities
-- ✅ Generated driver behavior scores and reports
-- ✅ Implemented predictive fuel consumption alerts
-- ✅ Understood statistical analysis patterns
+## 📚 Additional Resources
 
-**🎉 Congratulations! You've mastered advanced vehicle data analytics!**
+- **VSS Specification**: [COVESA Vehicle Signal Specification](https://github.com/COVESA/vehicle_signal_specification)
+- **KUKSA Documentation**: [Eclipse KUKSA](https://github.com/eclipse-kuksa)
+- **Velocitas Framework**: [Eclipse Velocitas](https://github.com/eclipse-velocitas)
+- **Custom VSS Examples**: Check the `custom_fleet_vss.json` for detailed signal definitions
 
----
+## 🎉 Congratulations!
 
-*🚗💨 Detect patterns and predict vehicle behavior with advanced analytics!*
+You have successfully mastered **Custom VSS Fleet Analytics**! You now have the skills to:
+- Design custom vehicle signal specifications for any business domain
+- Build enterprise-grade fleet management applications
+- Process complex multi-dimensional vehicle data
+- Implement production-ready vehicle intelligence systems
+
+**Your custom VSS application is ready for enterprise deployment!** 🚀
