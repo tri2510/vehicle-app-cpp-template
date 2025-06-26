@@ -13,8 +13,16 @@ In this advanced tutorial, you will master:
 
 **Required Setup:**
 ```bash
-# Ensure KUKSA databroker is running
-docker ps | grep velocitas-vdb || docker compose -f docker-compose.dev.yml up -d vehicledatabroker
+# Option A: KUKSA with Custom VSS (enables real custom signal testing)
+docker stop velocitas-vdb 2>/dev/null || true
+docker run -d --rm --name kuksa-custom-vss --network host \
+  -v $(pwd)/examples/custom_fleet_vss.json:/custom_vss.json \
+  ghcr.io/eclipse-kuksa/kuksa-databroker:main \
+  --address 0.0.0.0 --port 55555 --insecure \
+  --vss /custom_vss.json
+
+# Option B: Standard KUKSA (simulation only)
+# docker ps | grep velocitas-vdb || docker compose -f docker-compose.dev.yml up -d vehicledatabroker
 
 # Create fresh persistent volumes for Step 3 (isolated from other steps)
 docker volume rm step3-build step3-deps step3-vss 2>/dev/null || true
@@ -170,7 +178,101 @@ docker run -d --network host --name step3-fleet-analytics \
 
 ## 📊 Testing Custom VSS Signals
 
-### Test 1: Fleet Driver Performance Analysis
+### **Real Custom VSS Signal Testing** (Advanced - Requires Custom KUKSA + Updated App)
+
+> **⚠️ Note**: The current Step 3 application subscribes to standard VSS signals and simulates custom signals internally. 
+> To test actual custom VSS signal injection, you would need to:
+> 1. Use Option A (Custom KUKSA with VSS file)
+> 2. Update the C++ application to subscribe to custom signals
+> 3. Regenerate vehicle model with custom VSS specification
+> 
+> **For learning purposes**, the commands below show how you WOULD test custom signals if fully implemented:
+
+**Test 1: Fleet Management Signals**
+
+```bash
+# Test custom fleet management signals
+echo "setValue Vehicle.FleetManagement.FleetID FLEET_ALPHA_001" | docker run --rm -i --network host \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+
+echo "setValue Vehicle.FleetManagement.DriverID DRIVER_12345" | docker run --rm -i --network host \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+
+echo "setValue Vehicle.FleetManagement.RouteID ROUTE_NYC_BOS_001" | docker run --rm -i --network host \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+
+# Check fleet management processing
+docker logs step3-fleet-analytics --tail 10 | grep -E "(Fleet|Driver|Route)"
+```
+
+**Test 2: Analytics Signals**
+
+```bash
+# Test custom analytics signals
+echo "setValue Vehicle.Analytics.DrivingScore 85.5" | docker run --rm -i --network host \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+
+echo "setValue Vehicle.Analytics.EcoEfficiency 92.3" | docker run --rm -i --network host \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+
+echo "setValue Vehicle.Analytics.SafetyRating 96.7" | docker run --rm -i --network host \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+
+# Check analytics processing
+docker logs step3-fleet-analytics --tail 10 | grep -E "(Analytics|Score|Efficiency|Safety)"
+```
+
+**Test 3: Cargo Monitoring**
+
+```bash
+# Test custom cargo signals
+echo "setValue Vehicle.CustomSensors.CargoStatus.LoadWeight 2500.0" | docker run --rm -i --network host \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+
+echo "setValue Vehicle.CustomSensors.CargoStatus.LoadPercentage 75.0" | docker run --rm -i --network host \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+
+echo "setValue Vehicle.CustomSensors.CargoStatus.CargoType ELECTRONICS" | docker run --rm -i --network host \
+  ghcr.io/eclipse-kuksa/kuksa-python-sdk/kuksa-client:main grpc://127.0.0.1:55555
+
+# Check cargo processing
+docker logs step3-fleet-analytics --tail 10 | grep -E "(Cargo|Load|Weight)"
+```
+
+**Expected Custom VSS Output:**
+```
+📊 Real Custom VSS Signal: FleetID=FLEET_ALPHA_001 | DriverID=DRIVER_12345
+📈 Analytics Update: DrivingScore=85.5% | EcoEfficiency=92.3% | Safety=96.7%
+📦 Cargo Update: ELECTRONICS 2500kg (75.0%) | Real Custom VSS Active!
+🎉 SUCCESS: Custom VSS signals processed from KUKSA databroker!
+```
+
+### **Why This Approach is Educational**
+
+The current Step 3 tutorial uses a **hybrid approach** that's ideal for learning:
+
+#### **✅ What Works Now (Standard Signals + Simulation):**
+- **Real KUKSA Integration**: Uses actual Vehicle.Speed, GPS, and temperature signals
+- **Custom VSS Architecture**: Demonstrates custom signal structure and organization  
+- **Business Logic**: Shows how to process and correlate custom fleet data
+- **Production Patterns**: Uses real enterprise fleet management patterns
+
+#### **🔧 What Full Implementation Would Add:**
+- **Direct Custom Signal Subscription**: C++ app subscribes to Vehicle.FleetManagement.* signals
+- **Real Custom Signal Processing**: Actual signal callbacks for custom VSS data
+- **End-to-End Custom VSS**: Complete pipeline from KUKSA injection to application processing
+
+#### **📚 Learning Value:**
+- **Understand Custom VSS Concepts**: Learn signal organization and structure
+- **See Production Architecture**: Enterprise fleet patterns and data correlation
+- **Rapid Development**: No complex vehicle model regeneration required
+- **Real Signal Processing**: Experience actual KUKSA signal subscription patterns
+
+---
+
+### **Standard Signal Testing** (Works with both Option A & B)
+
+### Test 4: Fleet Driver Performance Analysis
 
 ```bash
 # Test excellent driving performance
