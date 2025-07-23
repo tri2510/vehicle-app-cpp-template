@@ -91,9 +91,8 @@ RUN export PATH="$HOME/.local/bin:$PATH" && \
     velocitas exec vehicle-signal-interface download-vspec && \
     velocitas exec vehicle-signal-interface generate-model
 
-# Pre-build the template application for instant rerun
-RUN export PATH="$HOME/.local/bin:$PATH" && \
-    velocitas exec build-system build -r
+# NOTE: We do NOT pre-build the template application to avoid cache issues
+# The application will be built fresh when user provides their VehicleApp.cpp
 
 # Switch back to root for script installation
 USER root

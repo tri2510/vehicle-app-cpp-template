@@ -15,6 +15,7 @@ WORKSPACE="/quickbuild"
 BUILD_DIR="$WORKSPACE/build"
 LOG_FILE="/tmp/run.log"
 RUN_TIMEOUT=15
+SOURCE_HASH_FILE="$WORKSPACE/.source_hash"
 
 # Logging functions
 log_info() {

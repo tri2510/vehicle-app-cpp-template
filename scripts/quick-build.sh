@@ -15,6 +15,7 @@ WORKSPACE="/quickbuild"
 APP_SOURCE="$WORKSPACE/app/src/VehicleApp.cpp"
 BUILD_DIR="$WORKSPACE/build"
 LOG_FILE="/tmp/build.log"
+SOURCE_HASH_FILE="$WORKSPACE/.source_hash"
 
 # Logging functions
 log_info() {
@@ -68,6 +69,15 @@ run_with_logging() {
 echo "🚀 Quick Build Started: $(date)" > "$LOG_FILE"
 log_info "Workspace: $WORKSPACE"
 
+# Function to calculate source file hash
+calculate_source_hash() {
+    if [ -f "$APP_SOURCE" ]; then
+        sha256sum "$APP_SOURCE" | cut -d' ' -f1
+    else
+        echo "no_file"
+    fi
+}
+
 # Function to validate VehicleApp.cpp content
 validate_vehicle_app() {
     local file="$1"
@@ -114,6 +124,9 @@ get_user_input() {
         echo "  docker run -v \$(pwd):/input velocitas-quick"
         exit 1
     fi
+    
+    # Touch the file to update its timestamp
+    touch "$APP_SOURCE"
     
     # Validate the input
     validate_vehicle_app "$APP_SOURCE"
@@ -203,10 +216,25 @@ prepare_workspace() {
     # Configure custom VSS if provided
     prepare_custom_vss
     
-    # Clean any previous build artifacts
-    if [ -d "$BUILD_DIR" ]; then
-        log_info "Cleaning previous build artifacts..."
+    # Check if source has changed
+    local current_hash=$(calculate_source_hash)
+    local previous_hash=""
+    
+    if [ -f "$SOURCE_HASH_FILE" ]; then
+        previous_hash=$(cat "$SOURCE_HASH_FILE")
+    fi
+    
+    # Clean build artifacts if source changed or no previous build
+    if [ "$current_hash" != "$previous_hash" ] || [ ! -f "$BUILD_DIR/bin/app" ]; then
+        log_info "Source changed or no previous build, cleaning build artifacts..."
         rm -rf "$BUILD_DIR"
+        # Also clean CMake cache files
+        find "$WORKSPACE" -name "CMakeCache.txt" -delete 2>/dev/null || true
+        find "$WORKSPACE" -name "CMakeFiles" -type d -exec rm -rf {} + 2>/dev/null || true
+        # Save new hash
+        echo "$current_hash" > "$SOURCE_HASH_FILE"
+    else
+        log_info "Source unchanged, keeping existing build artifacts"
     fi
     
     log_success "Workspace prepared"
@@ -248,7 +276,7 @@ build_application() {
     log_info "🏗️  Starting compilation (Release mode for optimization)..."
     log_info "   This may take 60-90 seconds depending on code complexity..."
     
-    # Build with optimized release mode for faster builds
+    # Build with release flag (clean already done in prepare_workspace)
     if ! run_with_logging "velocitas exec build-system build -r" "C++ compilation completed successfully" "Build compilation failed"; then
         log_error "Build failed"
         echo ""
@@ -269,7 +297,7 @@ build_application() {
     local executable_path=""
     
     # Check common Velocitas build locations
-    for path in "$BUILD_DIR/bin/app" "$WORKSPACE/build-linux-x86_64/Release/bin/app" "$WORKSPACE/app/build/bin/app"; do
+    for path in "$BUILD_DIR/bin/app" "$WORKSPACE/build-linux-x86_64/Release/bin/app" "$WORKSPACE/app/build/bin/app" "$WORKSPACE/build-linux-x86_64/Release/src/app"; do
         if [ -f "$path" ]; then
             executable_found=true
             executable_path="$path"
@@ -283,8 +311,13 @@ build_application() {
         log_info "  - $BUILD_DIR/bin/app"
         log_info "  - $WORKSPACE/build-linux-x86_64/Release/bin/app"
         log_info "  - $WORKSPACE/app/build/bin/app"
+        log_info "  - $WORKSPACE/build-linux-x86_64/Release/src/app"
         log_info "Available files in build directory:"
         find "$WORKSPACE" -name "app" -type f 2>/dev/null || echo "  No 'app' executable found"
+        
+        # Try to find any executable
+        log_info "Looking for any executable files..."
+        find "$WORKSPACE" -type f -executable 2>/dev/null | head -5
         return 1
     fi
     
