@@ -1,0 +1,67 @@
+{
+  "Vehicle": {
+    "type": "branch",
+    "description": "High-level vehicle data",
+    "children": {
+      "Speed": {
+        "type": "sensor",
+        "datatype": "float",
+        "unit": "km/h",
+        "min": 0,
+        "max": 300,
+        "description": "Vehicle speed"
+      },
+      "Powertrain": {
+        "type": "branch",
+        "description": "Powertrain data",
+        "children": {
+          "Battery": {
+            "type": "branch",
+            "description": "Battery-related data",
+            "children": {
+              "Temperature": {
+                "type": "sensor",
+                "datatype": "float",
+                "unit": "celsius",
+                "min": -40,
+                "max": 80,
+                "description": "Battery pack temperature"
+              },
+              "StateOfCharge": {
+                "type": "sensor",
+                "datatype": "float",
+                "unit": "percent",
+                "min": 0,
+                "max": 100,
+                "description": "Battery state of charge"
+              }
+            }
+          }
+        }
+      },
+      "CustomNamespace": {
+        "type": "branch",
+        "description": "Custom signals for testing",
+        "children": {
+          "TestMode": {
+            "type": "actuator",
+            "datatype": "boolean",
+            "description": "Enable/disable test mode"
+          },
+          "DebugLevel": {
+            "type": "actuator",
+            "datatype": "uint8",
+            "min": 0,
+            "max": 5,
+            "description": "Debug verbosity level"
+          },
+          "LastError": {
+            "type": "sensor",
+            "datatype": "string",
+            "description": "Last error message"
+          }
+        }
+      }
+    }
+  }
+}

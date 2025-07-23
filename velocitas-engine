@@ -1,0 +1,379 @@
+#!/bin/bash
+# ============================================================================
+# Velocitas Persistent Engine - Always-On Build System
+# ============================================================================
+# Purpose: Keep a persistent container running for instant builds
+# Usage: ./velocitas-engine start|stop|build|run|status|logs
+# ============================================================================
+
+set -e
+
+# Configuration
+CONTAINER_NAME="velocitas-engine"
+IMAGE_NAME="velocitas-quick"
+WORKSPACE_VOLUME="velocitas-workspace"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Logging functions
+log_info() {
+    echo -e "${BLUE}ℹ️  [ENGINE] $1${NC}"
+}
+
+log_success() {
+    echo -e "${GREEN}✅ [ENGINE] $1${NC}"
+}
+
+log_error() {
+    echo -e "${RED}❌ [ENGINE] $1${NC}"
+}
+
+log_warning() {
+    echo -e "${YELLOW}⚠️  [ENGINE] $1${NC}"
+}
+
+# Check if engine is running
+is_engine_running() {
+    docker ps --format "table {{.Names}}" | grep -q "^${CONTAINER_NAME}$" 2>/dev/null
+}
+
+# Check if engine container exists
+engine_exists() {
+    docker ps -a --format "table {{.Names}}" | grep -q "^${CONTAINER_NAME}$" 2>/dev/null
+}
+
+# Check if image exists
+image_exists() {
+    docker images --format "table {{.Repository}}:{{.Tag}}" | grep -q "^${IMAGE_NAME}:" 2>/dev/null
+}
+
+# Start the persistent engine
+start_engine() {
+    log_info "Starting Velocitas persistent engine..."
+    
+    # Check if image exists
+    if ! image_exists; then
+        log_error "Image '${IMAGE_NAME}' not found. Please build it first:"
+        echo "docker build -f Dockerfile.quick -t ${IMAGE_NAME} ."
+        return 1
+    fi
+    
+    # Check if already running
+    if is_engine_running; then
+        log_warning "Engine already running"
+        show_status
+        return 0
+    fi
+    
+    # Remove existing stopped container
+    if engine_exists; then
+        log_info "Removing stopped engine container..."
+        docker rm "$CONTAINER_NAME" >/dev/null 2>&1
+    fi
+    
+    # Create persistent workspace volume
+    docker volume create "$WORKSPACE_VOLUME" >/dev/null 2>&1 || true
+    
+    # Start engine container with persistent workspace mounted directly 
+    log_info "Creating persistent engine container..."
+    docker run -d \
+        --name "$CONTAINER_NAME" \
+        --restart unless-stopped \
+        -v "$WORKSPACE_VOLUME":/quickbuild \
+        -e HTTP_PROXY="${HTTP_PROXY:-}" \
+        -e HTTPS_PROXY="${HTTPS_PROXY:-}" \
+        -e http_proxy="${http_proxy:-}" \
+        -e https_proxy="${https_proxy:-}" \
+        --network host \
+        --entrypoint="/bin/bash" \
+        "$IMAGE_NAME" \
+        -c "
+            echo 'Velocitas Engine starting...'
+            echo 'Persistent workspace mounted at /quickbuild'
+            
+            # Ensure required files exist in persistent workspace
+            if [ ! -f /quickbuild/.velocitas.json ]; then
+                echo 'Copying initial configuration...'
+                # Copy configuration files from template
+                [ -f /quickbuild-original/.velocitas.json ] && cp /quickbuild-original/.velocitas.json /quickbuild/ || true
+                [ -f /quickbuild-original/CMakeLists.txt ] && cp /quickbuild-original/CMakeLists.txt /quickbuild/ || true
+                [ -f /quickbuild-original/conanfile.txt ] && cp /quickbuild-original/conanfile.txt /quickbuild/ || true
+                [ -d /quickbuild-original/app ] && cp -r /quickbuild-original/app /quickbuild/ || true
+            fi
+            
+            echo 'Engine ready for builds'
+            echo 'Container ID: '\$(hostname)
+            echo 'Workspace: /quickbuild (persistent)'
+            echo 'Listening for build commands...'
+            
+            # Keep container running
+            tail -f /dev/null
+        " >/dev/null
+    
+    # Wait for engine to be ready
+    sleep 3
+    
+    if is_engine_running; then
+        log_success "Engine started successfully"
+        show_status
+    else
+        log_error "Failed to start engine"
+        return 1
+    fi
+}
+
+# Stop the persistent engine
+stop_engine() {
+    log_info "Stopping Velocitas engine..."
+    
+    if engine_exists; then
+        docker stop "$CONTAINER_NAME" >/dev/null 2>&1 || true
+        docker rm "$CONTAINER_NAME" >/dev/null 2>&1 || true
+        log_success "Engine stopped and removed"
+    else
+        log_info "Engine not found"
+    fi
+}
+
+# Build using persistent engine
+build_with_engine() {
+    local input_file="$1"
+    
+    if [ -z "$input_file" ]; then
+        log_error "Usage: ./velocitas-engine build <VehicleApp.cpp>"
+        echo ""
+        echo "Examples:"
+        echo "  ./velocitas-engine build example-app.cpp"
+        echo "  ./velocitas-engine build my-vehicle-app.cpp"
+        return 1
+    fi
+    
+    if [ ! -f "$input_file" ]; then
+        log_error "File not found: $input_file"
+        return 1
+    fi
+    
+    # Ensure engine is running
+    if ! is_engine_running; then
+        log_info "Engine not running, starting..."
+        start_engine || return 1
+    fi
+    
+    log_info "Building $(basename "$input_file") with persistent engine..."
+    
+    # Copy input file to engine
+    docker cp "$input_file" "$CONTAINER_NAME":/input
+    
+    # Execute build in running container using the built-in build command
+    docker exec "$CONTAINER_NAME" build
+    
+    # Find and mark the executable location
+    local executable_path=$(docker exec "$CONTAINER_NAME" /scripts/find-executable.sh 2>/dev/null || echo "")
+    
+    if [ -n "$executable_path" ]; then
+        log_info "Found executable at: $executable_path"
+        # Store path for later extraction
+        echo "$executable_path" > /tmp/last_build_executable_path.txt
+    fi
+}
+
+# Build and run using persistent engine  
+run_with_engine() {
+    local input_file="$1"
+    
+    if [ -z "$input_file" ]; then
+        log_error "Usage: ./velocitas-engine run <VehicleApp.cpp>"
+        return 1
+    fi
+    
+    if [ ! -f "$input_file" ]; then
+        log_error "File not found: $input_file"
+        return 1
+    fi
+    
+    # Ensure engine is running
+    if ! is_engine_running; then
+        log_info "Engine not running, starting..."
+        start_engine || return 1
+    fi
+    
+    log_info "Building and running $(basename "$input_file") with persistent engine..."
+    
+    # Copy input file to engine
+    docker cp "$input_file" "$CONTAINER_NAME":/input
+    
+    # Execute build and run in running container using built-in run command
+    docker exec "$CONTAINER_NAME" run
+}
+
+# Show engine status
+show_status() {
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "🚀 Velocitas Persistent Engine Status"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    
+    if is_engine_running; then
+        echo -e "✅ Status: ${GREEN}Running${NC}"
+        echo "📦 Container: $CONTAINER_NAME"
+        echo "💾 Workspace: $WORKSPACE_VOLUME"
+        
+        # Get container info
+        local created=$(docker inspect "$CONTAINER_NAME" --format '{{.Created}}' | cut -d'T' -f1)
+        local uptime=$(docker exec "$CONTAINER_NAME" uptime -p 2>/dev/null || echo "unknown")
+        
+        echo "📅 Created: $created"
+        echo "⏱️  Uptime: $uptime"
+        
+        # Check cache status
+        if docker exec "$CONTAINER_NAME" test -f /quickbuild/.source_hash >/dev/null 2>&1; then
+            local hash=$(docker exec "$CONTAINER_NAME" cat /quickbuild/.source_hash 2>/dev/null || echo "unknown")
+            echo "🔑 Cache Hash: $hash"
+        else
+            echo "🔑 Cache Hash: None (fresh)"
+        fi
+        
+        # Check build artifacts
+        local artifacts=$(docker exec "$CONTAINER_NAME" find /quickbuild -name "*.o" -o -name "app" 2>/dev/null | wc -l)
+        echo "🏗️  Build Artifacts: $artifacts files"
+        
+        echo ""
+        echo "Ready for instant builds:"
+        echo "  ./velocitas-engine build your-app.cpp"
+        echo "  ./velocitas-engine run your-app.cpp"
+        
+    elif engine_exists; then
+        echo -e "⏸️  Status: ${YELLOW}Stopped${NC}"
+        echo "📦 Container: $CONTAINER_NAME (exists but not running)"
+        echo ""
+        echo "Start with: ./velocitas-engine start"
+        
+    else
+        echo -e "❌ Status: ${RED}Not Created${NC}"
+        echo ""
+        echo "Create with: ./velocitas-engine start"
+    fi
+    
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
+
+# Show engine logs
+show_logs() {
+    if is_engine_running; then
+        log_info "Showing engine logs (Ctrl+C to exit)..."
+        docker logs -f "$CONTAINER_NAME"
+    else
+        log_error "Engine not running"
+        return 1
+    fi
+}
+
+# Open shell in engine
+open_shell() {
+    if is_engine_running; then
+        log_info "Opening shell in engine container..."
+        docker exec -it "$CONTAINER_NAME" bash
+    else
+        log_error "Engine not running"
+        return 1
+    fi
+}
+
+# Restart engine
+restart_engine() {
+    log_info "Restarting engine..."
+    stop_engine
+    sleep 2
+    start_engine
+}
+
+# Clean engine data
+clean_engine() {
+    log_info "Cleaning engine data..."
+    stop_engine
+    docker volume rm "$WORKSPACE_VOLUME" >/dev/null 2>&1 || true
+    log_success "Engine data cleaned"
+}
+
+# Show help
+show_help() {
+    echo "🚀 Velocitas Persistent Engine - Always-On Build System"
+    echo ""
+    echo "Keep a container running for instant vehicle app builds without startup overhead."
+    echo ""
+    echo "Usage: ./velocitas-engine <command> [options]"
+    echo ""
+    echo "Commands:"
+    echo "  start              - Start persistent engine"
+    echo "  stop               - Stop and remove engine"
+    echo "  build <app.cpp>    - Build app using persistent engine"
+    echo "  run <app.cpp>      - Build and run app using persistent engine"
+    echo "  status             - Show engine status and cache info"
+    echo "  logs               - Show engine logs (live)"
+    echo "  shell              - Open bash shell in running engine"
+    echo "  restart            - Restart the engine"
+    echo "  clean              - Stop engine and remove all data"
+    echo "  help               - Show this help"
+    echo ""
+    echo "Examples:"
+    echo "  ./velocitas-engine start"
+    echo "  ./velocitas-engine build example-app.cpp"
+    echo "  ./velocitas-engine build my-speed-monitor.cpp"
+    echo "  ./velocitas-engine run my-speed-monitor.cpp"
+    echo "  ./velocitas-engine status"
+    echo ""
+    echo "Benefits:"
+    echo "  ⚡ Instant builds - No container startup time"
+    echo "  💾 Persistent cache - Faster rebuilds"
+    echo "  🔄 Always ready - Engine stays running"
+    echo "  🎯 True cache hits - Same files use cached builds"
+    echo ""
+    echo "Prerequisites:"
+    echo "  1. Build the image: docker build -f Dockerfile.quick -t ${IMAGE_NAME} ."
+    echo "  2. Start the engine: ./velocitas-engine start"
+    echo "  3. Build your apps: ./velocitas-engine build your-app.cpp"
+}
+
+# Main command handler
+case "${1:-help}" in
+    "start")
+        start_engine
+        ;;
+    "stop")
+        stop_engine
+        ;;
+    "build")
+        build_with_engine "$2"
+        ;;
+    "run")
+        run_with_engine "$2"
+        ;;
+    "status")
+        show_status
+        ;;
+    "logs")
+        show_logs
+        ;;
+    "shell")
+        open_shell
+        ;;
+    "restart")
+        restart_engine
+        ;;
+    "clean")
+        clean_engine
+        ;;
+    "help"|"--help"|"-h")
+        show_help
+        ;;
+    *)
+        log_error "Unknown command: $1"
+        echo ""
+        echo "Use './velocitas-engine help' for usage information"
+        exit 1
+        ;;
+esac

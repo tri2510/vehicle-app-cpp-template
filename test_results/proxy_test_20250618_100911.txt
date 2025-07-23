@@ -1,1828 +1,0 @@
-🧪 Mode 2 Test Suite - Wed Jun 18 10:09:11 AM +07 2025
-📊 Configuration:
-   Proxy: true
-   Proxy Host: 127.0.0.1:3128
-   Container: velocitas-quick-proxy
-   Timeout: 180s
-   Output: test_results
-
-📋 System Info:
-   Docker: Docker version 28.2.2, build e6534b4
-   OS: Linux HC-C-0057R 6.5.0-26-generic #26~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Tue Mar 12 10:22:43 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
-   Disk: /dev/mapper/ubuntu--vg-ubuntu--lv  935G  321G  567G  37% /
-
-🔧 TEST 1: Container Build
-Started: Wed Jun 18 10:09:11 AM +07 2025
-#0 building with "default" instance using docker driver
-
-#1 [internal] load build definition from Dockerfile.quick
-#1 transferring dockerfile: 4.97kB done
-#1 DONE 0.0s
-
-#2 [internal] load metadata for ghcr.io/eclipse-velocitas/devcontainer-base-images/cpp:v0.4
-#2 DONE 0.8s
-
-#3 [internal] load .dockerignore
-#3 transferring context: 126B done
-#3 DONE 0.0s
-
-#4 [ 1/21] FROM ghcr.io/eclipse-velocitas/devcontainer-base-images/cpp:v0.4@sha256:07b710143fc78143e744c932d2acb48ab71a8ae59ef95fcb1d20e4db59bf6a7c
-#4 DONE 0.0s
-
-#5 [ 3/21] RUN apt-get update && apt-get install -y     curl     wget     git     sudo     build-essential     cmake     ninja-build     ccache     pkg-config     python3     python3-pip     netcat-openbsd     jq     && rm -rf /var/lib/apt/lists/*
-#5 CACHED
-
-#6 [ 2/21] RUN groupadd --gid 1000 vscode || true &&     useradd --uid 1000 --gid 1000 -m vscode || true
-#6 CACHED
-
-#7 [ 4/21] RUN echo vscode ALL=(root) NOPASSWD:ALL > /etc/sudoers.d/vscode     && chmod 0440 /etc/sudoers.d/vscode
-#7 CACHED
-
-#8 [internal] load build context
-#8 transferring context: 701B done
-#8 DONE 0.0s
-
-#9 [ 5/21] RUN mkdir -p /quickbuild && chown -R vscode:vscode /quickbuild
-#9 DONE 0.1s
-
-#10 [ 6/21] COPY requirements.txt /tmp/requirements.txt
-#10 DONE 0.0s
-
-#11 [ 7/21] RUN python3 -m pip install --user --upgrade pip &&     python3 -m pip install --user -r /tmp/requirements.txt
-#11 0.478 Requirement already satisfied: pip in /usr/local/lib/python3.10/dist-packages (25.1.1)
-#11 2.418 Collecting build==1.2.2.post1 (from -r /tmp/requirements.txt (line 7))
-#11 3.147   Downloading build-1.2.2.post1-py3-none-any.whl.metadata (6.5 kB)
-#11 3.237 Collecting certifi==2025.1.31 (from -r /tmp/requirements.txt (line 9))
-#11 3.284   Downloading certifi-2025.1.31-py3-none-any.whl.metadata (2.5 kB)
-#11 3.297 Requirement already satisfied: cfgv==3.4.0 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 11)) (3.4.0)
-#11 3.491 Collecting charset-normalizer==3.4.1 (from -r /tmp/requirements.txt (line 13))
-#11 3.572   Downloading charset_normalizer-3.4.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (35 kB)
-#11 3.706 Collecting click==8.1.8 (from -r /tmp/requirements.txt (line 15))
-#11 3.745   Downloading click-8.1.8-py3-none-any.whl.metadata (2.3 kB)
-#11 3.761 Requirement already satisfied: colorama==0.4.6 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 17)) (0.4.6)
-#11 3.762 Requirement already satisfied: conan==2.15.1 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 19)) (2.15.1)
-#11 3.762 Requirement already satisfied: cpplint==1.6.1 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 21)) (1.6.1)
-#11 3.762 Requirement already satisfied: distlib==0.3.9 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 23)) (0.3.9)
-#11 3.763 Requirement already satisfied: distro==1.8.0 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 25)) (1.8.0)
-#11 3.763 Requirement already satisfied: fasteners==0.19 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 27)) (0.19)
-#11 3.764 Requirement already satisfied: filelock==3.18.0 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 29)) (3.18.0)
-#11 3.764 Requirement already satisfied: gcovr==5.2 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 31)) (5.2)
-#11 3.838 Collecting identify==2.6.9 (from -r /tmp/requirements.txt (line 33))
-#11 3.872   Downloading identify-2.6.9-py2.py3-none-any.whl.metadata (4.4 kB)
-#11 3.890 Requirement already satisfied: idna==3.10 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 35)) (3.10)
-#11 3.891 Requirement already satisfied: jinja2==3.1.6 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 37)) (3.1.6)
-#11 4.116 Collecting lxml==5.3.2 (from -r /tmp/requirements.txt (line 41))
-#11 4.173   Downloading lxml-5.3.2-cp310-cp310-manylinux_2_28_x86_64.whl.metadata (3.6 kB)
-#11 4.188 Requirement already satisfied: markupsafe==3.0.2 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 43)) (3.0.2)
-#11 4.188 Requirement already satisfied: nodeenv==1.9.1 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 45)) (1.9.1)
-#11 4.268 Collecting packaging==24.2 (from -r /tmp/requirements.txt (line 47))
-#11 4.314   Downloading packaging-24.2-py3-none-any.whl.metadata (3.2 kB)
-#11 4.330 Requirement already satisfied: patch-ng==1.18.1 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 49)) (1.18.1)
-#11 4.392 Collecting pip-tools==7.4.1 (from -r /tmp/requirements.txt (line 51))
-#11 4.428   Downloading pip_tools-7.4.1-py3-none-any.whl.metadata (26 kB)
-#11 4.500 Collecting platformdirs==4.3.7 (from -r /tmp/requirements.txt (line 53))
-#11 4.535   Downloading platformdirs-4.3.7-py3-none-any.whl.metadata (11 kB)
-#11 4.551 Requirement already satisfied: pre-commit==3.5.0 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 55)) (3.5.0)
-#11 4.611 Collecting pygments==2.19.1 (from -r /tmp/requirements.txt (line 57))
-#11 4.642   Downloading pygments-2.19.1-py3-none-any.whl.metadata (2.5 kB)
-#11 4.704 Collecting pyproject-hooks==1.2.0 (from -r /tmp/requirements.txt (line 59))
-#11 4.751   Downloading pyproject_hooks-1.2.0-py3-none-any.whl.metadata (1.3 kB)
-#11 4.773 Requirement already satisfied: python-dateutil==2.9.0.post0 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 63)) (2.9.0.post0)
-#11 4.773 Requirement already satisfied: pyyaml==6.0.2 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 65)) (6.0.2)
-#11 4.773 Requirement already satisfied: requests==2.32.3 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 69)) (2.32.3)
-#11 4.820 Collecting six==1.17.0 (from -r /tmp/requirements.txt (line 71))
-#11 4.865   Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
-#11 4.932 Collecting tomli==2.2.1 (from -r /tmp/requirements.txt (line 73))
-#11 4.962   Downloading tomli-2.2.1-py3-none-any.whl.metadata (10 kB)
-#11 4.978 Requirement already satisfied: urllib3==2.0.7 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 77)) (2.0.7)
-#11 5.051 Collecting virtualenv==20.30.0 (from -r /tmp/requirements.txt (line 81))
-#11 5.084   Downloading virtualenv-20.30.0-py3-none-any.whl.metadata (4.5 kB)
-#11 5.105 Requirement already satisfied: wheel==0.45.1 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 83)) (0.45.1)
-#11 5.152 Requirement already satisfied: pip>=22.2 in /usr/local/lib/python3.10/dist-packages (from pip-tools==7.4.1->-r /tmp/requirements.txt (line 51)) (25.1.1)
-#11 5.152 Requirement already satisfied: setuptools in /usr/local/lib/python3.10/dist-packages (from pip-tools==7.4.1->-r /tmp/requirements.txt (line 51)) (80.7.1)
-#11 5.232 Downloading build-1.2.2.post1-py3-none-any.whl (22 kB)
-#11 5.275 Downloading certifi-2025.1.31-py3-none-any.whl (166 kB)
-#11 5.354 Downloading charset_normalizer-3.4.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (146 kB)
-#11 5.402 Downloading click-8.1.8-py3-none-any.whl (98 kB)
-#11 5.449 Downloading identify-2.6.9-py2.py3-none-any.whl (99 kB)
-#11 5.514 Downloading lxml-5.3.2-cp310-cp310-manylinux_2_28_x86_64.whl (5.2 MB)
-#11 5.782    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.2/5.2 MB 18.5 MB/s eta 0:00:00
-#11 5.816 Downloading packaging-24.2-py3-none-any.whl (65 kB)
-#11 5.877 Downloading pip_tools-7.4.1-py3-none-any.whl (61 kB)
-#11 5.934 Downloading platformdirs-4.3.7-py3-none-any.whl (18 kB)
-#11 5.977 Downloading pygments-2.19.1-py3-none-any.whl (1.2 MB)
-#11 6.040    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 16.5 MB/s eta 0:00:00
-#11 6.071 Downloading pyproject_hooks-1.2.0-py3-none-any.whl (10 kB)
-#11 6.114 Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
-#11 6.163 Downloading tomli-2.2.1-py3-none-any.whl (14 kB)
-#11 6.211 Downloading virtualenv-20.30.0-py3-none-any.whl (4.3 MB)
-#11 6.383    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.3/4.3 MB 24.1 MB/s eta 0:00:00
-#11 6.462 Installing collected packages: tomli, six, pyproject-hooks, pygments, platformdirs, packaging, lxml, identify, click, charset-normalizer, certifi, virtualenv, build, pip-tools
-#11 7.964   WARNING: The script pygmentize is installed in '/home/vscode/.local/bin' which is not on PATH.
-#11 7.964   Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
-#11 8.406   WARNING: The script identify-cli is installed in '/home/vscode/.local/bin' which is not on PATH.
-#11 8.406   Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
-#11 8.597   WARNING: The script normalizer is installed in '/home/vscode/.local/bin' which is not on PATH.
-#11 8.597   Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
-#11 8.926   WARNING: The script virtualenv is installed in '/home/vscode/.local/bin' which is not on PATH.
-#11 8.926   Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
-#11 8.985   WARNING: The script pyproject-build is installed in '/home/vscode/.local/bin' which is not on PATH.
-#11 8.985   Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
-#11 9.076   WARNING: The scripts pip-compile and pip-sync are installed in '/home/vscode/.local/bin' which is not on PATH.
-#11 9.076   Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
-#11 9.088 
-#11 9.090 Successfully installed build-1.2.2.post1 certifi-2025.1.31 charset-normalizer-3.4.1 click-8.1.8 identify-2.6.9 lxml-5.3.2 packaging-24.2 pip-tools-7.4.1 platformdirs-4.3.7 pygments-2.19.1 pyproject-hooks-1.2.0 six-1.17.0 tomli-2.2.1 virtualenv-20.30.0
-#11 DONE 9.3s
-
-#12 [ 8/21] WORKDIR /quickbuild
-#12 DONE 0.1s
-
-#13 [ 9/21] COPY --chown=vscode:vscode templates/AppManifest.json /quickbuild/app/AppManifest.json
-#13 DONE 0.0s
-
-#14 [10/21] COPY --chown=vscode:vscode templates/conanfile.txt /quickbuild/conanfile.txt
-#14 DONE 0.0s
-
-#15 [11/21] COPY --chown=vscode:vscode templates/CMakeLists.txt /quickbuild/CMakeLists.txt
-#15 DONE 0.0s
-
-#16 [12/21] COPY --chown=vscode:vscode templates/app/ /quickbuild/app/
-#16 DONE 0.0s
-
-#17 [13/21] COPY --chown=vscode:vscode templates/app/src/VehicleApp.template.cpp /quickbuild/app/src/VehicleApp.cpp
-#17 DONE 0.0s
-
-#18 [14/21] COPY --chown=vscode:vscode .velocitas.json /quickbuild/.velocitas.json
-#18 DONE 0.1s
-
-#19 [15/21] RUN pip install --user -r /tmp/requirements.txt &&     export PATH="$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" &&     velocitas init -f -v
-#19 0.477 Requirement already satisfied: build==1.2.2.post1 in /home/vscode/.local/lib/python3.10/site-packages (from -r /tmp/requirements.txt (line 7)) (1.2.2.post1)
-#19 0.477 Requirement already satisfied: certifi==2025.1.31 in /home/vscode/.local/lib/python3.10/site-packages (from -r /tmp/requirements.txt (line 9)) (2025.1.31)
-#19 0.477 Requirement already satisfied: cfgv==3.4.0 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 11)) (3.4.0)
-#19 0.478 Requirement already satisfied: charset-normalizer==3.4.1 in /home/vscode/.local/lib/python3.10/site-packages (from -r /tmp/requirements.txt (line 13)) (3.4.1)
-#19 0.478 Requirement already satisfied: click==8.1.8 in /home/vscode/.local/lib/python3.10/site-packages (from -r /tmp/requirements.txt (line 15)) (8.1.8)
-#19 0.478 Requirement already satisfied: colorama==0.4.6 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 17)) (0.4.6)
-#19 0.478 Requirement already satisfied: conan==2.15.1 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 19)) (2.15.1)
-#19 0.479 Requirement already satisfied: cpplint==1.6.1 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 21)) (1.6.1)
-#19 0.479 Requirement already satisfied: distlib==0.3.9 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 23)) (0.3.9)
-#19 0.479 Requirement already satisfied: distro==1.8.0 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 25)) (1.8.0)
-#19 0.480 Requirement already satisfied: fasteners==0.19 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 27)) (0.19)
-#19 0.480 Requirement already satisfied: filelock==3.18.0 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 29)) (3.18.0)
-#19 0.480 Requirement already satisfied: gcovr==5.2 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 31)) (5.2)
-#19 0.481 Requirement already satisfied: identify==2.6.9 in /home/vscode/.local/lib/python3.10/site-packages (from -r /tmp/requirements.txt (line 33)) (2.6.9)
-#19 0.481 Requirement already satisfied: idna==3.10 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 35)) (3.10)
-#19 0.481 Requirement already satisfied: jinja2==3.1.6 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 37)) (3.1.6)
-#19 0.482 Requirement already satisfied: lxml==5.3.2 in /home/vscode/.local/lib/python3.10/site-packages (from -r /tmp/requirements.txt (line 41)) (5.3.2)
-#19 0.482 Requirement already satisfied: markupsafe==3.0.2 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 43)) (3.0.2)
-#19 0.483 Requirement already satisfied: nodeenv==1.9.1 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 45)) (1.9.1)
-#19 0.483 Requirement already satisfied: packaging==24.2 in /home/vscode/.local/lib/python3.10/site-packages (from -r /tmp/requirements.txt (line 47)) (24.2)
-#19 0.484 Requirement already satisfied: patch-ng==1.18.1 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 49)) (1.18.1)
-#19 0.484 Requirement already satisfied: pip-tools==7.4.1 in /home/vscode/.local/lib/python3.10/site-packages (from -r /tmp/requirements.txt (line 51)) (7.4.1)
-#19 0.484 Requirement already satisfied: platformdirs==4.3.7 in /home/vscode/.local/lib/python3.10/site-packages (from -r /tmp/requirements.txt (line 53)) (4.3.7)
-#19 0.485 Requirement already satisfied: pre-commit==3.5.0 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 55)) (3.5.0)
-#19 0.485 Requirement already satisfied: pygments==2.19.1 in /home/vscode/.local/lib/python3.10/site-packages (from -r /tmp/requirements.txt (line 57)) (2.19.1)
-#19 0.486 Requirement already satisfied: pyproject-hooks==1.2.0 in /home/vscode/.local/lib/python3.10/site-packages (from -r /tmp/requirements.txt (line 59)) (1.2.0)
-#19 0.487 Requirement already satisfied: python-dateutil==2.9.0.post0 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 63)) (2.9.0.post0)
-#19 0.487 Requirement already satisfied: pyyaml==6.0.2 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 65)) (6.0.2)
-#19 0.487 Requirement already satisfied: requests==2.32.3 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 69)) (2.32.3)
-#19 0.488 Requirement already satisfied: six==1.17.0 in /home/vscode/.local/lib/python3.10/site-packages (from -r /tmp/requirements.txt (line 71)) (1.17.0)
-#19 0.488 Requirement already satisfied: tomli==2.2.1 in /home/vscode/.local/lib/python3.10/site-packages (from -r /tmp/requirements.txt (line 73)) (2.2.1)
-#19 0.489 Requirement already satisfied: urllib3==2.0.7 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 77)) (2.0.7)
-#19 0.489 Requirement already satisfied: virtualenv==20.30.0 in /home/vscode/.local/lib/python3.10/site-packages (from -r /tmp/requirements.txt (line 81)) (20.30.0)
-#19 0.489 Requirement already satisfied: wheel==0.45.1 in /usr/local/lib/python3.10/dist-packages (from -r /tmp/requirements.txt (line 83)) (0.45.1)
-#19 0.541 Requirement already satisfied: pip>=22.2 in /usr/local/lib/python3.10/dist-packages (from pip-tools==7.4.1->-r /tmp/requirements.txt (line 51)) (25.1.1)
-#19 0.541 Requirement already satisfied: setuptools in /usr/local/lib/python3.10/dist-packages (from pip-tools==7.4.1->-r /tmp/requirements.txt (line 51)) (80.7.1)
-#19 1.931 Initializing Velocitas packages ...
-#19 4.592 ... Resolved 'devenv-devcontainer-setup:v3.0.0' to version: 'v3.0.0'
-#19 4.592 ... Downloading package: 'devenv-devcontainer-setup:v3.0.0'
-#19 7.340 ... > Running post init hook for 'vehicle-signal-interface'
-#19 7.340 Running 'install-deps'
-#19 7.341 Starting vehicle-signal-interface/install-deps
-#19 12.24 Collecting velocitas-lib==0.0.13
-#19 12.65   Downloading velocitas_lib-0.0.13-py3-none-any.whl (22 kB)
-#19 12.95 Collecting velocitas-model-generator==0.8.0
-#19 12.99   Downloading velocitas_model_generator-0.8.0-py3-none-any.whl (34 kB)
-#19 13.10 Collecting types-requests
-#19 13.17   Downloading types_requests-2.32.4.20250611-py3-none-any.whl (20 kB)
-#19 13.27 Collecting requests
-#19 13.30   Downloading requests-2.32.4-py3-none-any.whl (64 kB)
-#19 13.30 [?25l     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/64.8 KB[0m [31m?[0m eta [36m-:--:--[0m[2K     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m64.8/64.8 KB[0m [31m7.2 MB/s[0m eta [36m0:00:00[0m
-#19 13.31 [?25hCollecting vss-tools==4.0
-#19 13.65   Downloading vss_tools-4.0-py3-none-any.whl (46 kB)
-#19 13.65 [?25l     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/46.8 KB[0m [31m?[0m eta [36m-:--:--[0m[2K     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m46.8/46.8 KB[0m [31m5.1 MB/s[0m eta [36m0:00:00[0m
-#19 13.66 [?25hCollecting anytree>=2.8.0
-#19 14.00   Downloading anytree-2.13.0-py3-none-any.whl (45 kB)
-#19 14.00 [?25l     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/45.1 KB[0m [31m?[0m eta [36m-:--:--[0m[2K     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m45.1/45.1 KB[0m [31m4.4 MB/s[0m eta [36m0:00:00[0m
-#19 14.01 [?25hCollecting pyyaml>=5.1
-#19 14.16   Downloading PyYAML-6.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (751 kB)
-#19 14.16 [?25l     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/751.2 KB[0m [31m?[0m eta [36m-:--:--[0m[2K     [91m━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m419.8/751.2 KB[0m [31m12.4 MB/s[0m eta [36m0:00:01[0m[2K     [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━[0m [32m634.9/751.2 KB[0m [31m16.7 MB/s[0m eta [36m0:00:01[0m[2K     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m751.2/751.2 KB[0m [31m8.5 MB/s[0m eta [36m0:00:00[0m
-#19 14.25 [?25hCollecting graphql-core
-#19 14.39   Downloading graphql_core-3.2.6-py3-none-any.whl (203 kB)
-#19 14.39 [?25l     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/203.4 KB[0m [31m?[0m eta [36m-:--:--[0m[2K     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m203.4/203.4 KB[0m [31m20.8 MB/s[0m eta [36m0:00:00[0m
-#19 14.40 [?25hCollecting deprecation>=2.1.0
-#19 14.50   Downloading deprecation-2.1.0-py2.py3-none-any.whl (11 kB)
-#19 14.59 Collecting urllib3>=2
-#19 14.64   Downloading urllib3-2.4.0-py3-none-any.whl (128 kB)
-#19 14.64 [?25l     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/128.7 KB[0m [31m?[0m eta [36m-:--:--[0m[2K     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m128.7/128.7 KB[0m [31m13.6 MB/s[0m eta [36m0:00:00[0m
-#19 14.66 [?25hCollecting idna<4,>=2.5
-#19 14.77   Downloading idna-3.10-py3-none-any.whl (70 kB)
-#19 14.77 [?25l     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/70.4 KB[0m [31m?[0m eta [36m-:--:--[0m[2K     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m70.4/70.4 KB[0m [31m7.2 MB/s[0m eta [36m0:00:00[0m
-#19 14.78 [?25hCollecting charset_normalizer<4,>=2
-#19 15.04   Downloading charset_normalizer-3.4.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (149 kB)
-#19 15.04 [?25l     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/149.5 KB[0m [31m?[0m eta [36m-:--:--[0m[2K     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m149.5/149.5 KB[0m [31m14.9 MB/s[0m eta [36m0:00:00[0m
-#19 15.05 [?25hCollecting certifi>=2017.4.17
-#19 15.18   Downloading certifi-2025.6.15-py3-none-any.whl (157 kB)
-#19 15.18 [?25l     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/157.7 KB[0m [31m?[0m eta [36m-:--:--[0m[2K     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m157.7/157.7 KB[0m [31m16.3 MB/s[0m eta [36m0:00:00[0m
-#19 15.19 [?25hCollecting packaging
-#19 15.36   Downloading packaging-25.0-py3-none-any.whl (66 kB)
-#19 15.36 [?25l     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/66.5 KB[0m [31m?[0m eta [36m-:--:--[0m[2K     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m66.5/66.5 KB[0m [31m6.1 MB/s[0m eta [36m0:00:00[0m
-#19 15.37 [?25hInstalling collected packages: urllib3, pyyaml, packaging, idna, graphql-core, charset_normalizer, certifi, anytree, types-requests, requests, deprecation, vss-tools, velocitas-lib, velocitas-model-generator
-#19 16.91 Successfully installed anytree-2.13.0 certifi-2025.6.15 charset_normalizer-3.4.2 deprecation-2.1.0 graphql-core-3.2.6 idna-3.10 packaging-25.0 pyyaml-6.0.2 requests-2.32.4 types-requests-2.32.4.20250611 urllib3-2.4.0 velocitas-lib-0.0.13 velocitas-model-generator-0.8.0 vss-tools-4.0
-#19 16.97 Running 'download-vspec'
-#19 16.97 Starting vehicle-signal-interface/download-vspec
-#19 21.62 vspec_file_path='/home/vscode/.velocitas/projects/20c9e89591b7712bd6517500cc120486/vspec.json' >> VELOCITAS_CACHE
-#19 21.62 unit_file_path_list=["/home/vscode/.velocitas/packages/devenv-devcontainer-setup/v3.0.0/vehicle-model-lifecycle/units.yaml"] >> VELOCITAS_CACHE
-#19 21.64 Running 'generate-model'
-#19 21.64 Starting vehicle-signal-interface/generate-model
-#19 23.19 Deleting old model at '/home/vscode/.velocitas/projects/20c9e89591b7712bd6517500cc120486/vehicle_model'
-#19 23.19 Invoking model generator for language cpp and file '/home/vscode/.velocitas/projects/20c9e89591b7712bd6517500cc120486/vspec.json' with units from ['/home/vscode/.velocitas/packages/devenv-devcontainer-setup/v3.0.0/vehicle-model-lifecycle/units.yaml']
-#19 23.19 Loading json...
-#19 23.19 Generating tree from json...
-#19 23.23 Recursing tree and creating c++ code...
-#19 23.39 All done.
-#19 23.39 Exporting Conan project
-#19 23.81 ... > Running post init hook for 'sdk-installer'
-#19 23.81 Running 'install-deps'
-#19 23.82 Starting sdk-installer/install-deps
-#19 28.94 Collecting velocitas-lib==0.0.13
-#19 28.94   Using cached velocitas_lib-0.0.13-py3-none-any.whl (22 kB)
-#19 29.23 Collecting cloudevents
-#19 29.84   Downloading cloudevents-1.12.0-py3-none-any.whl (55 kB)
-#19 29.84 [?25l     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/55.8 KB[0m [31m?[0m eta [36m-:--:--[0m[2K     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m55.8/55.8 KB[0m [31m4.4 MB/s[0m eta [36m0:00:00[0m
-#19 29.86 [?25hCollecting requests>=2.31.0
-#19 29.94   Using cached requests-2.32.4-py3-none-any.whl (64 kB)
-#19 30.03 Collecting types-requests
-#19 30.04   Using cached types_requests-2.32.4.20250611-py3-none-any.whl (20 kB)
-#19 30.10 Collecting deprecation<3.0,>=2.0
-#19 30.10   Using cached deprecation-2.1.0-py2.py3-none-any.whl (11 kB)
-#19 30.19 Collecting packaging
-#19 30.19   Using cached packaging-25.0-py3-none-any.whl (66 kB)
-#19 30.28 Collecting certifi>=2017.4.17
-#19 30.28   Using cached certifi-2025.6.15-py3-none-any.whl (157 kB)
-#19 30.50 Collecting charset_normalizer<4,>=2
-#19 30.50   Using cached charset_normalizer-3.4.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (149 kB)
-#19 30.58 Collecting idna<4,>=2.5
-#19 30.58   Using cached idna-3.10-py3-none-any.whl (70 kB)
-#19 30.69 Collecting urllib3<3,>=1.21.1
-#19 30.69   Using cached urllib3-2.4.0-py3-none-any.whl (128 kB)
-#19 30.76 Installing collected packages: urllib3, packaging, idna, charset_normalizer, certifi, types-requests, requests, deprecation, velocitas-lib, cloudevents
-#19 31.56 Successfully installed certifi-2025.6.15 charset_normalizer-3.4.2 cloudevents-1.12.0 deprecation-2.1.0 idna-3.10 packaging-25.0 requests-2.32.4 types-requests-2.32.4.20250611 urllib3-2.4.0 velocitas-lib-0.0.13
-#19 31.62 Running 'run'
-#19 31.62 Starting sdk-installer/run
-#19 33.40 Connecting to remote 'conancenter' anonymously[0m
-#19 34.93 Cloning into '/home/vscode/.velocitas/projects/20c9e89591b7712bd6517500cc120486/vehicle-app-sdk-cpp'...
-#19 36.29 remote: Enumerating objects: 238, done.[K
-#19 36.29 remote: Counting objects:   0% (1/238)[Kremote: Counting objects:   1% (3/238)[Kremote: Counting objects:   2% (5/238)[Kremote: Counting objects:   3% (8/238)[Kremote: Counting objects:   4% (10/238)[Kremote: Counting objects:   5% (12/238)[Kremote: Counting objects:   6% (15/238)[Kremote: Counting objects:   7% (17/238)[Kremote: Counting objects:   8% (20/238)[Kremote: Counting objects:   9% (22/238)[Kremote: Counting objects:  10% (24/238)[Kremote: Counting objects:  11% (27/238)[Kremote: Counting objects:  12% (29/238)[Kremote: Counting objects:  13% (31/238)[Kremote: Counting objects:  14% (34/238)[Kremote: Counting objects:  15% (36/238)[Kremote: Counting objects:  16% (39/238)[Kremote: Counting objects:  17% (41/238)[Kremote: Counting objects:  18% (43/238)[Kremote: Counting objects:  19% (46/238)[Kremote: Counting objects:  20% (48/238)[Kremote: Counting objects:  21% (50/238)[Kremote: Counting objects:  22% (53/238)[Kremote: Counting objects:  23% (55/238)[Kremote: Counting objects:  24% (58/238)[Kremote: Counting objects:  25% (60/238)[Kremote: Counting objects:  26% (62/238)[Kremote: Counting objects:  27% (65/238)[Kremote: Counting objects:  28% (67/238)[Kremote: Counting objects:  29% (70/238)[Kremote: Counting objects:  30% (72/238)[Kremote: Counting objects:  31% (74/238)[Kremote: Counting objects:  32% (77/238)[Kremote: Counting objects:  33% (79/238)[Kremote: Counting objects:  34% (81/238)[Kremote: Counting objects:  35% (84/238)[Kremote: Counting objects:  36% (86/238)[Kremote: Counting objects:  37% (89/238)[Kremote: Counting objects:  38% (91/238)[Kremote: Counting objects:  39% (93/238)[Kremote: Counting objects:  40% (96/238)[Kremote: Counting objects:  41% (98/238)[Kremote: Counting objects:  42% (100/238)[Kremote: Counting objects:  43% (103/238)[Kremote: Counting objects:  44% (105/238)[Kremote: Counting objects:  45% (108/238)[Kremote: Counting objects:  46% (110/238)[Kremote: Counting objects:  47% (112/238)[Kremote: Counting objects:  48% (115/238)[Kremote: Counting objects:  49% (117/238)[Kremote: Counting objects:  50% (119/238)[Kremote: Counting objects:  51% (122/238)[Kremote: Counting objects:  52% (124/238)[Kremote: Counting objects:  53% (127/238)[Kremote: Counting objects:  54% (129/238)[Kremote: Counting objects:  55% (131/238)[Kremote: Counting objects:  56% (134/238)[Kremote: Counting objects:  57% (136/238)[Kremote: Counting objects:  58% (139/238)[Kremote: Counting objects:  59% (141/238)[Kremote: Counting objects:  60% (143/238)[Kremote: Counting objects:  61% (146/238)[Kremote: Counting objects:  62% (148/238)[Kremote: Counting objects:  63% (150/238)[Kremote: Counting objects:  64% (153/238)[Kremote: Counting objects:  65% (155/238)[Kremote: Counting objects:  66% (158/238)[Kremote: Counting objects:  67% (160/238)[Kremote: Counting objects:  68% (162/238)[Kremote: Counting objects:  69% (165/238)[Kremote: Counting objects:  70% (167/238)[Kremote: Counting objects:  71% (169/238)[Kremote: Counting objects:  72% (172/238)[Kremote: Counting objects:  73% (174/238)[Kremote: Counting objects:  74% (177/238)[Kremote: Counting objects:  75% (179/238)[Kremote: Counting objects:  76% (181/238)[Kremote: Counting objects:  77% (184/238)[Kremote: Counting objects:  78% (186/238)[Kremote: Counting objects:  79% (189/238)[Kremote: Counting objects:  80% (191/238)[Kremote: Counting objects:  81% (193/238)[Kremote: Counting objects:  82% (196/238)[Kremote: Counting objects:  83% (198/238)[Kremote: Counting objects:  84% (200/238)[Kremote: Counting objects:  85% (203/238)[Kremote: Counting objects:  86% (205/238)[Kremote: Counting objects:  87% (208/238)[Kremote: Counting objects:  88% (210/238)[Kremote: Counting objects:  89% (212/238)[Kremote: Counting objects:  90% (215/238)[Kremote: Counting objects:  91% (217/238)[Kremote: Counting objects:  92% (219/238)[Kremote: Counting objects:  93% (222/238)[Kremote: Counting objects:  94% (224/238)[Kremote: Counting objects:  95% (227/238)[Kremote: Counting objects:  96% (229/238)[Kremote: Counting objects:  97% (231/238)[Kremote: Counting objects:  98% (234/238)[Kremote: Counting objects:  99% (236/238)[Kremote: Counting objects: 100% (238/238)[Kremote: Counting objects: 100% (238/238), done.[K
-#19 36.29 remote: Compressing objects:   0% (1/200)[Kremote: Compressing objects:   1% (2/200)[Kremote: Compressing objects:   2% (4/200)[Kremote: Compressing objects:   3% (6/200)[Kremote: Compressing objects:   4% (8/200)[Kremote: Compressing objects:   5% (10/200)[Kremote: Compressing objects:   6% (12/200)[Kremote: Compressing objects:   7% (14/200)[Kremote: Compressing objects:   8% (16/200)[Kremote: Compressing objects:   9% (18/200)[Kremote: Compressing objects:  10% (20/200)[Kremote: Compressing objects:  11% (22/200)[Kremote: Compressing objects:  12% (24/200)[Kremote: Compressing objects:  13% (26/200)[Kremote: Compressing objects:  14% (28/200)[Kremote: Compressing objects:  15% (30/200)[Kremote: Compressing objects:  16% (32/200)[Kremote: Compressing objects:  17% (34/200)[Kremote: Compressing objects:  18% (36/200)[Kremote: Compressing objects:  19% (38/200)[Kremote: Compressing objects:  20% (40/200)[Kremote: Compressing objects:  21% (42/200)[Kremote: Compressing objects:  22% (44/200)[Kremote: Compressing objects:  23% (46/200)[Kremote: Compressing objects:  24% (48/200)[Kremote: Compressing objects:  25% (50/200)[Kremote: Compressing objects:  26% (52/200)[Kremote: Compressing objects:  27% (54/200)[Kremote: Compressing objects:  28% (56/200)[Kremote: Compressing objects:  29% (58/200)[Kremote: Compressing objects:  30% (60/200)[Kremote: Compressing objects:  31% (62/200)[Kremote: Compressing objects:  32% (64/200)[Kremote: Compressing objects:  33% (66/200)[Kremote: Compressing objects:  34% (68/200)[Kremote: Compressing objects:  35% (70/200)[Kremote: Compressing objects:  36% (72/200)[Kremote: Compressing objects:  37% (74/200)[Kremote: Compressing objects:  38% (76/200)[Kremote: Compressing objects:  39% (78/200)[Kremote: Compressing objects:  40% (80/200)[Kremote: Compressing objects:  41% (82/200)[Kremote: Compressing objects:  42% (84/200)[Kremote: Compressing objects:  43% (86/200)[Kremote: Compressing objects:  44% (88/200)[Kremote: Compressing objects:  45% (90/200)[Kremote: Compressing objects:  46% (92/200)[Kremote: Compressing objects:  47% (94/200)[Kremote: Compressing objects:  48% (96/200)[Kremote: Compressing objects:  49% (98/200)[Kremote: Compressing objects:  50% (100/200)[Kremote: Compressing objects:  51% (102/200)[Kremote: Compressing objects:  52% (104/200)[Kremote: Compressing objects:  53% (106/200)[Kremote: Compressing objects:  54% (108/200)[Kremote: Compressing objects:  55% (110/200)[Kremote: Compressing objects:  56% (112/200)[Kremote: Compressing objects:  57% (114/200)[Kremote: Compressing objects:  58% (116/200)[Kremote: Compressing objects:  59% (118/200)[Kremote: Compressing objects:  60% (120/200)[Kremote: Compressing objects:  61% (122/200)[Kremote: Compressing objects:  62% (124/200)[Kremote: Compressing objects:  63% (126/200)[Kremote: Compressing objects:  64% (128/200)[Kremote: Compressing objects:  65% (130/200)[Kremote: Compressing objects:  66% (132/200)[Kremote: Compressing objects:  67% (134/200)[Kremote: Compressing objects:  68% (136/200)[Kremote: Compressing objects:  69% (138/200)[Kremote: Compressing objects:  70% (140/200)[Kremote: Compressing objects:  71% (142/200)[Kremote: Compressing objects:  72% (144/200)[Kremote: Compressing objects:  73% (146/200)[Kremote: Compressing objects:  74% (148/200)[Kremote: Compressing objects:  75% (150/200)[Kremote: Compressing objects:  76% (152/200)[Kremote: Compressing objects:  77% (154/200)[Kremote: Compressing objects:  78% (156/200)[Kremote: Compressing objects:  79% (158/200)[Kremote: Compressing objects:  80% (160/200)[Kremote: Compressing objects:  81% (162/200)[Kremote: Compressing objects:  82% (164/200)[Kremote: Compressing objects:  83% (166/200)[Kremote: Compressing objects:  84% (168/200)[Kremote: Compressing objects:  85% (170/200)[Kremote: Compressing objects:  86% (172/200)[Kremote: Compressing objects:  87% (174/200)[Kremote: Compressing objects:  88% (176/200)[Kremote: Compressing objects:  89% (178/200)[Kremote: Compressing objects:  90% (180/200)[Kremote: Compressing objects:  91% (182/200)[Kremote: Compressing objects:  92% (184/200)[Kremote: Compressing objects:  93% (186/200)[Kremote: Compressing objects:  94% (188/200)[Kremote: Compressing objects:  95% (190/200)[Kremote: Compressing objects:  96% (192/200)[Kremote: Compressing objects:  97% (194/200)[Kremote: Compressing objects:  98% (196/200)[Kremote: Compressing objects:  99% (198/200)[Kremote: Compressing objects: 100% (200/200)[Kremote: Compressing objects: 100% (200/200), done.[K
-#19 36.32 Receiving objects:   0% (1/238)Receiving objects:   1% (3/238)Receiving objects:   2% (5/238)Receiving objects:   3% (8/238)Receiving objects:   4% (10/238)Receiving objects:   5% (12/238)Receiving objects:   6% (15/238)Receiving objects:   7% (17/238)Receiving objects:   8% (20/238)Receiving objects:   9% (22/238)Receiving objects:  10% (24/238)Receiving objects:  11% (27/238)Receiving objects:  12% (29/238)Receiving objects:  13% (31/238)Receiving objects:  14% (34/238)Receiving objects:  15% (36/238)Receiving objects:  16% (39/238)Receiving objects:  17% (41/238)Receiving objects:  18% (43/238)Receiving objects:  19% (46/238)Receiving objects:  20% (48/238)Receiving objects:  21% (50/238)Receiving objects:  22% (53/238)Receiving objects:  23% (55/238)Receiving objects:  24% (58/238)Receiving objects:  25% (60/238)Receiving objects:  26% (62/238)Receiving objects:  27% (65/238)Receiving objects:  28% (67/238)Receiving objects:  29% (70/238)Receiving objects:  30% (72/238)Receiving objects:  31% (74/238)Receiving objects:  32% (77/238)Receiving objects:  33% (79/238)Receiving objects:  34% (81/238)Receiving objects:  35% (84/238)Receiving objects:  36% (86/238)Receiving objects:  37% (89/238)Receiving objects:  38% (91/238)Receiving objects:  39% (93/238)Receiving objects:  40% (96/238)Receiving objects:  41% (98/238)Receiving objects:  42% (100/238)Receiving objects:  43% (103/238)Receiving objects:  44% (105/238)Receiving objects:  45% (108/238)Receiving objects:  46% (110/238)Receiving objects:  47% (112/238)Receiving objects:  48% (115/238)Receiving objects:  49% (117/238)Receiving objects:  50% (119/238)Receiving objects:  51% (122/238)Receiving objects:  52% (124/238)Receiving objects:  53% (127/238)Receiving objects:  54% (129/238)Receiving objects:  55% (131/238)Receiving objects:  56% (134/238)Receiving objects:  57% (136/238)Receiving objects:  58% (139/238)Receiving objects:  59% (141/238)Receiving objects:  60% (143/238)Receiving objects:  61% (146/238)Receiving objects:  62% (148/238)Receiving objects:  63% (150/238)Receiving objects:  64% (153/238)Receiving objects:  65% (155/238)Receiving objects:  66% (158/238)Receiving objects:  67% (160/238)Receiving objects:  68% (162/238)Receiving objects:  69% (165/238)Receiving objects:  70% (167/238)Receiving objects:  71% (169/238)Receiving objects:  72% (172/238)Receiving objects:  73% (174/238)Receiving objects:  74% (177/238)Receiving objects:  75% (179/238)Receiving objects:  76% (181/238)Receiving objects:  77% (184/238)Receiving objects:  78% (186/238)Receiving objects:  79% (189/238)Receiving objects:  80% (191/238)Receiving objects:  81% (193/238)Receiving objects:  82% (196/238)Receiving objects:  83% (198/238)Receiving objects:  84% (200/238)remote: Total 238 (delta 64), reused 108 (delta 24), pack-reused 0 (from 0)[K
-#19 36.42 Receiving objects:  85% (203/238)Receiving objects:  86% (205/238)Receiving objects:  87% (208/238)Receiving objects:  88% (210/238)Receiving objects:  89% (212/238)Receiving objects:  90% (215/238)Receiving objects:  91% (217/238)Receiving objects:  92% (219/238)Receiving objects:  93% (222/238)Receiving objects:  94% (224/238)Receiving objects:  95% (227/238)Receiving objects:  96% (229/238)Receiving objects:  97% (231/238)Receiving objects:  98% (234/238)Receiving objects:  99% (236/238)Receiving objects: 100% (238/238)Receiving objects: 100% (238/238), 162.99 KiB | 1.57 MiB/s, done.
-#19 36.42 Resolving deltas:   0% (0/64)Resolving deltas:   1% (1/64)Resolving deltas:   3% (2/64)Resolving deltas:   4% (3/64)Resolving deltas:   6% (4/64)Resolving deltas:   7% (5/64)Resolving deltas:   9% (6/64)Resolving deltas:  14% (9/64)Resolving deltas:  15% (10/64)Resolving deltas:  17% (11/64)Resolving deltas:  18% (12/64)Resolving deltas:  21% (14/64)Resolving deltas:  23% (15/64)Resolving deltas:  25% (16/64)Resolving deltas:  28% (18/64)Resolving deltas:  31% (20/64)Resolving deltas:  34% (22/64)Resolving deltas:  35% (23/64)Resolving deltas:  39% (25/64)Resolving deltas:  42% (27/64)Resolving deltas:  43% (28/64)Resolving deltas:  45% (29/64)Resolving deltas:  51% (33/64)Resolving deltas:  53% (34/64)Resolving deltas:  56% (36/64)Resolving deltas:  57% (37/64)Resolving deltas:  59% (38/64)Resolving deltas:  60% (39/64)Resolving deltas:  62% (40/64)Resolving deltas:  65% (42/64)Resolving deltas:  67% (43/64)Resolving deltas:  68% (44/64)Resolving deltas:  71% (46/64)Resolving deltas:  73% (47/64)Resolving deltas:  75% (48/64)Resolving deltas:  78% (50/64)Resolving deltas:  79% (51/64)Resolving deltas:  81% (52/64)Resolving deltas:  82% (53/64)Resolving deltas:  84% (54/64)Resolving deltas:  85% (55/64)Resolving deltas:  89% (57/64)Resolving deltas:  90% (58/64)Resolving deltas:  92% (59/64)Resolving deltas:  95% (61/64)Resolving deltas:  96% (62/64)Resolving deltas:  98% (63/64)Resolving deltas: 100% (64/64)Resolving deltas: 100% (64/64), done.
-#19 36.45 Note: switching to 'd4031dcd35a04466a90fdc44d0aa9313f58c7536'.
-#19 36.45 
-#19 36.45 You are in 'detached HEAD' state. You can look around, make experimental
-#19 36.45 changes and commit them, and you can discard any commits you make in this
-#19 36.45 state without impacting any branches by switching back to a branch.
-#19 36.45 
-#19 36.45 If you want to create a new branch to retain commits you create, you may
-#19 36.45 do so (now or later) by using -c with the switch command. Example:
-#19 36.45 
-#19 36.45   git switch -c <new-branch-name>
-#19 36.45 
-#19 36.45 Or undo this operation with:
-#19 36.45 
-#19 36.45   git switch -
-#19 36.45 
-#19 36.45 Turn off this advice by setting config variable advice.detachedHead to false
-#19 36.45 
-#19 36.50 Installing package version 'v0.7.0' from 'https://github.com/eclipse-velocitas/vehicle-app-cpp-sdk.git'...
-#19 36.72 [1m[35m
-#19 36.72 ======== Exporting recipe to the cache ========[0m
-#19 36.73 Determined SDK version: 0.7.0
-#19 36.73 vehicle-app-sdk/0.7.0:[0m Exporting package recipe: /home/vscode/.velocitas/projects/20c9e89591b7712bd6517500cc120486/vehicle-app-sdk-cpp/conanfile.py[0m
-#19 36.82 vehicle-app-sdk/0.7.0:[0m Copied 8 '.txt' files[0m
-#19 36.82 vehicle-app-sdk/0.7.0:[0m Copied 2 '.py' files: conanfile.py, conanfile.py[0m
-#19 36.82 vehicle-app-sdk/0.7.0:[0m Copied 3 files: LICENSE, linux-aarch64, linux-x86_64[0m
-#19 36.82 vehicle-app-sdk/0.7.0:[0m Copied 3 '.sh' files: build.sh, install_dependencies.sh, common.sh[0m
-#19 36.82 vehicle-app-sdk/0.7.0:[0m Copied 36 '.h' files[0m
-#19 36.82 vehicle-app-sdk/0.7.0:[0m Copied 46 '.cpp' files[0m
-#19 36.82 vehicle-app-sdk/0.7.0:[0m Copied 5 '.proto' files[0m
-#19 36.82 vehicle-app-sdk/0.7.0:[0m Exported to cache folder: /home/vscode/.conan2/p/vehic54b690974e1e3/e[0m
-#19 36.82 [1m[32mvehicle-app-sdk/0.7.0:[0m [1m[32mExported: vehicle-app-sdk/0.7.0#30d6b025245b59e189d5087e7a8aca26 (2025-06-18 03:09:58 UTC)[0m
-#19 36.86 ... > Running post init hook for 'build-system'
-#19 36.86 Running 'install-deps'
-#19 36.87 Starting build-system/install-deps
-#19 42.04 Collecting shell-source<4,>=3.0.0
-#19 42.65   Downloading shell_source-3.0.0-py3-none-any.whl (8.2 kB)
-#19 42.71 Collecting velocitas-lib==0.0.13
-#19 42.71   Using cached velocitas_lib-0.0.13-py3-none-any.whl (22 kB)
-#19 42.81 Collecting types-requests
-#19 42.81   Using cached types_requests-2.32.4.20250611-py3-none-any.whl (20 kB)
-#19 42.88 Collecting requests>=2.31.0
-#19 42.89   Using cached requests-2.32.4-py3-none-any.whl (64 kB)
-#19 42.95 Collecting toml<0.11.0,>=0.10.2
-#19 43.01   Downloading toml-0.10.2-py2.py3-none-any.whl (16 kB)
-#19 43.15 Collecting importlib-metadata<5.0.0,>=4.11.4
-#19 43.22   Downloading importlib_metadata-4.13.0-py3-none-any.whl (23 kB)
-#19 43.89 Collecting zipp>=0.5
-#19 43.94   Downloading zipp-3.23.0-py3-none-any.whl (10 kB)
-#19 44.07 Collecting urllib3<3,>=1.21.1
-#19 44.07   Using cached urllib3-2.4.0-py3-none-any.whl (128 kB)
-#19 44.17 Collecting certifi>=2017.4.17
-#19 44.18   Using cached certifi-2025.6.15-py3-none-any.whl (157 kB)
-#19 44.29 Collecting idna<4,>=2.5
-#19 44.29   Using cached idna-3.10-py3-none-any.whl (70 kB)
-#19 44.51 Collecting charset_normalizer<4,>=2
-#19 44.51   Using cached charset_normalizer-3.4.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (149 kB)
-#19 44.62 Installing collected packages: zipp, urllib3, toml, idna, charset_normalizer, certifi, types-requests, requests, importlib-metadata, velocitas-lib, shell-source
-#19 45.24 Successfully installed certifi-2025.6.15 charset_normalizer-3.4.2 idna-3.10 importlib-metadata-4.13.0 requests-2.32.4 shell-source-3.0.0 toml-0.10.2 types-requests-2.32.4.20250611 urllib3-2.4.0 velocitas-lib-0.0.13 zipp-3.23.0
-#19 45.30 ... No .velocitas-lock.json found. Creating it at the root of your repository.
-#19 DONE 45.3s
-
-#20 [16/21] RUN export PATH="$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" &&     velocitas exec build-system install
-#20 2.121 --> "MIXED" build type detected - preparing build for pure Release and "mixed" buid type:
-#20 2.121 
-#20 2.121 --> Installing dependencies for "mixed" build: Dependencies in Release mode, local stuff in Debug mode ...
-#20 2.391 [1m[35m
-#20 2.391 ======== Input profiles ========[0m
-#20 2.391 [1m[36mProfile host:[0m
-#20 2.391 [settings]
-#20 2.391 arch=x86_64
-#20 2.391 build_type=Release
-#20 2.391 compiler=gcc
-#20 2.391 compiler.cppstd=17
-#20 2.391 compiler.libcxx=libstdc++11
-#20 2.391 compiler.version=11
-#20 2.391 os=Linux
-#20 2.391 &:build_type=Debug
-#20 2.391 [buildenv]
-#20 2.391 CC=x86_64-linux-gnu-gcc-11
-#20 2.391 CXX=x86_64-linux-gnu-g++-11
-#20 2.391 LD=x86_64-linux-gnu-ld
-#20 2.391 [0m
-#20 2.391 [1m[36mProfile build:[0m
-#20 2.391 [settings]
-#20 2.391 arch=x86_64
-#20 2.391 build_type=Release
-#20 2.391 compiler=gcc
-#20 2.391 compiler.cppstd=17
-#20 2.391 compiler.libcxx=libstdc++11
-#20 2.391 compiler.version=11
-#20 2.391 os=Linux
-#20 2.391 [buildenv]
-#20 2.391 CC=x86_64-linux-gnu-gcc-11
-#20 2.391 CXX=x86_64-linux-gnu-g++-11
-#20 2.391 LD=x86_64-linux-gnu-ld
-#20 2.391 [0m
-#20 2.393 [1m[35m
-#20 2.393 ======== Computing dependency graph ========[0m
-#20 2.553 [1m[33mGraph root[0m
-#20 2.553 [1m[36m    conanfile.txt: /quickbuild/conanfile.txt[0m
-#20 2.553 [1m[33mRequirements[0m
-#20 2.553 [1m[36m    abseil/20230802.1#cd8012e2f333d4008dcf43cb39b031b8 - Cache[0m
-#20 2.553 [1m[36m    c-ares/1.34.3#55aa867c731f23300cd544f6d90a794d - Cache[0m
-#20 2.553 [1m[36m    fmt/11.1.1#9d84ca70128ab4b84d80140b45d76b21 - Cache[0m
-#20 2.553 [1m[36m    grpc/1.50.1#11ca9ad5502889e7b32e5122a7000037 - Cache[0m
-#20 2.553 [1m[36m    nlohmann_json/3.11.3#45828be26eb619a2e04ca517bb7b828d - Cache[0m
-#20 2.553 [1m[36m    openssl/3.4.1#638c4c4df8ecdef1f7aa73fc0d07fde6 - Cache[0m
-#20 2.553 [1m[36m    paho-mqtt-c/1.3.13#398643eeb183ad7536157ea96b6fad52 - Cache[0m
-#20 2.553 [1m[36m    paho-mqtt-cpp/1.4.0#5faa2a31ae8c1c1acfd3ab6bcbecd9bc - Cache[0m
-#20 2.553 [1m[36m    protobuf/3.21.12#1815c278fa25d4447be035f7bb52ed7e - Cache[0m
-#20 2.553 [1m[36m    re2/20230301#e8d673155a0494f27c7589b611e8350d - Cache[0m
-#20 2.553 [1m[36m    vehicle-app-sdk/0.7.0#30d6b025245b59e189d5087e7a8aca26 - Cache[0m
-#20 2.553 [1m[36m    vehicle-model/generated#ea8604cd048ba7a3baeb82b505ca53da - Cache[0m
-#20 2.553 [1m[36m    zlib/1.3.1#b8bc2603263cf7eccbd6e17e66b0ed76 - Cache[0m
-#20 2.553 [1m[33mBuild requirements[0m
-#20 2.553 [1m[36m    abseil/20230802.1#cd8012e2f333d4008dcf43cb39b031b8 - Cache[0m
-#20 2.553 [1m[36m    c-ares/1.34.3#55aa867c731f23300cd544f6d90a794d - Cache[0m
-#20 2.553 [1m[36m    cmake/3.31.6#ed0e6c1d49bd564ce6fed1a19653b86d - Cache[0m
-#20 2.553 [1m[36m    grpc/1.50.1#11ca9ad5502889e7b32e5122a7000037 - Cache[0m
-#20 2.553 [1m[36m    openssl/3.4.1#638c4c4df8ecdef1f7aa73fc0d07fde6 - Cache[0m
-#20 2.553 [1m[36m    protobuf/3.21.12#1815c278fa25d4447be035f7bb52ed7e - Cache[0m
-#20 2.553 [1m[36m    re2/20230301#e8d673155a0494f27c7589b611e8350d - Cache[0m
-#20 2.553 [1m[36m    zlib/1.3.1#b8bc2603263cf7eccbd6e17e66b0ed76 - Cache[0m
-#20 2.553 [1m[33mResolved version ranges[0m
-#20 2.553 [1m[36m    abseil/[>=20230125.3 <=20230802.1]: abseil/20230802.1[0m
-#20 2.553 [1m[36m    c-ares/[>=1.19.1 <2]: c-ares/1.34.3[0m
-#20 2.553 [1m[36m    cmake/[>=3.25 <4]: cmake/3.31.6[0m
-#20 2.553 [1m[36m    openssl/[>=1.1 <4]: openssl/3.4.1[0m
-#20 2.553 [1m[36m    zlib/[>=1.2.11 <2]: zlib/1.3.1[0m
-#20 2.553 [1m[35m
-#20 2.553 ======== Computing necessary packages ========[0m
-#20 2.570 Connecting to remote 'conancenter' anonymously[0m
-#20 3.587 vehicle-app-sdk/0.7.0:[0m Main binary package '7ce7e38afed71a4b4ec561a41b36ad98baefe9ec' missing[0m
-#20 3.587 vehicle-app-sdk/0.7.0:[0m Checking 11 compatible configurations[0m
-#20 3.588 vehicle-app-sdk/0.7.0:[0m Compatible configurations not found in cache, checking servers[0m
-#20 3.588 vehicle-app-sdk/0.7.0:[0m '1d2b53ce484e8336025f3e6f5a36df600797a33c': compiler.cppstd=98[0m
-#20 3.869 vehicle-app-sdk/0.7.0:[0m 'aa3dae3df216150c5f09d83903296089050e974f': compiler.cppstd=gnu98[0m
-#20 3.909 vehicle-app-sdk/0.7.0:[0m '1bf3cd686684392aef77ad970c7d235dd0407ad5': compiler.cppstd=11[0m
-#20 3.945 vehicle-app-sdk/0.7.0:[0m 'ce465bd080cd5eb8acf305b0be727c9f535a68be': compiler.cppstd=gnu11[0m
-#20 3.979 vehicle-app-sdk/0.7.0:[0m '979c25803a87a73253982a2383ec3f359a178d64': compiler.cppstd=14[0m
-#20 4.011 vehicle-app-sdk/0.7.0:[0m '813f2e71e1316cd6d35ba143a0157faef79c5d45': compiler.cppstd=gnu14[0m
-#20 4.057 vehicle-app-sdk/0.7.0:[0m '758e1e08ed6f66c0f7c71ee8dd7e11866d508ff5': compiler.cppstd=gnu17[0m
-#20 4.117 vehicle-app-sdk/0.7.0:[0m '355c552ee1abed0adc72705acc81221e51d3683f': compiler.cppstd=20[0m
-#20 4.165 vehicle-app-sdk/0.7.0:[0m 'aec4591e91ed0d00b0c4404493313f368491957e': compiler.cppstd=gnu20[0m
-#20 4.205 vehicle-app-sdk/0.7.0:[0m '219cf6ae38c5ce61a8e3ca663bafab4ccf706a64': compiler.cppstd=23[0m
-#20 4.241 vehicle-app-sdk/0.7.0:[0m '8da9bb72ff4803d671b7bb883a8d06a2433e0c00': compiler.cppstd=gnu23[0m
-#20 4.314 [1m[33mRequirements[0m
-#20 4.314 [1m[36m    abseil/20230802.1#cd8012e2f333d4008dcf43cb39b031b8:13be611585c95453f1cbbd053cea04b3e64470ca#710166ef8f4cf03ced5fa2517919728f - Cache[0m
-#20 4.314 [1m[36m    c-ares/1.34.3#55aa867c731f23300cd544f6d90a794d:e3c52a2f5bd5dc2a32df2d25f9f70a04cfd7bea3#136a11d51eb02659d1e1a19d4f45d7b8 - Cache[0m
-#20 4.314 [1m[36m    fmt/11.1.1#9d84ca70128ab4b84d80140b45d76b21:29da3f322a17cc9826b294a7ab191c2f298a9f49#3e8d0a0786499b1f9a664774105eafbe - Cache[0m
-#20 4.314 [1m[36m    grpc/1.50.1#11ca9ad5502889e7b32e5122a7000037:d2f7e98507df6010002471e4759512a6304ca3c2#0d7784aef253040c205404081c2df3c7 - Cache[0m
-#20 4.314 [1m[36m    nlohmann_json/3.11.3#45828be26eb619a2e04ca517bb7b828d:da39a3ee5e6b4b0d3255bfef95601890afd80709#552828a2560333bcbeff9d087ce0af0f - Cache[0m
-#20 4.314 [1m[36m    openssl/3.4.1#638c4c4df8ecdef1f7aa73fc0d07fde6:ba0c965640dfc9185194d683d05bfbe6419b47a3#1d843347092982a7457076e20260b3dc - Cache[0m
-#20 4.314 [1m[36m    paho-mqtt-c/1.3.13#398643eeb183ad7536157ea96b6fad52:f54498ef9ce4a33155fd3c80a3636b5c0a2169cf#634ea5f932ada817bc79ab38b4fabe2f - Cache[0m
-#20 4.314 [1m[36m    paho-mqtt-cpp/1.4.0#5faa2a31ae8c1c1acfd3ab6bcbecd9bc:08e303d4ae4d38419fbedbffd216a4f52d185e37#454b0264b741d19e3d93d96dc26396d1 - Cache[0m
-#20 4.314 [1m[36m    protobuf/3.21.12#1815c278fa25d4447be035f7bb52ed7e:10670e90b03eb1607902ed190ae2fecdc52d69bb#b5324d4450284f61adacce3eb9c2aa90 - Cache[0m
-#20 4.314 [1m[36m    re2/20230301#e8d673155a0494f27c7589b611e8350d:81d35562505eb9186290237bea6e2684b0ba3cc8#9a7aa2fcdc3224b32df054cadb7a5439 - Cache[0m
-#20 4.314 [1m[36m    vehicle-app-sdk/0.7.0#30d6b025245b59e189d5087e7a8aca26:7ce7e38afed71a4b4ec561a41b36ad98baefe9ec - [0m[1m[33mBuild[0m
-#20 4.315 [1m[36m    vehicle-model/generated#ea8604cd048ba7a3baeb82b505ca53da:8c358ded7a47c6b689964f9635606e1577e3ad39 - [0m[1m[33mBuild[0m
-#20 4.315 [1m[36m    zlib/1.3.1#b8bc2603263cf7eccbd6e17e66b0ed76:b647c43bfefae3f830561ca202b6cfd935b56205#fee20b6da94c4580b0c84ca5ce203fdc - Cache[0m
-#20 4.315 [1m[33mBuild requirements[0m
-#20 4.315 [1m[36m    grpc/1.50.1#11ca9ad5502889e7b32e5122a7000037:d2f7e98507df6010002471e4759512a6304ca3c2#0d7784aef253040c205404081c2df3c7 - Cache[0m
-#20 4.315 [1m[36m    protobuf/3.21.12#1815c278fa25d4447be035f7bb52ed7e:10670e90b03eb1607902ed190ae2fecdc52d69bb#b5324d4450284f61adacce3eb9c2aa90 - Cache[0m
-#20 4.315 [1m[33mSkipped binaries[0m
-#20 4.315 [1m[36m    abseil/20230802.1, c-ares/1.34.3, cmake/3.31.6, openssl/3.4.1, re2/20230301, zlib/1.3.1[0m
-#20 4.316 [1m[35m
-#20 4.316 ======== Installing packages ========[0m
-#20 4.321 [1m[32mabseil/20230802.1:[0m [1m[32mAlready installed! (1 of 13)[0m
-#20 4.329 [1m[32mc-ares/1.34.3:[0m [1m[32mAlready installed! (2 of 13)[0m
-#20 4.336 [1m[32mfmt/11.1.1:[0m [1m[32mAlready installed! (3 of 13)[0m
-#20 4.340 [1m[32mnlohmann_json/3.11.3:[0m [1m[32mAlready installed! (4 of 13)[0m
-#20 4.344 [1m[32mre2/20230301:[0m [1m[32mAlready installed! (5 of 13)[0m
-#20 4.348 [1m[32mzlib/1.3.1:[0m [1m[32mAlready installed! (6 of 13)[0m
-#20 4.354 [1m[32mopenssl/3.4.1:[0m [1m[32mAlready installed! (7 of 13)[0m
-#20 4.358 [1m[32mprotobuf/3.21.12:[0m [1m[32mAlready installed! (8 of 13)[0m
-#20 4.362 [1m[32mgrpc/1.50.1:[0m [1m[32mAlready installed! (9 of 13)[0m
-#20 4.382 [1m[32mpaho-mqtt-c/1.3.13:[0m [1m[32mAlready installed! (10 of 13)[0m
-#20 4.388 [1m[32mpaho-mqtt-cpp/1.4.0:[0m [1m[32mAlready installed! (11 of 13)[0m
-#20 4.423 [1m[35m
-#20 4.423 -------- Installing package vehicle-app-sdk/0.7.0 (12 of 13) --------[0m
-#20 4.423 [1m[35mvehicle-app-sdk/0.7.0:[0m [1m[35mBuilding from source[0m
-#20 4.424 vehicle-app-sdk/0.7.0:[0m Package vehicle-app-sdk/0.7.0:7ce7e38afed71a4b4ec561a41b36ad98baefe9ec[0m
-#20 4.424 vehicle-app-sdk/0.7.0:[0m Copying sources to build folder[0m
-#20 4.457 vehicle-app-sdk/0.7.0:[0m Building your package in /home/vscode/.conan2/p/b/vehica1080f90569cb/b[0m
-#20 4.457 [1m[35mvehicle-app-sdk/0.7.0:[0m [1m[35mWriting generators to /home/vscode/.conan2/p/b/vehica1080f90569cb/b/build-linux-x86_64/Release/generators[0m
-#20 4.460 vehicle-app-sdk/0.7.0:[0m Generator 'CMakeDeps' calling 'generate()'[0m
-#20 4.567 vehicle-app-sdk/0.7.0:[0m Generator 'CMakeToolchain' calling 'generate()'[0m
-#20 4.612 vehicle-app-sdk/0.7.0:[0m CMakeToolchain generated: conan_toolchain.cmake[0m
-#20 4.613 vehicle-app-sdk/0.7.0:[0m CMakeToolchain generated: /home/vscode/.conan2/p/b/vehica1080f90569cb/b/build-linux-x86_64/Release/generators/CMakePresets.json[0m
-#20 4.613 vehicle-app-sdk/0.7.0:[0m CMakeToolchain generated: /home/vscode/.conan2/p/b/vehica1080f90569cb/b/CMakeUserPresets.json[0m
-#20 4.616 [1m[35mvehicle-app-sdk/0.7.0:[0m [1m[35mGenerating aggregated env files[0m
-#20 4.616 vehicle-app-sdk/0.7.0:[0m Generated aggregated env files: ['conanbuild.sh', 'conanrun.sh'][0m
-#20 4.616 [1m[35mvehicle-app-sdk/0.7.0:[0m [1m[35mCalling build()[0m
-#20 4.630 CMake version      cmake version 3.22.1 CMake suite maintained and supported by Kitware (kitware.com/cmake).
-#20 4.869 Conan version      Conan version 2.15.1
-#20 4.869 Build type         Release
-#20 4.869 Build arch         x86_64
-#20 4.869 Host arch          x86_64
-#20 4.869 Build target       all
-#20 4.869 Build SDK tests    OFF
-#20 4.869 Build SDK examples OFF
-#20 4.869 Static build       OFF
-#20 4.869 Coverage           OFF
-#20 4.869 Using build foler build-linux-x86_64/Release
-#20 4.870 Setting/updating symlink 'build' to build-linux-x86_64/Release
-#20 4.874 ~/.conan2/p/b/vehica1080f90569cb/b/build-linux-x86_64/Release ~/.conan2/p/b/vehica1080f90569cb/b
-#20 4.897 Not searching for unused variables given on the command line.
-#20 4.906 -- Using Conan toolchain: /home/vscode/.conan2/p/b/vehica1080f90569cb/b/build-linux-x86_64/Release/generators/conan_toolchain.cmake
-#20 4.906 -- Conan toolchain: Setting CMAKE_POSITION_INDEPENDENT_CODE=ON (options.fPIC)
-#20 4.906 -- Conan toolchain: Defining architecture flag: -m64
-#20 4.906 -- Conan toolchain: C++ Standard 17 with extensions OFF
-#20 4.906 -- Conan toolchain: Setting BUILD_SHARED_LIBS = OFF
-#20 4.976 -- The CXX compiler identification is GNU 11.4.0
-#20 4.992 -- Detecting CXX compiler ABI info
-#20 5.086 -- Detecting CXX compiler ABI info - done
-#20 5.095 -- Check for working CXX compiler: /usr/bin/x86_64-linux-gnu-g++-11 - skipped
-#20 5.095 -- Detecting CXX compile features
-#20 5.096 -- Detecting CXX compile features - done
-#20 5.107 -- Conan: Component target declared 'fmt::fmt'
-#20 5.109 -- Conan: Component target declared 'gRPC::address_sorting'
-#20 5.109 -- Conan: Component target declared 'gRPC::gpr'
-#20 5.109 -- Conan: Component target declared 'gRPC::grpc_plugin_support'
-#20 5.109 -- Conan: Component target declared 'gRPC::upb'
-#20 5.109 -- Conan: Component target declared 'gRPC::grpc'
-#20 5.109 -- Conan: Component target declared 'gRPC::grpc_unsecure'
-#20 5.109 -- Conan: Component target declared 'gRPC::grpc++'
-#20 5.109 -- Conan: Component target declared 'gRPC::grpc++_unsecure'
-#20 5.109 -- Conan: Component target declared 'gRPC::grpc++_alts'
-#20 5.109 -- Conan: Component target declared 'gRPC::grpc++_error_details'
-#20 5.109 -- Conan: Component target declared 'gRPC::grpc++_reflection'
-#20 5.109 -- Conan: Component target declared 'gRPC::grpcpp_channelz'
-#20 5.109 -- Conan: Target declared 'grpc::grpc'
-#20 5.122 -- Conan: Component target declared 'absl::config'
-#20 5.122 -- Conan: Component target declared 'absl::pretty_function'
-#20 5.122 -- Conan: Component target declared 'absl::civil_time'
-#20 5.122 -- Conan: Component target declared 'absl::time_zone'
-#20 5.122 -- Conan: Component target declared 'absl::errno_saver'
-#20 5.122 -- Conan: Component target declared 'absl::dynamic_annotations'
-#20 5.122 -- Conan: Component target declared 'absl::core_headers'
-#20 5.122 -- Conan: Component target declared 'absl::fast_type_id'
-#20 5.122 -- Conan: Component target declared 'absl::algorithm'
-#20 5.122 -- Conan: Component target declared 'absl::counting_allocator'
-#20 5.122 -- Conan: Component target declared 'absl::hashtable_debug_hooks'
-#20 5.122 -- Conan: Component target declared 'absl::node_slot_policy'
-#20 5.122 -- Conan: Component target declared 'absl::non_temporal_arm_intrinsics'
-#20 5.122 -- Conan: Component target declared 'absl::log_internal_voidify'
-#20 5.122 -- Conan: Component target declared 'absl::numeric_representation'
-#20 5.122 -- Conan: Component target declared 'absl::random_seed_gen_exception'
-#20 5.122 -- Conan: Component target declared 'absl::random_internal_traits'
-#20 5.122 -- Conan: Component target declared 'absl::random_internal_fast_uniform_bits'
-#20 5.122 -- Conan: Component target declared 'absl::random_internal_platform'
-#20 5.122 -- Conan: Component target declared 'absl::cordz_update_tracker'
-#20 5.122 -- Conan: Component target declared 'absl::if_constexpr'
-#20 5.122 -- Conan: Component target declared 'absl::atomic_hook'
-#20 5.122 -- Conan: Component target declared 'absl::log_severity'
-#20 5.122 -- Conan: Component target declared 'absl::strerror'
-#20 5.122 -- Conan: Component target declared 'absl::prefetch'
-#20 5.122 -- Conan: Component target declared 'absl::hashtable_debug'
-#20 5.122 -- Conan: Component target declared 'absl::non_temporal_memcpy'
-#20 5.122 -- Conan: Component target declared 'absl::leak_check'
-#20 5.122 -- Conan: Component target declared 'absl::flags_commandlineflag_internal'
-#20 5.122 -- Conan: Component target declared 'absl::log_internal_config'
-#20 5.122 -- Conan: Component target declared 'absl::log_internal_nullguard'
-#20 5.122 -- Conan: Component target declared 'absl::type_traits'
-#20 5.122 -- Conan: Component target declared 'absl::bits'
-#20 5.122 -- Conan: Component target declared 'absl::exponential_biased'
-#20 5.122 -- Conan: Component target declared 'absl::random_internal_randen_slow'
-#20 5.122 -- Conan: Component target declared 'absl::random_internal_randen_hwaes_impl'
-#20 5.122 -- Conan: Component target declared 'absl::nullability'
-#20 5.122 -- Conan: Component target declared 'absl::raw_logging_internal'
-#20 5.122 -- Conan: Component target declared 'absl::base_internal'
-#20 5.122 -- Conan: Component target declared 'absl::container_common'
-#20 5.122 -- Conan: Component target declared 'absl::meta'
-#20 5.122 -- Conan: Component target declared 'absl::int128'
-#20 5.122 -- Conan: Component target declared 'absl::periodic_sampler'
-#20 5.122 -- Conan: Component target declared 'absl::random_internal_fastmath'
-#20 5.122 -- Conan: Component target declared 'absl::random_internal_randen_hwaes'
-#20 5.122 -- Conan: Component target declared 'absl::random_internal_uniform_helper'
-#20 5.122 -- Conan: Component target declared 'absl::compare'
-#20 5.122 -- Conan: Component target declared 'absl::spinlock_wait'
-#20 5.122 -- Conan: Component target declared 'absl::throw_delegate'
-#20 5.122 -- Conan: Component target declared 'absl::scoped_set_env'
-#20 5.122 -- Conan: Component target declared 'absl::algorithm_container'
-#20 5.122 -- Conan: Component target declared 'absl::common_policy_traits'
-#20 5.122 -- Conan: Component target declared 'absl::debugging_internal'
-#20 5.122 -- Conan: Component target declared 'absl::memory'
-#20 5.122 -- Conan: Component target declared 'absl::numeric'
-#20 5.122 -- Conan: Component target declared 'absl::random_internal_iostream_state_saver'
-#20 5.122 -- Conan: Component target declared 'absl::random_internal_generate_real'
-#20 5.122 -- Conan: Component target declared 'absl::random_internal_wide_multiply'
-#20 5.122 -- Conan: Component target declared 'absl::random_internal_randen'
-#20 5.123 -- Conan: Component target declared 'absl::cordz_functions'
-#20 5.123 -- Conan: Component target declared 'absl::bad_any_cast_impl'
-#20 5.123 -- Conan: Component target declared 'absl::bad_optional_access'
-#20 5.123 -- Conan: Component target declared 'absl::bad_variant_access'
-#20 5.123 -- Conan: Component target declared 'absl::utility'
-#20 5.123 -- Conan: Component target declared 'absl::base'
-#20 5.123 -- Conan: Component target declared 'absl::cleanup_internal'
-#20 5.123 -- Conan: Component target declared 'absl::compressed_tuple'
-#20 5.123 -- Conan: Component target declared 'absl::container_memory'
-#20 5.123 -- Conan: Component target declared 'absl::hash_policy_traits'
-#20 5.123 -- Conan: Component target declared 'absl::stacktrace'
-#20 5.123 -- Conan: Component target declared 'absl::any_invocable'
-#20 5.123 -- Conan: Component target declared 'absl::random_internal_distribution_caller'
-#20 5.123 -- Conan: Component target declared 'absl::random_internal_pcg_engine'
-#20 5.123 -- Conan: Component target declared 'absl::bad_any_cast'
-#20 5.123 -- Conan: Component target declared 'absl::span'
-#20 5.123 -- Conan: Component target declared 'absl::optional'
-#20 5.123 -- Conan: Component target declared 'absl::variant'
-#20 5.123 -- Conan: Component target declared 'absl::malloc_internal'
-#20 5.123 -- Conan: Component target declared 'absl::endian'
-#20 5.123 -- Conan: Component target declared 'absl::cleanup'
-#20 5.123 -- Conan: Component target declared 'absl::fixed_array'
-#20 5.123 -- Conan: Component target declared 'absl::inlined_vector_internal'
-#20 5.123 -- Conan: Component target declared 'absl::crc_cpu_detect'
-#20 5.123 -- Conan: Component target declared 'absl::demangle_internal'
-#20 5.123 -- Conan: Component target declared 'absl::debugging'
-#20 5.123 -- Conan: Component target declared 'absl::bind_front'
-#20 5.123 -- Conan: Component target declared 'absl::function_ref'
-#20 5.123 -- Conan: Component target declared 'absl::log_internal_conditions'
-#20 5.123 -- Conan: Component target declared 'absl::random_bit_gen_ref'
-#20 5.123 -- Conan: Component target declared 'absl::random_internal_mock_helpers'
-#20 5.123 -- Conan: Component target declared 'absl::string_view'
-#20 5.123 -- Conan: Component target declared 'absl::any'
-#20 5.123 -- Conan: Component target declared 'absl::inlined_vector'
-#20 5.123 -- Conan: Component target declared 'absl::crc_internal'
-#20 5.123 -- Conan: Component target declared 'absl::city'
-#20 5.123 -- Conan: Component target declared 'absl::low_level_hash'
-#20 5.123 -- Conan: Component target declared 'absl::random_internal_randen_engine'
-#20 5.123 -- Conan: Component target declared 'absl::strings_internal'
-#20 5.123 -- Conan: Component target declared 'absl::graphcycles_internal'
-#20 5.123 -- Conan: Component target declared 'absl::strings'
-#20 5.123 -- Conan: Component target declared 'absl::layout'
-#20 5.123 -- Conan: Component target declared 'absl::symbolize'
-#20 5.123 -- Conan: Component target declared 'absl::flags_path_util'
-#20 5.123 -- Conan: Component target declared 'absl::flags_commandlineflag'
-#20 5.123 -- Conan: Component target declared 'absl::hash'
-#20 5.123 -- Conan: Component target declared 'absl::log_internal_proto'
-#20 5.123 -- Conan: Component target declared 'absl::log_internal_nullstream'
-#20 5.123 -- Conan: Component target declared 'absl::log_internal_append_truncated'
-#20 5.123 -- Conan: Component target declared 'absl::random_distributions'
-#20 5.123 -- Conan: Component target declared 'absl::random_internal_seed_material'
-#20 5.123 -- Conan: Component target declared 'absl::str_format_internal'
-#20 5.123 -- Conan: Component target declared 'absl::time'
-#20 5.123 -- Conan: Component target declared 'absl::examine_stack'
-#20 5.123 -- Conan: Component target declared 'absl::flags_private_handle_accessor'
-#20 5.123 -- Conan: Component target declared 'absl::log_internal_globals'
-#20 5.123 -- Conan: Component target declared 'absl::log_globals'
-#20 5.123 -- Conan: Component target declared 'absl::log_entry'
-#20 5.123 -- Conan: Component target declared 'absl::random_internal_pool_urbg'
-#20 5.123 -- Conan: Component target declared 'absl::random_internal_salted_seed_seq'
-#20 5.123 -- Conan: Component target declared 'absl::str_format'
-#20 5.123 -- Conan: Component target declared 'absl::kernel_timeout_internal'
-#20 5.123 -- Conan: Component target declared 'absl::crc32c'
-#20 5.123 -- Conan: Component target declared 'absl::failure_signal_handler'
-#20 5.123 -- Conan: Component target declared 'absl::flags_marshalling'
-#20 5.123 -- Conan: Component target declared 'absl::log_internal_format'
-#20 5.123 -- Conan: Component target declared 'absl::log_initialize'
-#20 5.123 -- Conan: Component target declared 'absl::log_sink'
-#20 5.123 -- Conan: Component target declared 'absl::random_seed_sequences'
-#20 5.123 -- Conan: Component target declared 'absl::random_internal_nonsecure_base'
-#20 5.123 -- Conan: Component target declared 'absl::random_internal_distribution_test_util'
-#20 5.123 -- Conan: Component target declared 'absl::synchronization'
-#20 5.123 -- Conan: Component target declared 'absl::crc_cord_state'
-#20 5.123 -- Conan: Component target declared 'absl::flags_program_name'
-#20 5.123 -- Conan: Component target declared 'absl::log_internal_log_sink_set'
-#20 5.123 -- Conan: Component target declared 'absl::sample_recorder'
-#20 5.123 -- Conan: Component target declared 'absl::random_random'
-#20 5.123 -- Conan: Component target declared 'absl::cordz_statistics'
-#20 5.123 -- Conan: Component target declared 'absl::cordz_handle'
-#20 5.123 -- Conan: Component target declared 'absl::hashtablez_sampler'
-#20 5.123 -- Conan: Component target declared 'absl::flags_config'
-#20 5.123 -- Conan: Component target declared 'absl::log_sink_registry'
-#20 5.123 -- Conan: Component target declared 'absl::cord_internal'
-#20 5.123 -- Conan: Component target declared 'absl::raw_hash_set'
-#20 5.123 -- Conan: Component target declared 'absl::flags_internal'
-#20 5.123 -- Conan: Component target declared 'absl::log_internal_message'
-#20 5.123 -- Conan: Component target declared 'absl::cordz_info'
-#20 5.123 -- Conan: Component target declared 'absl::raw_hash_map'
-#20 5.123 -- Conan: Component target declared 'absl::log_internal_strip'
-#20 5.123 -- Conan: Component target declared 'absl::log_internal_structured'
-#20 5.123 -- Conan: Component target declared 'absl::cordz_sample_token'
-#20 5.123 -- Conan: Component target declared 'absl::cordz_update_scope'
-#20 5.123 -- Conan: Component target declared 'absl::log_internal_check_op'
-#20 5.123 -- Conan: Component target declared 'absl::log_internal_log_impl'
-#20 5.123 -- Conan: Component target declared 'absl::log_structured'
-#20 5.123 -- Conan: Component target declared 'absl::cord'
-#20 5.123 -- Conan: Component target declared 'absl::btree'
-#20 5.123 -- Conan: Component target declared 'absl::hash_function_defaults'
-#20 5.123 -- Conan: Component target declared 'absl::log_internal_check_impl'
-#20 5.123 -- Conan: Component target declared 'absl::absl_log'
-#20 5.123 -- Conan: Component target declared 'absl::log'
-#20 5.123 -- Conan: Component target declared 'absl::status'
-#20 5.123 -- Conan: Component target declared 'absl::flat_hash_map'
-#20 5.123 -- Conan: Component target declared 'absl::flat_hash_set'
-#20 5.123 -- Conan: Component target declared 'absl::node_hash_map'
-#20 5.123 -- Conan: Component target declared 'absl::node_hash_set'
-#20 5.123 -- Conan: Component target declared 'absl::absl_check'
-#20 5.123 -- Conan: Component target declared 'absl::check'
-#20 5.123 -- Conan: Component target declared 'absl::die_if_null'
-#20 5.123 -- Conan: Component target declared 'absl::log_streamer'
-#20 5.123 -- Conan: Component target declared 'absl::statusor'
-#20 5.123 -- Conan: Component target declared 'absl::flags_reflection'
-#20 5.123 -- Conan: Component target declared 'absl::flags'
-#20 5.124 -- Conan: Component target declared 'absl::flags_usage_internal'
-#20 5.124 -- Conan: Component target declared 'absl::log_internal_flags'
-#20 5.124 -- Conan: Component target declared 'absl::flags_usage'
-#20 5.124 -- Conan: Component target declared 'absl::log_flags'
-#20 5.124 -- Conan: Component target declared 'absl::flags_parse'
-#20 5.124 -- Conan: Target declared 'abseil::abseil'
-#20 5.161 -- Conan: Including build module from '/home/vscode/.conan2/p/absei72989cb28aac1/p/lib/cmake/conan_trick/cxx_std.cmake'
-#20 5.162 -- Conan: Component target declared 'protobuf::libprotobuf'
-#20 5.162 -- Conan: Component target declared 'protobuf::libprotoc'
-#20 5.162 -- Conan: Target declared 'protobuf::protobuf'
-#20 5.164 -- Conan: Target declared 'ZLIB::ZLIB'
-#20 5.164 -- Conan: Including build module from '/home/vscode/.conan2/p/protof8266396c9bed/p/lib/cmake/protobuf/protobuf-generate.cmake'
-#20 5.164 -- Conan: Including build module from '/home/vscode/.conan2/p/protof8266396c9bed/p/lib/cmake/protobuf/protobuf-module.cmake'
-#20 5.165 -- Conan: Including build module from '/home/vscode/.conan2/p/protof8266396c9bed/p/lib/cmake/protobuf/protobuf-options.cmake'
-#20 5.165 -- Conan: Including build module from '/home/vscode/.conan2/p/protof8266396c9bed/p/lib/cmake/protobuf/protobuf-conan-protoc-target.cmake'
-#20 5.166 -- Conan: Component target declared 'c-ares::cares'
-#20 5.167 -- Conan: Target declared 're2::re2'
-#20 5.169 -- Conan: Component target declared 'OpenSSL::Crypto'
-#20 5.169 -- Conan: Component target declared 'OpenSSL::SSL'
-#20 5.169 -- Conan: Target declared 'openssl::openssl'
-#20 5.170 -- Conan: Including build module from '/home/vscode/.conan2/p/opensa9484b37acb9b/p/lib/cmake/conan-official-openssl-variables.cmake'
-#20 5.171 -- Conan: Including build module from '/home/vscode/.conan2/p/grpc43d6dda3fd901/p/lib/cmake/conan_trick/grpc_cpp_plugin.cmake'
-#20 5.171 -- Conan: Including build module from '/home/vscode/.conan2/p/grpc43d6dda3fd901/p/lib/cmake/conan_trick/grpc_csharp_plugin.cmake'
-#20 5.171 -- Conan: Including build module from '/home/vscode/.conan2/p/grpc43d6dda3fd901/p/lib/cmake/conan_trick/grpc_node_plugin.cmake'
-#20 5.172 -- Conan: Including build module from '/home/vscode/.conan2/p/grpc43d6dda3fd901/p/lib/cmake/conan_trick/grpc_objective_c_plugin.cmake'
-#20 5.172 -- Conan: Including build module from '/home/vscode/.conan2/p/grpc43d6dda3fd901/p/lib/cmake/conan_trick/grpc_php_plugin.cmake'
-#20 5.172 -- Conan: Including build module from '/home/vscode/.conan2/p/grpc43d6dda3fd901/p/lib/cmake/conan_trick/grpc_python_plugin.cmake'
-#20 5.173 -- Conan: Including build module from '/home/vscode/.conan2/p/grpc43d6dda3fd901/p/lib/cmake/conan_trick/grpc_ruby_plugin.cmake'
-#20 5.174 -- Conan: Target declared 'nlohmann_json::nlohmann_json'
-#20 5.175 -- Conan: Component target declared 'PahoMqttCpp::paho-mqttpp3-static'
-#20 5.176 -- Conan: Component target declared 'eclipse-paho-mqtt-c::paho-mqtt3as-static'
-#20 5.178 -- Conan: Including build module from '/home/vscode/.conan2/p/protof8266396c9bed/p/lib/cmake/protobuf/protobuf-generate.cmake'
-#20 5.178 -- Conan: Including build module from '/home/vscode/.conan2/p/protof8266396c9bed/p/lib/cmake/protobuf/protobuf-module.cmake'
-#20 5.178 -- Conan: Including build module from '/home/vscode/.conan2/p/protof8266396c9bed/p/lib/cmake/protobuf/protobuf-options.cmake'
-#20 5.178 -- Conan: Including build module from '/home/vscode/.conan2/p/protof8266396c9bed/p/lib/cmake/protobuf/protobuf-conan-protoc-target.cmake'
-#20 5.194 -- Conan: Including build module from '/home/vscode/.conan2/p/absei72989cb28aac1/p/lib/cmake/conan_trick/cxx_std.cmake'
-#20 5.195 [0mFound ccache installation[0m
-#20 5.201 -- Configuring done
-#20 5.240 -- Generating done
-#20 5.265 -- Build files have been written to: /home/vscode/.conan2/p/b/vehica1080f90569cb/b/build-linux-x86_64/Release
-#20 5.284 [0/48] Running cpp protocol buffer compiler on kuksa/val/v2/types.proto[K[0/48] Running cpp protocol buffer compiler on kuksa/val/v2/val.proto[K[0/48] Running cpp protocol buffer compiler on sdv/databroker/v1/types.proto[K[0/48] Running cpp protocol buffer compiler on sdv/databroker/v1/collector.proto[K[0/48] Running cpp protocol buffer compiler on sdv/databroker/v1/broker.proto[K[0/48] Running grpc protocol buffer co...lugin-options: generate_mock_code=true[K[0/48] Running grpc protocol buffer co...lugin-options: generate_mock_code=true[K[0/48] Running grpc protocol buffer co...lugin-options: generate_mock_code=true[K[0/48] Running grpc protocol buffer co...lugin-options: generate_mock_code=true[K[0/48] Running grpc protocol buffer co...lugin-options: generate_mock_code=true[K[1/48] Running grpc protocol buffer co...lugin-options: generate_mock_code=true[K[2/48] Running cpp protocol buffer compiler on sdv/databroker/v1/broker.proto[K[3/48] Running grpc protocol buffer co...lugin-options: generate_mock_code=true[K[4/48] Running grpc protocol buffer co...lugin-options: generate_mock_code=true[K[5/48] Running cpp protocol buffer compiler on sdv/databroker/v1/collector.proto[K[6/48] Running grpc protocol buffer co...lugin-options: generate_mock_code=true[K[7/48] Running cpp protocol buffer compiler on sdv/databroker/v1/types.proto[K[8/48] Running grpc protocol buffer co...lugin-options: generate_mock_code=true[K[9/48] Running cpp protocol buffer compiler on kuksa/val/v2/types.proto[K[10/48] Running cpp protocol buffer compiler on kuksa/val/v2/val.proto[K[10/48] Building CXX object sdk/proto/...ed-grpc.dir/kuksa/val/v2/types.pb.cc.o[K[10/48] Building CXX object sdk/proto/...ated-grpc.dir/kuksa/val/v2/val.pb.cc.o[K[10/48] Building CXX object sdk/proto/...pc.dir/sdv/databroker/v1/types.pb.cc.o[K[10/48] Building CXX object sdk/proto/...ir/sdv/databroker/v1/collector.pb.cc.o[K[10/48] Building CXX object sdk/proto/...c.dir/sdv/databroker/v1/broker.pb.cc.o[K[10/48] Building CXX object sdk/proto/...pc.dir/kuksa/val/v2/types.grpc.pb.cc.o[K[10/48] Building CXX object sdk/proto/...grpc.dir/kuksa/val/v2/val.grpc.pb.cc.o[K[10/48] Building CXX object sdk/proto/...r/sdv/databroker/v1/types.grpc.pb.cc.o[K[10/48] Building CXX object sdk/proto/...v/databroker/v1/collector.grpc.pb.cc.o[K[10/48] Building CXX object sdk/proto/.../sdv/databroker/v1/broker.grpc.pb.cc.o[K[10/48] Building CXX object sdk/src/CM...hicle-app-sdk.dir/sdk/VehicleApp.cpp.o[K[10/48] Building CXX object sdk/src/CM...es/vehicle-app-sdk.dir/sdk/Model.cpp.o[K[10/48] Building CXX object sdk/src/CM...les/vehicle-app-sdk.dir/sdk/Node.cpp.o[K[10/48] Building CXX object sdk/src/CM...cle-app-sdk.dir/sdk/QueryBuilder.cpp.o[K[10/48] Building CXX object sdk/src/CM...ehicle-app-sdk.dir/sdk/DataPoint.cpp.o[K[10/48] Building CXX object sdk/src/CM...e-app-sdk.dir/sdk/DataPointValue.cpp.o[K[10/48] Building CXX object sdk/src/CM...hicle-app-sdk.dir/sdk/ThreadPool.cpp.o[K[10/48] Building CXX object sdk/src/CMakeFiles/vehicle-app-sdk.dir/sdk/Job.cpp.o[K[11/48] Building CXX object sdk/src/CM...les/vehicle-app-sdk.dir/sdk/Node.cpp.o[K[11/48] Building CXX object sdk/src/CM...es/vehicle-app-sdk.dir/sdk/Utils.cpp.o[K[12/48] Building CXX object sdk/src/CMakeFiles/vehicle-app-sdk.dir/sdk/Job.cpp.o[K[12/48] Building CXX object sdk/src/CM...s/vehicle-app-sdk.dir/sdk/Logger.cpp.o[K[13/48] Building CXX object sdk/src/CM...e-app-sdk.dir/sdk/DataPointValue.cpp.o[K[13/48] Building CXX object sdk/src/CM...-app-sdk.dir/sdk/grpc/GrpcClient.cpp.o[K[14/48] Building CXX object sdk/src/CM...es/vehicle-app-sdk.dir/sdk/Model.cpp.o[K[14/48] Building CXX object sdk/src/CM...sdk.dir/sdk/grpc/AsyncGrpcFacade.cpp.o[K[15/48] Building CXX object sdk/src/CM...cle-app-sdk.dir/sdk/QueryBuilder.cpp.o[K[15/48] Building CXX object sdk/src/CM...dk.dir/sdk/middleware/Middleware.cpp.o[K[16/48] Building CXX object sdk/src/CM...es/vehicle-app-sdk.dir/sdk/Utils.cpp.o[K[16/48] Building CXX object sdk/src/CM.../sdk/middleware/NativeMiddleware.cpp.o[K[17/48] Building CXX object sdk/src/CM...hicle-app-sdk.dir/sdk/ThreadPool.cpp.o[K[17/48] Building CXX object sdk/src/CM....dir/sdk/pubsub/MqttPubSubClient.cpp.o[K[18/48] Building CXX object sdk/src/CM...dk.dir/sdk/middleware/Middleware.cpp.o[K[18/48] Building CXX object sdk/src/CM...p-sdk.dir/sdk/vdb/DataPointBatch.cpp.o[K[19/48] Building CXX object sdk/proto/...pc.dir/kuksa/val/v2/types.grpc.pb.cc.o[K[19/48] Building CXX object sdk/src/CM...sdk/vdb/IVehicleDataBrokerClient.cpp.o[K[20/48] Building CXX object sdk/src/CM...hicle-app-sdk.dir/sdk/VehicleApp.cpp.o[K[20/48] Building CXX object sdk/src/CM...grpc/common/ChannelConfiguration.cpp.o[K[21/48] Building CXX object sdk/proto/...r/sdv/databroker/v1/types.grpc.pb.cc.o[K[21/48] Building CXX object sdk/src/CM.../vdb/grpc/common/TypeConversions.cpp.o[K[22/48] Building CXX object sdk/src/CM...-app-sdk.dir/sdk/grpc/GrpcClient.cpp.o[K[22/48] Building CXX object sdk/src/CM...ksa_val_v2/BrokerAsyncGrpcFacade.cpp.o[K[23/48] Building CXX object sdk/src/CM...sdk.dir/sdk/grpc/AsyncGrpcFacade.cpp.o[K[23/48] Building CXX object sdk/src/CM...b/grpc/kuksa_val_v2/BrokerClient.cpp.o[K[24/48] Building CXX object sdk/src/CM...p-sdk.dir/sdk/vdb/DataPointBatch.cpp.o[K[24/48] Building CXX object sdk/src/CM...k/vdb/grpc/kuksa_val_v2/Metadata.cpp.o[K[25/48] Building CXX object sdk/src/CM.../sdk/middleware/NativeMiddleware.cpp.o[K[25/48] Building CXX object sdk/src/CM...rpc/kuksa_val_v2/TypeConversions.cpp.o[K[26/48] Building CXX object sdk/proto/...pc.dir/sdv/databroker/v1/types.pb.cc.o[K[26/48] Building CXX object sdk/src/CM...abroker_v1/BrokerAsyncGrpcFacade.cpp.o[K[27/48] Building CXX object sdk/proto/...ed-grpc.dir/kuksa/val/v2/types.pb.cc.o[K[27/48] Building CXX object sdk/src/CM...c/sdv_databroker_v1/BrokerClient.cpp.o[K[28/48] Building CXX object sdk/src/CM.../vdb/grpc/common/TypeConversions.cpp.o[K[28/48] Building CXX object sdk/src/CM...er_v1/GrpcDataPointValueProvider.cpp.o[K[29/48] Building CXX object sdk/src/CM...s/vehicle-app-sdk.dir/sdk/Logger.cpp.o[K[30/48] Building CXX object sdk/src/CM....dir/sdk/pubsub/MqttPubSubClient.cpp.o[K[31/48] Building CXX object sdk/src/CM...sdk/vdb/IVehicleDataBrokerClient.cpp.o[K[32/48] Building CXX object sdk/proto/...c.dir/sdv/databroker/v1/broker.pb.cc.o[K[33/48] Building CXX object sdk/proto/...v/databroker/v1/collector.grpc.pb.cc.o[K[34/48] Building CXX object sdk/proto/.../sdv/databroker/v1/broker.grpc.pb.cc.o[K[35/48] Building CXX object sdk/proto/...ir/sdv/databroker/v1/collector.pb.cc.o[K[36/48] Building CXX object sdk/src/CM...ksa_val_v2/BrokerAsyncGrpcFacade.cpp.o[K[37/48] Building CXX object sdk/src/CM...abroker_v1/BrokerAsyncGrpcFacade.cpp.o[K[38/48] Building CXX object sdk/src/CM...er_v1/GrpcDataPointValueProvider.cpp.o[K[39/48] Building CXX object sdk/src/CM...grpc/common/ChannelConfiguration.cpp.o[K[40/48] Building CXX object sdk/proto/...ated-grpc.dir/kuksa/val/v2/val.pb.cc.o[K[41/48] Building CXX object sdk/src/CM...k/vdb/grpc/kuksa_val_v2/Metadata.cpp.o[K[42/48] Building CXX object sdk/proto/...grpc.dir/kuksa/val/v2/val.grpc.pb.cc.o[K[42/48] Linking CXX static library sdk/proto/libvehicle-app-sdk-generated-grpc.a[K[43/48] Building CXX object sdk/src/CM...rpc/kuksa_val_v2/TypeConversions.cpp.o[K[44/48] Linking CXX static library sdk/proto/libvehicle-app-sdk-generated-grpc.a[K[45/48] Building CXX object sdk/src/CM...b/grpc/kuksa_val_v2/BrokerClient.cpp.o[K[46/48] Building CXX object sdk/src/CM...c/sdv_databroker_v1/BrokerClient.cpp.o[K[47/48] Building CXX object sdk/src/CM...ehicle-app-sdk.dir/sdk/DataPoint.cpp.o[K[47/48] Linking CXX static library sdk/src/libvehicle-app-sdk.a[K[48/48] Linking CXX static library sdk/src/libvehicle-app-sdk.a[K
-#20 28.92 [1m[32mvehicle-app-sdk/0.7.0:[0m [1m[32mPackage '7ce7e38afed71a4b4ec561a41b36ad98baefe9ec' built[0m
-#20 28.92 vehicle-app-sdk/0.7.0:[0m Build folder /home/vscode/.conan2/p/b/vehica1080f90569cb/b/build-linux-x86_64/Release[0m
-#20 28.92 vehicle-app-sdk/0.7.0:[0m Generating the package[0m
-#20 28.92 vehicle-app-sdk/0.7.0:[0m Packaging in folder /home/vscode/.conan2/p/b/vehica1080f90569cb/p[0m
-#20 28.92 [1m[35mvehicle-app-sdk/0.7.0:[0m [1m[35mCalling package()[0m
-#20 29.19 vehicle-app-sdk/0.7.0: package():[0m Packaged 22 '.h' files[0m
-#20 29.19 vehicle-app-sdk/0.7.0: package():[0m Packaged 1 file: LICENSE[0m
-#20 29.19 vehicle-app-sdk/0.7.0: package():[0m Packaged 2 '.a' files: libvehicle-app-sdk.a, libvehicle-app-sdk-generated-grpc.a[0m
-#20 29.19 vehicle-app-sdk/0.7.0:[0m Created package revision 1d4a5ac661230b4cda78063b8c5fb7e7[0m
-#20 29.19 [1m[32mvehicle-app-sdk/0.7.0:[0m [1m[32mPackage '7ce7e38afed71a4b4ec561a41b36ad98baefe9ec' created[0m
-#20 29.19 [1m[32mvehicle-app-sdk/0.7.0:[0m [1m[32mFull package reference: vehicle-app-sdk/0.7.0#30d6b025245b59e189d5087e7a8aca26:7ce7e38afed71a4b4ec561a41b36ad98baefe9ec#1d4a5ac661230b4cda78063b8c5fb7e7[0m
-#20 29.20 [1m[32mvehicle-app-sdk/0.7.0:[0m [1m[32mPackage folder /home/vscode/.conan2/p/b/vehica1080f90569cb/p[0m
-#20 29.38 [1m[35m
-#20 29.38 -------- Installing package vehicle-model/generated (13 of 13) --------[0m
-#20 29.38 [1m[35mvehicle-model/generated:[0m [1m[35mBuilding from source[0m
-#20 29.38 vehicle-model/generated:[0m Package vehicle-model/generated:8c358ded7a47c6b689964f9635606e1577e3ad39[0m
-#20 29.38 vehicle-model/generated:[0m Building your package in /home/vscode/.conan2/p/b/vehicd78578bb9144c/b[0m
-#20 29.38 [1m[35mvehicle-model/generated:[0m [1m[35mGenerating aggregated env files[0m
-#20 29.38 vehicle-model/generated:[0m Generated aggregated env files: ['conanbuild.sh', 'conanrun.sh'][0m
-#20 29.38 [1m[32mvehicle-model/generated:[0m [1m[32mPackage '8c358ded7a47c6b689964f9635606e1577e3ad39' built[0m
-#20 29.38 vehicle-model/generated:[0m Build folder /home/vscode/.conan2/p/b/vehicd78578bb9144c/b[0m
-#20 29.38 vehicle-model/generated:[0m Generating the package[0m
-#20 29.38 vehicle-model/generated:[0m Packaging in folder /home/vscode/.conan2/p/b/vehicd78578bb9144c/p[0m
-#20 29.38 [1m[35mvehicle-model/generated:[0m [1m[35mCalling package()[0m
-#20 29.51 vehicle-model/generated: package():[0m Packaged 287 '.hpp' files[0m
-#20 29.51 vehicle-model/generated:[0m Created package revision 004cfa2f7396a54b5955064f6cd86d0a[0m
-#20 29.51 [1m[32mvehicle-model/generated:[0m [1m[32mPackage '8c358ded7a47c6b689964f9635606e1577e3ad39' created[0m
-#20 29.51 [1m[32mvehicle-model/generated:[0m [1m[32mFull package reference: vehicle-model/generated#ea8604cd048ba7a3baeb82b505ca53da:8c358ded7a47c6b689964f9635606e1577e3ad39#004cfa2f7396a54b5955064f6cd86d0a[0m
-#20 29.52 [1m[32mvehicle-model/generated:[0m [1m[32mPackage folder /home/vscode/.conan2/p/b/vehicd78578bb9144c/p[0m
-#20 29.52 [33mWARN: deprecated: Usage of deprecated Conan 1.X features that will be removed in Conan 2.X:[0m
-#20 29.52 [33mWARN: deprecated:     'cpp_info.names' used in: c-ares/1.34.3, zlib/1.3.1, paho-mqtt-cpp/1.4.0, abseil/20230802.1, protobuf/3.21.12[0m
-#20 29.52 [33mWARN: deprecated:     'cpp_info.build_modules' used in: abseil/20230802.1, protobuf/3.21.12[0m
-#20 29.52 [33mWARN: deprecated:     'env_info' used in: c-ares/1.34.3, protobuf/3.21.12[0m
-#20 29.52 [33mWARN: deprecated:     'cpp_info.filenames' used in: protobuf/3.21.12[0m
-#20 29.52 [1m[35m
-#20 29.52 ======== Finalizing install (deploy, generators) ========[0m
-#20 29.52 [1m[35mconanfile.txt:[0m [1m[35mWriting generators to /quickbuild/build-linux-x86_64/Debug/generators[0m
-#20 29.53 conanfile.txt:[0m Generator 'CMakeDeps' calling 'generate()'[0m
-#20 29.57 [36mconanfile.txt:[0m [36mCMakeDeps necessary find_package() and targets for your CMakeLists.txt
-#20 29.57     find_package(vehicle-model)
-#20 29.57     find_package(vehicle-app-sdk)
-#20 29.57     find_package(fmt)
-#20 29.57     find_package(nlohmann_json)
-#20 29.57     target_link_libraries(... vehicle-model::vehicle-model vehicle-app-sdk::vehicle-app-sdk fmt::fmt nlohmann_json::nlohmann_json)[0m
-#20 29.59 conanfile.txt:[0m Generator 'CMakeToolchain' calling 'generate()'[0m
-#20 29.63 conanfile.txt:[0m CMakeToolchain generated: conan_toolchain.cmake[0m
-#20 29.63 [36mconanfile.txt:[0m [36mCMakeToolchain: Preset 'conan-debug' added to CMakePresets.json.
-#20 29.63     (cmake>=3.23) cmake --preset conan-debug
-#20 29.63     (cmake<3.23) cmake <path> -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake  -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_BUILD_TYPE=Debug[0m
-#20 29.63 conanfile.txt:[0m CMakeToolchain generated: /quickbuild/build-linux-x86_64/Debug/generators/CMakePresets.json[0m
-#20 29.63 conanfile.txt:[0m CMakeToolchain generated: /quickbuild/CMakeUserPresets.json[0m
-#20 29.63 [1m[35mconanfile.txt:[0m [1m[35mGenerating aggregated env files[0m
-#20 29.63 conanfile.txt:[0m Generated aggregated env files: ['conanbuild.sh', 'conanrun.sh'][0m
-#20 29.63 [1m[32mInstall finished successfully[0m
-#20 29.64 [0m
-#20 29.67 --> Installing dependencies for uniform build in Release mode ...
-#20 29.93 [1m[35m
-#20 29.93 ======== Input profiles ========[0m
-#20 29.93 [1m[36mProfile host:[0m
-#20 29.93 [settings]
-#20 29.93 arch=x86_64
-#20 29.93 build_type=Release
-#20 29.93 compiler=gcc
-#20 29.93 compiler.cppstd=17
-#20 29.93 compiler.libcxx=libstdc++11
-#20 29.93 compiler.version=11
-#20 29.93 os=Linux
-#20 29.93 [buildenv]
-#20 29.93 CC=x86_64-linux-gnu-gcc-11
-#20 29.93 CXX=x86_64-linux-gnu-g++-11
-#20 29.93 LD=x86_64-linux-gnu-ld
-#20 29.93 [0m
-#20 29.93 [1m[36mProfile build:[0m
-#20 29.93 [settings]
-#20 29.93 arch=x86_64
-#20 29.93 build_type=Release
-#20 29.93 compiler=gcc
-#20 29.93 compiler.cppstd=17
-#20 29.93 compiler.libcxx=libstdc++11
-#20 29.93 compiler.version=11
-#20 29.93 os=Linux
-#20 29.93 [buildenv]
-#20 29.93 CC=x86_64-linux-gnu-gcc-11
-#20 29.93 CXX=x86_64-linux-gnu-g++-11
-#20 29.93 LD=x86_64-linux-gnu-ld
-#20 29.93 [0m
-#20 29.93 [1m[35m
-#20 29.93 ======== Computing dependency graph ========[0m
-#20 30.06 [1m[33mGraph root[0m
-#20 30.06 [1m[36m    conanfile.txt: /quickbuild/conanfile.txt[0m
-#20 30.06 [1m[33mRequirements[0m
-#20 30.06 [1m[36m    abseil/20230802.1#cd8012e2f333d4008dcf43cb39b031b8 - Cache[0m
-#20 30.06 [1m[36m    c-ares/1.34.3#55aa867c731f23300cd544f6d90a794d - Cache[0m
-#20 30.06 [1m[36m    fmt/11.1.1#9d84ca70128ab4b84d80140b45d76b21 - Cache[0m
-#20 30.06 [1m[36m    grpc/1.50.1#11ca9ad5502889e7b32e5122a7000037 - Cache[0m
-#20 30.06 [1m[36m    nlohmann_json/3.11.3#45828be26eb619a2e04ca517bb7b828d - Cache[0m
-#20 30.06 [1m[36m    openssl/3.4.1#638c4c4df8ecdef1f7aa73fc0d07fde6 - Cache[0m
-#20 30.06 [1m[36m    paho-mqtt-c/1.3.13#398643eeb183ad7536157ea96b6fad52 - Cache[0m
-#20 30.06 [1m[36m    paho-mqtt-cpp/1.4.0#5faa2a31ae8c1c1acfd3ab6bcbecd9bc - Cache[0m
-#20 30.06 [1m[36m    protobuf/3.21.12#1815c278fa25d4447be035f7bb52ed7e - Cache[0m
-#20 30.06 [1m[36m    re2/20230301#e8d673155a0494f27c7589b611e8350d - Cache[0m
-#20 30.06 [1m[36m    vehicle-app-sdk/0.7.0#30d6b025245b59e189d5087e7a8aca26 - Cache[0m
-#20 30.06 [1m[36m    vehicle-model/generated#ea8604cd048ba7a3baeb82b505ca53da - Cache[0m
-#20 30.06 [1m[36m    zlib/1.3.1#b8bc2603263cf7eccbd6e17e66b0ed76 - Cache[0m
-#20 30.06 [1m[33mBuild requirements[0m
-#20 30.06 [1m[36m    abseil/20230802.1#cd8012e2f333d4008dcf43cb39b031b8 - Cache[0m
-#20 30.06 [1m[36m    c-ares/1.34.3#55aa867c731f23300cd544f6d90a794d - Cache[0m
-#20 30.06 [1m[36m    cmake/3.31.6#ed0e6c1d49bd564ce6fed1a19653b86d - Cache[0m
-#20 30.06 [1m[36m    grpc/1.50.1#11ca9ad5502889e7b32e5122a7000037 - Cache[0m
-#20 30.06 [1m[36m    openssl/3.4.1#638c4c4df8ecdef1f7aa73fc0d07fde6 - Cache[0m
-#20 30.06 [1m[36m    protobuf/3.21.12#1815c278fa25d4447be035f7bb52ed7e - Cache[0m
-#20 30.06 [1m[36m    re2/20230301#e8d673155a0494f27c7589b611e8350d - Cache[0m
-#20 30.06 [1m[36m    zlib/1.3.1#b8bc2603263cf7eccbd6e17e66b0ed76 - Cache[0m
-#20 30.06 [1m[33mResolved version ranges[0m
-#20 30.06 [1m[36m    abseil/[>=20230125.3 <=20230802.1]: abseil/20230802.1[0m
-#20 30.06 [1m[36m    c-ares/[>=1.19.1 <2]: c-ares/1.34.3[0m
-#20 30.06 [1m[36m    cmake/[>=3.25 <4]: cmake/3.31.6[0m
-#20 30.06 [1m[36m    openssl/[>=1.1 <4]: openssl/3.4.1[0m
-#20 30.06 [1m[36m    zlib/[>=1.2.11 <2]: zlib/1.3.1[0m
-#20 30.06 [1m[35m
-#20 30.06 ======== Computing necessary packages ========[0m
-#20 30.07 Connecting to remote 'conancenter' anonymously[0m
-#20 30.75 [1m[33mRequirements[0m
-#20 30.75 [1m[36m    abseil/20230802.1#cd8012e2f333d4008dcf43cb39b031b8:13be611585c95453f1cbbd053cea04b3e64470ca#710166ef8f4cf03ced5fa2517919728f - Cache[0m
-#20 30.75 [1m[36m    c-ares/1.34.3#55aa867c731f23300cd544f6d90a794d:e3c52a2f5bd5dc2a32df2d25f9f70a04cfd7bea3#136a11d51eb02659d1e1a19d4f45d7b8 - Cache[0m
-#20 30.75 [1m[36m    fmt/11.1.1#9d84ca70128ab4b84d80140b45d76b21:29da3f322a17cc9826b294a7ab191c2f298a9f49#3e8d0a0786499b1f9a664774105eafbe - Cache[0m
-#20 30.75 [1m[36m    grpc/1.50.1#11ca9ad5502889e7b32e5122a7000037:d2f7e98507df6010002471e4759512a6304ca3c2#0d7784aef253040c205404081c2df3c7 - Cache[0m
-#20 30.75 [1m[36m    nlohmann_json/3.11.3#45828be26eb619a2e04ca517bb7b828d:da39a3ee5e6b4b0d3255bfef95601890afd80709#552828a2560333bcbeff9d087ce0af0f - Cache[0m
-#20 30.75 [1m[36m    openssl/3.4.1#638c4c4df8ecdef1f7aa73fc0d07fde6:ba0c965640dfc9185194d683d05bfbe6419b47a3#1d843347092982a7457076e20260b3dc - Cache[0m
-#20 30.75 [1m[36m    paho-mqtt-c/1.3.13#398643eeb183ad7536157ea96b6fad52:f54498ef9ce4a33155fd3c80a3636b5c0a2169cf#634ea5f932ada817bc79ab38b4fabe2f - Cache[0m
-#20 30.75 [1m[36m    paho-mqtt-cpp/1.4.0#5faa2a31ae8c1c1acfd3ab6bcbecd9bc:08e303d4ae4d38419fbedbffd216a4f52d185e37#454b0264b741d19e3d93d96dc26396d1 - Cache[0m
-#20 30.75 [1m[36m    protobuf/3.21.12#1815c278fa25d4447be035f7bb52ed7e:10670e90b03eb1607902ed190ae2fecdc52d69bb#b5324d4450284f61adacce3eb9c2aa90 - Cache[0m
-#20 30.75 [1m[36m    re2/20230301#e8d673155a0494f27c7589b611e8350d:81d35562505eb9186290237bea6e2684b0ba3cc8#9a7aa2fcdc3224b32df054cadb7a5439 - Cache[0m
-#20 30.75 [1m[36m    vehicle-app-sdk/0.7.0#30d6b025245b59e189d5087e7a8aca26:7ce7e38afed71a4b4ec561a41b36ad98baefe9ec#1d4a5ac661230b4cda78063b8c5fb7e7 - Cache[0m
-#20 30.75 [1m[36m    vehicle-model/generated#ea8604cd048ba7a3baeb82b505ca53da:8c358ded7a47c6b689964f9635606e1577e3ad39#004cfa2f7396a54b5955064f6cd86d0a - Cache[0m
-#20 30.75 [1m[36m    zlib/1.3.1#b8bc2603263cf7eccbd6e17e66b0ed76:b647c43bfefae3f830561ca202b6cfd935b56205#fee20b6da94c4580b0c84ca5ce203fdc - Cache[0m
-#20 30.75 [1m[33mBuild requirements[0m
-#20 30.75 [1m[33mSkipped binaries[0m
-#20 30.75 [1m[36m    abseil/20230802.1, c-ares/1.34.3, cmake/3.31.6, grpc/1.50.1, openssl/3.4.1, protobuf/3.21.12, re2/20230301, zlib/1.3.1[0m
-#20 30.75 [1m[35m
-#20 30.75 ======== Installing packages ========[0m
-#20 30.76 [1m[32mabseil/20230802.1:[0m [1m[32mAlready installed! (1 of 13)[0m
-#20 30.76 [1m[32mc-ares/1.34.3:[0m [1m[32mAlready installed! (2 of 13)[0m
-#20 30.77 [1m[32mfmt/11.1.1:[0m [1m[32mAlready installed! (3 of 13)[0m
-#20 30.77 [1m[32mnlohmann_json/3.11.3:[0m [1m[32mAlready installed! (4 of 13)[0m
-#20 30.78 [1m[32mre2/20230301:[0m [1m[32mAlready installed! (5 of 13)[0m
-#20 30.78 [1m[32mzlib/1.3.1:[0m [1m[32mAlready installed! (6 of 13)[0m
-#20 30.79 [1m[32mopenssl/3.4.1:[0m [1m[32mAlready installed! (7 of 13)[0m
-#20 30.79 [1m[32mprotobuf/3.21.12:[0m [1m[32mAlready installed! (8 of 13)[0m
-#20 30.80 [1m[32mgrpc/1.50.1:[0m [1m[32mAlready installed! (9 of 13)[0m
-#20 30.81 [1m[32mpaho-mqtt-c/1.3.13:[0m [1m[32mAlready installed! (10 of 13)[0m
-#20 30.81 [1m[32mpaho-mqtt-cpp/1.4.0:[0m [1m[32mAlready installed! (11 of 13)[0m
-#20 30.82 [1m[32mvehicle-app-sdk/0.7.0:[0m [1m[32mAlready installed! (12 of 13)[0m
-#20 30.82 [1m[32mvehicle-model/generated:[0m [1m[32mAlready installed! (13 of 13)[0m
-#20 30.82 [33mWARN: deprecated: Usage of deprecated Conan 1.X features that will be removed in Conan 2.X:[0m
-#20 30.82 [33mWARN: deprecated:     'cpp_info.names' used in: protobuf/3.21.12, paho-mqtt-cpp/1.4.0, abseil/20230802.1, c-ares/1.34.3, zlib/1.3.1[0m
-#20 30.82 [33mWARN: deprecated:     'cpp_info.build_modules' used in: protobuf/3.21.12, abseil/20230802.1[0m
-#20 30.82 [33mWARN: deprecated:     'env_info' used in: protobuf/3.21.12, c-ares/1.34.3[0m
-#20 30.82 [33mWARN: deprecated:     'cpp_info.filenames' used in: protobuf/3.21.12[0m
-#20 30.82 [1m[35m
-#20 30.82 ======== Finalizing install (deploy, generators) ========[0m
-#20 30.82 [1m[35mconanfile.txt:[0m [1m[35mWriting generators to /quickbuild/build-linux-x86_64/Release/generators[0m
-#20 30.83 conanfile.txt:[0m Generator 'CMakeDeps' calling 'generate()'[0m
-#20 30.92 [36mconanfile.txt:[0m [36mCMakeDeps necessary find_package() and targets for your CMakeLists.txt
-#20 30.92     find_package(vehicle-model)
-#20 30.92     find_package(vehicle-app-sdk)
-#20 30.92     find_package(fmt)
-#20 30.92     find_package(nlohmann_json)
-#20 30.92     target_link_libraries(... vehicle-model::vehicle-model vehicle-app-sdk::vehicle-app-sdk fmt::fmt nlohmann_json::nlohmann_json)[0m
-#20 30.93 conanfile.txt:[0m Generator 'CMakeToolchain' calling 'generate()'[0m
-#20 30.98 conanfile.txt:[0m CMakeToolchain generated: conan_toolchain.cmake[0m
-#20 30.98 [36mconanfile.txt:[0m [36mCMakeToolchain: Preset 'conan-release' added to CMakePresets.json.
-#20 30.98     (cmake>=3.23) cmake --preset conan-release
-#20 30.98     (cmake<3.23) cmake <path> -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake  -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_BUILD_TYPE=Release[0m
-#20 30.98 conanfile.txt:[0m CMakeToolchain generated: /quickbuild/build-linux-x86_64/Release/generators/CMakePresets.json[0m
-#20 30.98 conanfile.txt:[0m CMakeToolchain generated: /quickbuild/CMakeUserPresets.json[0m
-#20 30.98 [1m[35mconanfile.txt:[0m [1m[35mGenerating aggregated env files[0m
-#20 30.98 conanfile.txt:[0m Generated aggregated env files: ['conanbuild.sh', 'conanrun.sh'][0m
-#20 30.98 [1m[32mInstall finished successfully[0m
-#20 30.98 [0m
-#20 DONE 31.0s
-
-#21 [17/21] RUN export PATH="$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" &&     velocitas exec vehicle-signal-interface download-vspec &&     velocitas exec vehicle-signal-interface generate-model
-#21 4.736 vspec_file_path='/home/vscode/.velocitas/projects/20c9e89591b7712bd6517500cc120486/vspec.json' >> VELOCITAS_CACHE
-#21 4.736 unit_file_path_list=["/home/vscode/.velocitas/packages/devenv-devcontainer-setup/v3.0.0/vehicle-model-lifecycle/units.yaml"] >> VELOCITAS_CACHE
-#21 6.692 Deleting old model at '/home/vscode/.velocitas/projects/20c9e89591b7712bd6517500cc120486/vehicle_model'
-#21 6.763 Invoking model generator for language cpp and file '/home/vscode/.velocitas/projects/20c9e89591b7712bd6517500cc120486/vspec.json' with units from ['/home/vscode/.velocitas/packages/devenv-devcontainer-setup/v3.0.0/vehicle-model-lifecycle/units.yaml']
-#21 6.763 Loading json...
-#21 6.765 Generating tree from json...
-#21 6.806 Recursing tree and creating c++ code...
-#21 6.976 All done.
-#21 6.976 Exporting Conan project
-#21 DONE 7.4s
-
-#22 [18/21] RUN export PATH="$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" &&     velocitas exec build-system build -r
-#22 2.410 CMake version      cmake version 3.22.1
-#22 2.410 
-#22 2.410 CMake suite maintained and supported by Kitware (kitware.com/cmake).
-#22 2.410 Conan version      Conan version 2.15.1
-#22 2.410 Build arch         x86_64
-#22 2.410 Host arch          x86_64
-#22 2.410 Build type         Release
-#22 2.410 Build target       all
-#22 2.410 Static build       no
-#22 2.410 Coverage enabled   no
-#22 2.431 Not searching for unused variables given on the command line.
-#22 2.440 -- Using Conan toolchain: /quickbuild/build-linux-x86_64/Release/generators/conan_toolchain.cmake
-#22 2.440 -- Conan toolchain: Defining architecture flag: -m64
-#22 2.440 -- Conan toolchain: C++ Standard 17 with extensions OFF
-#22 2.506 -- The CXX compiler identification is GNU 11.4.0
-#22 2.517 -- Detecting CXX compiler ABI info
-#22 2.606 -- Detecting CXX compiler ABI info - done
-#22 2.617 -- Check for working CXX compiler: /usr/bin/x86_64-linux-gnu-g++-11 - skipped
-#22 2.618 -- Detecting CXX compile features
-#22 2.619 -- Detecting CXX compile features - done
-#22 2.629 -- Conan: Target declared 'vehicle-app-sdk::vehicle-app-sdk'
-#22 2.630 -- Conan: Component target declared 'fmt::fmt'
-#22 2.632 -- Conan: Component target declared 'gRPC::address_sorting'
-#22 2.632 -- Conan: Component target declared 'gRPC::gpr'
-#22 2.632 -- Conan: Component target declared 'gRPC::grpc_plugin_support'
-#22 2.632 -- Conan: Component target declared 'gRPC::upb'
-#22 2.632 -- Conan: Component target declared 'gRPC::grpc'
-#22 2.632 -- Conan: Component target declared 'gRPC::grpc_unsecure'
-#22 2.632 -- Conan: Component target declared 'gRPC::grpc++'
-#22 2.632 -- Conan: Component target declared 'gRPC::grpc++_unsecure'
-#22 2.632 -- Conan: Component target declared 'gRPC::grpc++_alts'
-#22 2.632 -- Conan: Component target declared 'gRPC::grpc++_error_details'
-#22 2.632 -- Conan: Component target declared 'gRPC::grpc++_reflection'
-#22 2.632 -- Conan: Component target declared 'gRPC::grpcpp_channelz'
-#22 2.632 -- Conan: Target declared 'grpc::grpc'
-#22 2.645 -- Conan: Component target declared 'absl::config'
-#22 2.645 -- Conan: Component target declared 'absl::pretty_function'
-#22 2.645 -- Conan: Component target declared 'absl::civil_time'
-#22 2.645 -- Conan: Component target declared 'absl::time_zone'
-#22 2.645 -- Conan: Component target declared 'absl::errno_saver'
-#22 2.645 -- Conan: Component target declared 'absl::dynamic_annotations'
-#22 2.645 -- Conan: Component target declared 'absl::core_headers'
-#22 2.645 -- Conan: Component target declared 'absl::fast_type_id'
-#22 2.645 -- Conan: Component target declared 'absl::algorithm'
-#22 2.645 -- Conan: Component target declared 'absl::counting_allocator'
-#22 2.645 -- Conan: Component target declared 'absl::hashtable_debug_hooks'
-#22 2.645 -- Conan: Component target declared 'absl::node_slot_policy'
-#22 2.646 -- Conan: Component target declared 'absl::non_temporal_arm_intrinsics'
-#22 2.646 -- Conan: Component target declared 'absl::log_internal_voidify'
-#22 2.646 -- Conan: Component target declared 'absl::numeric_representation'
-#22 2.646 -- Conan: Component target declared 'absl::random_seed_gen_exception'
-#22 2.646 -- Conan: Component target declared 'absl::random_internal_traits'
-#22 2.646 -- Conan: Component target declared 'absl::random_internal_fast_uniform_bits'
-#22 2.646 -- Conan: Component target declared 'absl::random_internal_platform'
-#22 2.646 -- Conan: Component target declared 'absl::cordz_update_tracker'
-#22 2.646 -- Conan: Component target declared 'absl::if_constexpr'
-#22 2.646 -- Conan: Component target declared 'absl::atomic_hook'
-#22 2.646 -- Conan: Component target declared 'absl::log_severity'
-#22 2.646 -- Conan: Component target declared 'absl::strerror'
-#22 2.646 -- Conan: Component target declared 'absl::prefetch'
-#22 2.646 -- Conan: Component target declared 'absl::hashtable_debug'
-#22 2.646 -- Conan: Component target declared 'absl::non_temporal_memcpy'
-#22 2.646 -- Conan: Component target declared 'absl::leak_check'
-#22 2.646 -- Conan: Component target declared 'absl::flags_commandlineflag_internal'
-#22 2.646 -- Conan: Component target declared 'absl::log_internal_config'
-#22 2.646 -- Conan: Component target declared 'absl::log_internal_nullguard'
-#22 2.646 -- Conan: Component target declared 'absl::type_traits'
-#22 2.646 -- Conan: Component target declared 'absl::bits'
-#22 2.646 -- Conan: Component target declared 'absl::exponential_biased'
-#22 2.646 -- Conan: Component target declared 'absl::random_internal_randen_slow'
-#22 2.646 -- Conan: Component target declared 'absl::random_internal_randen_hwaes_impl'
-#22 2.646 -- Conan: Component target declared 'absl::nullability'
-#22 2.646 -- Conan: Component target declared 'absl::raw_logging_internal'
-#22 2.646 -- Conan: Component target declared 'absl::base_internal'
-#22 2.646 -- Conan: Component target declared 'absl::container_common'
-#22 2.646 -- Conan: Component target declared 'absl::meta'
-#22 2.646 -- Conan: Component target declared 'absl::int128'
-#22 2.646 -- Conan: Component target declared 'absl::periodic_sampler'
-#22 2.646 -- Conan: Component target declared 'absl::random_internal_fastmath'
-#22 2.646 -- Conan: Component target declared 'absl::random_internal_randen_hwaes'
-#22 2.646 -- Conan: Component target declared 'absl::random_internal_uniform_helper'
-#22 2.646 -- Conan: Component target declared 'absl::compare'
-#22 2.646 -- Conan: Component target declared 'absl::spinlock_wait'
-#22 2.646 -- Conan: Component target declared 'absl::throw_delegate'
-#22 2.646 -- Conan: Component target declared 'absl::scoped_set_env'
-#22 2.646 -- Conan: Component target declared 'absl::algorithm_container'
-#22 2.646 -- Conan: Component target declared 'absl::common_policy_traits'
-#22 2.646 -- Conan: Component target declared 'absl::debugging_internal'
-#22 2.646 -- Conan: Component target declared 'absl::memory'
-#22 2.646 -- Conan: Component target declared 'absl::numeric'
-#22 2.646 -- Conan: Component target declared 'absl::random_internal_iostream_state_saver'
-#22 2.646 -- Conan: Component target declared 'absl::random_internal_generate_real'
-#22 2.646 -- Conan: Component target declared 'absl::random_internal_wide_multiply'
-#22 2.646 -- Conan: Component target declared 'absl::random_internal_randen'
-#22 2.646 -- Conan: Component target declared 'absl::cordz_functions'
-#22 2.646 -- Conan: Component target declared 'absl::bad_any_cast_impl'
-#22 2.646 -- Conan: Component target declared 'absl::bad_optional_access'
-#22 2.646 -- Conan: Component target declared 'absl::bad_variant_access'
-#22 2.646 -- Conan: Component target declared 'absl::utility'
-#22 2.646 -- Conan: Component target declared 'absl::base'
-#22 2.646 -- Conan: Component target declared 'absl::cleanup_internal'
-#22 2.646 -- Conan: Component target declared 'absl::compressed_tuple'
-#22 2.646 -- Conan: Component target declared 'absl::container_memory'
-#22 2.646 -- Conan: Component target declared 'absl::hash_policy_traits'
-#22 2.646 -- Conan: Component target declared 'absl::stacktrace'
-#22 2.646 -- Conan: Component target declared 'absl::any_invocable'
-#22 2.646 -- Conan: Component target declared 'absl::random_internal_distribution_caller'
-#22 2.646 -- Conan: Component target declared 'absl::random_internal_pcg_engine'
-#22 2.646 -- Conan: Component target declared 'absl::bad_any_cast'
-#22 2.646 -- Conan: Component target declared 'absl::span'
-#22 2.646 -- Conan: Component target declared 'absl::optional'
-#22 2.646 -- Conan: Component target declared 'absl::variant'
-#22 2.646 -- Conan: Component target declared 'absl::malloc_internal'
-#22 2.646 -- Conan: Component target declared 'absl::endian'
-#22 2.646 -- Conan: Component target declared 'absl::cleanup'
-#22 2.646 -- Conan: Component target declared 'absl::fixed_array'
-#22 2.646 -- Conan: Component target declared 'absl::inlined_vector_internal'
-#22 2.646 -- Conan: Component target declared 'absl::crc_cpu_detect'
-#22 2.646 -- Conan: Component target declared 'absl::demangle_internal'
-#22 2.646 -- Conan: Component target declared 'absl::debugging'
-#22 2.646 -- Conan: Component target declared 'absl::bind_front'
-#22 2.646 -- Conan: Component target declared 'absl::function_ref'
-#22 2.646 -- Conan: Component target declared 'absl::log_internal_conditions'
-#22 2.646 -- Conan: Component target declared 'absl::random_bit_gen_ref'
-#22 2.646 -- Conan: Component target declared 'absl::random_internal_mock_helpers'
-#22 2.646 -- Conan: Component target declared 'absl::string_view'
-#22 2.646 -- Conan: Component target declared 'absl::any'
-#22 2.646 -- Conan: Component target declared 'absl::inlined_vector'
-#22 2.646 -- Conan: Component target declared 'absl::crc_internal'
-#22 2.646 -- Conan: Component target declared 'absl::city'
-#22 2.646 -- Conan: Component target declared 'absl::low_level_hash'
-#22 2.646 -- Conan: Component target declared 'absl::random_internal_randen_engine'
-#22 2.646 -- Conan: Component target declared 'absl::strings_internal'
-#22 2.646 -- Conan: Component target declared 'absl::graphcycles_internal'
-#22 2.646 -- Conan: Component target declared 'absl::strings'
-#22 2.646 -- Conan: Component target declared 'absl::layout'
-#22 2.646 -- Conan: Component target declared 'absl::symbolize'
-#22 2.646 -- Conan: Component target declared 'absl::flags_path_util'
-#22 2.646 -- Conan: Component target declared 'absl::flags_commandlineflag'
-#22 2.646 -- Conan: Component target declared 'absl::hash'
-#22 2.647 -- Conan: Component target declared 'absl::log_internal_proto'
-#22 2.647 -- Conan: Component target declared 'absl::log_internal_nullstream'
-#22 2.647 -- Conan: Component target declared 'absl::log_internal_append_truncated'
-#22 2.647 -- Conan: Component target declared 'absl::random_distributions'
-#22 2.647 -- Conan: Component target declared 'absl::random_internal_seed_material'
-#22 2.647 -- Conan: Component target declared 'absl::str_format_internal'
-#22 2.647 -- Conan: Component target declared 'absl::time'
-#22 2.647 -- Conan: Component target declared 'absl::examine_stack'
-#22 2.647 -- Conan: Component target declared 'absl::flags_private_handle_accessor'
-#22 2.647 -- Conan: Component target declared 'absl::log_internal_globals'
-#22 2.647 -- Conan: Component target declared 'absl::log_globals'
-#22 2.647 -- Conan: Component target declared 'absl::log_entry'
-#22 2.647 -- Conan: Component target declared 'absl::random_internal_pool_urbg'
-#22 2.647 -- Conan: Component target declared 'absl::random_internal_salted_seed_seq'
-#22 2.647 -- Conan: Component target declared 'absl::str_format'
-#22 2.647 -- Conan: Component target declared 'absl::kernel_timeout_internal'
-#22 2.647 -- Conan: Component target declared 'absl::crc32c'
-#22 2.647 -- Conan: Component target declared 'absl::failure_signal_handler'
-#22 2.647 -- Conan: Component target declared 'absl::flags_marshalling'
-#22 2.647 -- Conan: Component target declared 'absl::log_internal_format'
-#22 2.647 -- Conan: Component target declared 'absl::log_initialize'
-#22 2.647 -- Conan: Component target declared 'absl::log_sink'
-#22 2.647 -- Conan: Component target declared 'absl::random_seed_sequences'
-#22 2.647 -- Conan: Component target declared 'absl::random_internal_nonsecure_base'
-#22 2.647 -- Conan: Component target declared 'absl::random_internal_distribution_test_util'
-#22 2.647 -- Conan: Component target declared 'absl::synchronization'
-#22 2.647 -- Conan: Component target declared 'absl::crc_cord_state'
-#22 2.647 -- Conan: Component target declared 'absl::flags_program_name'
-#22 2.647 -- Conan: Component target declared 'absl::log_internal_log_sink_set'
-#22 2.647 -- Conan: Component target declared 'absl::sample_recorder'
-#22 2.647 -- Conan: Component target declared 'absl::random_random'
-#22 2.647 -- Conan: Component target declared 'absl::cordz_statistics'
-#22 2.647 -- Conan: Component target declared 'absl::cordz_handle'
-#22 2.647 -- Conan: Component target declared 'absl::hashtablez_sampler'
-#22 2.647 -- Conan: Component target declared 'absl::flags_config'
-#22 2.647 -- Conan: Component target declared 'absl::log_sink_registry'
-#22 2.647 -- Conan: Component target declared 'absl::cord_internal'
-#22 2.647 -- Conan: Component target declared 'absl::raw_hash_set'
-#22 2.647 -- Conan: Component target declared 'absl::flags_internal'
-#22 2.647 -- Conan: Component target declared 'absl::log_internal_message'
-#22 2.647 -- Conan: Component target declared 'absl::cordz_info'
-#22 2.647 -- Conan: Component target declared 'absl::raw_hash_map'
-#22 2.647 -- Conan: Component target declared 'absl::log_internal_strip'
-#22 2.647 -- Conan: Component target declared 'absl::log_internal_structured'
-#22 2.647 -- Conan: Component target declared 'absl::cordz_sample_token'
-#22 2.647 -- Conan: Component target declared 'absl::cordz_update_scope'
-#22 2.647 -- Conan: Component target declared 'absl::log_internal_check_op'
-#22 2.647 -- Conan: Component target declared 'absl::log_internal_log_impl'
-#22 2.647 -- Conan: Component target declared 'absl::log_structured'
-#22 2.647 -- Conan: Component target declared 'absl::cord'
-#22 2.647 -- Conan: Component target declared 'absl::btree'
-#22 2.647 -- Conan: Component target declared 'absl::hash_function_defaults'
-#22 2.647 -- Conan: Component target declared 'absl::log_internal_check_impl'
-#22 2.647 -- Conan: Component target declared 'absl::absl_log'
-#22 2.647 -- Conan: Component target declared 'absl::log'
-#22 2.647 -- Conan: Component target declared 'absl::status'
-#22 2.647 -- Conan: Component target declared 'absl::flat_hash_map'
-#22 2.647 -- Conan: Component target declared 'absl::flat_hash_set'
-#22 2.648 -- Conan: Component target declared 'absl::node_hash_map'
-#22 2.648 -- Conan: Component target declared 'absl::node_hash_set'
-#22 2.648 -- Conan: Component target declared 'absl::absl_check'
-#22 2.648 -- Conan: Component target declared 'absl::check'
-#22 2.648 -- Conan: Component target declared 'absl::die_if_null'
-#22 2.648 -- Conan: Component target declared 'absl::log_streamer'
-#22 2.648 -- Conan: Component target declared 'absl::statusor'
-#22 2.648 -- Conan: Component target declared 'absl::flags_reflection'
-#22 2.648 -- Conan: Component target declared 'absl::flags'
-#22 2.648 -- Conan: Component target declared 'absl::flags_usage_internal'
-#22 2.648 -- Conan: Component target declared 'absl::log_internal_flags'
-#22 2.648 -- Conan: Component target declared 'absl::flags_usage'
-#22 2.648 -- Conan: Component target declared 'absl::log_flags'
-#22 2.648 -- Conan: Component target declared 'absl::flags_parse'
-#22 2.648 -- Conan: Target declared 'abseil::abseil'
-#22 2.687 -- Conan: Including build module from '/home/vscode/.conan2/p/absei72989cb28aac1/p/lib/cmake/conan_trick/cxx_std.cmake'
-#22 2.688 -- Conan: Component target declared 'protobuf::libprotobuf'
-#22 2.688 -- Conan: Component target declared 'protobuf::libprotoc'
-#22 2.688 -- Conan: Target declared 'protobuf::protobuf'
-#22 2.689 -- Conan: Target declared 'ZLIB::ZLIB'
-#22 2.690 -- Conan: Including build module from '/home/vscode/.conan2/p/protof8266396c9bed/p/lib/cmake/protobuf/protobuf-generate.cmake'
-#22 2.690 -- Conan: Including build module from '/home/vscode/.conan2/p/protof8266396c9bed/p/lib/cmake/protobuf/protobuf-module.cmake'
-#22 2.691 -- Conan: Including build module from '/home/vscode/.conan2/p/protof8266396c9bed/p/lib/cmake/protobuf/protobuf-options.cmake'
-#22 2.691 -- Conan: Including build module from '/home/vscode/.conan2/p/protof8266396c9bed/p/lib/cmake/protobuf/protobuf-conan-protoc-target.cmake'
-#22 2.692 -- Conan: Component target declared 'c-ares::cares'
-#22 2.694 -- Conan: Target declared 're2::re2'
-#22 2.695 -- Conan: Component target declared 'OpenSSL::Crypto'
-#22 2.695 -- Conan: Component target declared 'OpenSSL::SSL'
-#22 2.695 -- Conan: Target declared 'openssl::openssl'
-#22 2.696 -- Conan: Including build module from '/home/vscode/.conan2/p/opensa9484b37acb9b/p/lib/cmake/conan-official-openssl-variables.cmake'
-#22 2.696 -- Conan: Including build module from '/home/vscode/.conan2/p/grpc43d6dda3fd901/p/lib/cmake/conan_trick/grpc_cpp_plugin.cmake'
-#22 2.696 -- Conan: Including build module from '/home/vscode/.conan2/p/grpc43d6dda3fd901/p/lib/cmake/conan_trick/grpc_csharp_plugin.cmake'
-#22 2.696 -- Conan: Including build module from '/home/vscode/.conan2/p/grpc43d6dda3fd901/p/lib/cmake/conan_trick/grpc_node_plugin.cmake'
-#22 2.697 -- Conan: Including build module from '/home/vscode/.conan2/p/grpc43d6dda3fd901/p/lib/cmake/conan_trick/grpc_objective_c_plugin.cmake'
-#22 2.697 -- Conan: Including build module from '/home/vscode/.conan2/p/grpc43d6dda3fd901/p/lib/cmake/conan_trick/grpc_php_plugin.cmake'
-#22 2.697 -- Conan: Including build module from '/home/vscode/.conan2/p/grpc43d6dda3fd901/p/lib/cmake/conan_trick/grpc_python_plugin.cmake'
-#22 2.698 -- Conan: Including build module from '/home/vscode/.conan2/p/grpc43d6dda3fd901/p/lib/cmake/conan_trick/grpc_ruby_plugin.cmake'
-#22 2.698 -- Conan: Target declared 'nlohmann_json::nlohmann_json'
-#22 2.700 -- Conan: Component target declared 'PahoMqttCpp::paho-mqttpp3-static'
-#22 2.701 -- Conan: Component target declared 'eclipse-paho-mqtt-c::paho-mqtt3as-static'
-#22 2.702 -- Conan: Target declared 'vehicle-model::vehicle-model'
-#22 2.704 [0mFound ccache installation[0m
-#22 2.708 -- Configuring done
-#22 2.736 -- Generating done
-#22 2.758 -- Build files have been written to: /quickbuild/build-linux-x86_64/Release
-#22 2.777 [0/2] Building CXX object app/src/CMakeFiles/app.dir/VehicleApp.cpp.o[K[1/2] Building CXX object app/src/CMakeFiles/app.dir/VehicleApp.cpp.o[K[1/2] Linking CXX executable bin/app[K[2/2] Linking CXX executable bin/app[K
-#22 DONE 22.0s
-
-#23 [19/21] COPY --chown=vscode:vscode scripts/ /scripts/
-#23 DONE 0.1s
-
-#24 [20/21] RUN chmod +x /scripts/*.sh
-#24 DONE 0.2s
-
-#25 [21/21] RUN echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-build.sh "$@"' > /usr/local/bin/build &&     echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-run.sh "$@"' > /usr/local/bin/run &&     echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/validate-template.sh "$@"' > /usr/local/bin/validate &&     echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-build.sh gen-model "$@"' > /usr/local/bin/gen-model &&     echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-build.sh compile "$@"' > /usr/local/bin/compile &&     echo '#!/bin/bash\nexport PATH="$HOME/.local/bin:$PATH"\n/scripts/quick-build.sh finalize "$@"' > /usr/local/bin/finalize &&     chmod +x /usr/local/bin/build /usr/local/bin/run /usr/local/bin/validate /usr/local/bin/gen-model /usr/local/bin/compile /usr/local/bin/finalize
-#25 DONE 0.2s
-
-#26 exporting to image
-#26 exporting layers
-#26 exporting layers 2.1s done
-#26 writing image sha256:dd9744615b759f41b75006fc6b86b1ba94e1a4cc1d34fd3618a767a63762e624 done
-#26 naming to docker.io/library/velocitas-quick-proxy 0.0s done
-#26 DONE 2.2s
-Completed: Wed Jun 18 10:11:10 AM +07 2025
-Exit Code: 0
-Duration: 119s
-
-✅ TEST 1 PASSED: Container Build
-🔧 TEST 2: Help Command
-Started: Wed Jun 18 10:11:10 AM +07 2025
-ℹ️  [INFO] Workspace: /quickbuild
-Quick Build Script - Mode 2 Blackbox Utility
-
-Usage:
-  cat VehicleApp.cpp | docker run -i velocitas-quick
-  docker run -v $(pwd)/app.cpp:/input velocitas-quick
-  docker run -v $(pwd):/input velocitas-quick
-
-Custom VSS Support:
-  # Use custom VSS file
-  docker run -v $(pwd)/my-vss.json:/vss.json -e VSS_SPEC_FILE=/vss.json -i velocitas-quick
-
-  # Use custom VSS URL
-  docker run -e VSS_SPEC_URL=https://company.com/vss.json -i velocitas-quick
-
-Commands:
-  build       - Build the application (default)
-  run         - Build (if needed) and run application with live output
-  rerun       - Run pre-built template (no input needed, fastest)
-  validate    - Only validate VehicleApp.cpp
-
-Granular Build Commands:
-  gen-model   - Generate vehicle signal model from VSS (Step 3)
-  model       - Alias for gen-model
-  compile     - Compile C++ application only (Step 4)
-  build-cpp   - Alias for compile
-  finalize    - Build summary and finalization (Step 5)
-
-  help        - Show this help message
-
-Environment Variables:
-  VSS_SPEC_FILE - Path to custom VSS JSON file
-  VSS_SPEC_URL  - URL to custom VSS JSON specification
-Completed: Wed Jun 18 10:11:10 AM +07 2025
-Exit Code: 0
-Duration: 0s
-
-✅ TEST 2 PASSED: Help Command
-🔧 TEST 3: Basic Build via Stdin
-Started: Wed Jun 18 10:11:10 AM +07 2025
-ℹ️  [INFO] Workspace: /quickbuild
-
-ℹ️  [INFO] 🚀 Velocitas C++ Quick Build Utility
-ℹ️  [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ℹ️  [INFO] 📦 Zero-setup containerized build for Velocitas vehicle apps
-
-ℹ️  [INFO] 🔧 STEP 1/5: Processing input...
-ℹ️  [INFO] Reading user VehicleApp.cpp...
-ℹ️  [INFO] Reading from stdin...
-✅ [SUCCESS] VehicleApp.cpp validation passed
-✅ [SUCCESS] VehicleApp.cpp loaded successfully (454 lines)
-
-ℹ️  [INFO] 🔧 STEP 2/5: Preparing build workspace...
-ℹ️  [INFO] Preparing build workspace...
-ℹ️  [INFO] Configuring VSS specification...
-ℹ️  [INFO] Using default VSS 4.0 specification
-ℹ️  [INFO] Cleaning previous build artifacts...
-✅ [SUCCESS] Workspace prepared
-
-ℹ️  [INFO] 🔧 STEP 3/5: Vehicle signal model preparation...
-ℹ️  [INFO] Generating vehicle model from VSS...
-✅ [SUCCESS] Vehicle model generated
-
-ℹ️  [INFO] 🔧 STEP 4/5: Building C++ application...
-ℹ️  [INFO] Building C++ application...
-ℹ️  [INFO] 🔧 Configuring build environment...
-ℹ️  [INFO] 📦 Installing dependencies (if needed)...
-⚠️  [WARNING] Dependency installation had issues, continuing with build...
-ℹ️  [INFO] 🏗️  Starting compilation (Release mode for optimization)...
-ℹ️  [INFO]    This may take 60-90 seconds depending on code complexity...
-ℹ️  [INFO] 🔍 Verifying build output...
-✅ [SUCCESS] Build completed successfully!
-ℹ️  [INFO] 📍 Executable location: /quickbuild/build/bin/app
-ℹ️  [INFO] 📏 Executable size: 14M
-ℹ️  [INFO] 🔐 Permissions: -rwxr-xr-x
-
-ℹ️  [INFO] 🔧 STEP 5/5: Finalizing build...
-ℹ️  [INFO] Build Summary:
-============================================
-✅ VehicleApp.cpp: Validated and compiled
-✅ Dependencies: Pre-installed (cached)
-✅ Vehicle Model: Generated from VSS
-✅ Executable: /quickbuild/build/bin/app
-📊 Size: 13.3MiB
-🕐 Completed: Wed Jun 18 03:11:22 UTC 2025
-============================================
-
-✅ [SUCCESS] 🎉 Quick build completed successfully!
-ℹ️  [INFO] 💡 Your vehicle app is ready to run!
-Completed: Wed Jun 18 10:11:22 AM +07 2025
-Exit Code: 0
-Duration: 12s
-
-✅ TEST 3 PASSED: Basic Build via Stdin
-🔧 TEST 4: Validation Command
-Started: Wed Jun 18 10:11:22 AM +07 2025
-ℹ️  [INFO] Workspace: /quickbuild
-ℹ️  [INFO] Reading user VehicleApp.cpp...
-ℹ️  [INFO] Reading from stdin...
-✅ [SUCCESS] VehicleApp.cpp validation passed
-✅ [SUCCESS] VehicleApp.cpp loaded successfully (454 lines)
-✅ [SUCCESS] Validation completed - VehicleApp.cpp is valid
-Completed: Wed Jun 18 10:11:23 AM +07 2025
-Exit Code: 0
-Duration: 1s
-
-✅ TEST 4 PASSED: Validation Command
-🔧 TEST 5: Custom VSS Support
-Started: Wed Jun 18 10:11:23 AM +07 2025
-ℹ️  [INFO] Workspace: /quickbuild
-
-ℹ️  [INFO] 🚀 Velocitas C++ Quick Build Utility
-ℹ️  [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ℹ️  [INFO] 📦 Zero-setup containerized build for Velocitas vehicle apps
-
-ℹ️  [INFO] 🔧 STEP 1/5: Processing input...
-ℹ️  [INFO] Reading user VehicleApp.cpp...
-ℹ️  [INFO] Reading from stdin...
-✅ [SUCCESS] VehicleApp.cpp validation passed
-✅ [SUCCESS] VehicleApp.cpp loaded successfully (454 lines)
-
-ℹ️  [INFO] 🔧 STEP 2/5: Preparing build workspace...
-ℹ️  [INFO] Preparing build workspace...
-ℹ️  [INFO] Configuring VSS specification...
-ℹ️  [INFO] Using custom VSS URL: https://raw.githubusercontent.com/COVESA/vehicle_signal_specification/main/spec/VehicleSignalSpecification.json
-✅ [SUCCESS] VSS configuration updated
-ℹ️  [INFO] VSS source: https://raw.githubusercontent.com/COVESA/vehicle_signal_specification/main/spec/VehicleSignalSpecification.json
-ℹ️  [INFO] Cleaning previous build artifacts...
-✅ [SUCCESS] Workspace prepared
-
-ℹ️  [INFO] 🔧 STEP 3/5: Vehicle signal model preparation...
-ℹ️  [INFO] Generating vehicle model from VSS...
-✅ [SUCCESS] Vehicle model generated
-
-ℹ️  [INFO] 🔧 STEP 4/5: Building C++ application...
-ℹ️  [INFO] Building C++ application...
-ℹ️  [INFO] 🔧 Configuring build environment...
-ℹ️  [INFO] 📦 Installing dependencies (if needed)...
-⚠️  [WARNING] Dependency installation had issues, continuing with build...
-ℹ️  [INFO] 🏗️  Starting compilation (Release mode for optimization)...
-ℹ️  [INFO]    This may take 60-90 seconds depending on code complexity...
-ℹ️  [INFO] 🔍 Verifying build output...
-✅ [SUCCESS] Build completed successfully!
-ℹ️  [INFO] 📍 Executable location: /quickbuild/build/bin/app
-ℹ️  [INFO] 📏 Executable size: 14M
-ℹ️  [INFO] 🔐 Permissions: -rwxr-xr-x
-
-ℹ️  [INFO] 🔧 STEP 5/5: Finalizing build...
-ℹ️  [INFO] Build Summary:
-============================================
-✅ VehicleApp.cpp: Validated and compiled
-✅ Dependencies: Pre-installed (cached)
-✅ Vehicle Model: Generated from VSS
-✅ Executable: /quickbuild/build/bin/app
-📊 Size: 13.3MiB
-🕐 Completed: Wed Jun 18 03:11:34 UTC 2025
-============================================
-
-✅ [SUCCESS] 🎉 Quick build completed successfully!
-ℹ️  [INFO] 💡 Your vehicle app is ready to run!
-Completed: Wed Jun 18 10:11:34 AM +07 2025
-Exit Code: 0
-Duration: 11s
-
-✅ TEST 5 PASSED: Custom VSS Support
-🔧 TEST 6: Error Handling
-Started: Wed Jun 18 10:11:34 AM +07 2025
-ℹ️  [INFO] Workspace: /quickbuild
-
-ℹ️  [INFO] 🚀 Velocitas C++ Quick Build Utility
-ℹ️  [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ℹ️  [INFO] 📦 Zero-setup containerized build for Velocitas vehicle apps
-
-ℹ️  [INFO] 🔧 STEP 1/5: Processing input...
-ℹ️  [INFO] Reading user VehicleApp.cpp...
-ℹ️  [INFO] Reading from stdin...
-❌ [ERROR] Invalid VehicleApp.cpp: Missing VehicleApp class definition
-Completed: Wed Jun 18 10:11:35 AM +07 2025
-Exit Code: 0
-Duration: 1s
-
-✅ TEST 6 PASSED: Error Handling
-🔧 TEST 7: File Mount Input
-Started: Wed Jun 18 10:11:35 AM +07 2025
-ℹ️  [INFO] Workspace: /quickbuild
-
-ℹ️  [INFO] 🚀 Velocitas C++ Quick Build Utility
-ℹ️  [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ℹ️  [INFO] 📦 Zero-setup containerized build for Velocitas vehicle apps
-
-ℹ️  [INFO] 🔧 STEP 1/5: Processing input...
-ℹ️  [INFO] Reading user VehicleApp.cpp...
-ℹ️  [INFO] Reading from mounted file: /input
-✅ [SUCCESS] VehicleApp.cpp validation passed
-✅ [SUCCESS] VehicleApp.cpp loaded successfully (454 lines)
-
-ℹ️  [INFO] 🔧 STEP 2/5: Preparing build workspace...
-ℹ️  [INFO] Preparing build workspace...
-ℹ️  [INFO] Configuring VSS specification...
-ℹ️  [INFO] Using default VSS 4.0 specification
-ℹ️  [INFO] Cleaning previous build artifacts...
-✅ [SUCCESS] Workspace prepared
-
-ℹ️  [INFO] 🔧 STEP 3/5: Vehicle signal model preparation...
-ℹ️  [INFO] Generating vehicle model from VSS...
-✅ [SUCCESS] Vehicle model generated
-
-ℹ️  [INFO] 🔧 STEP 4/5: Building C++ application...
-ℹ️  [INFO] Building C++ application...
-ℹ️  [INFO] 🔧 Configuring build environment...
-ℹ️  [INFO] 📦 Installing dependencies (if needed)...
-⚠️  [WARNING] Dependency installation had issues, continuing with build...
-ℹ️  [INFO] 🏗️  Starting compilation (Release mode for optimization)...
-ℹ️  [INFO]    This may take 60-90 seconds depending on code complexity...
-ℹ️  [INFO] 🔍 Verifying build output...
-✅ [SUCCESS] Build completed successfully!
-ℹ️  [INFO] 📍 Executable location: /quickbuild/build/bin/app
-ℹ️  [INFO] 📏 Executable size: 14M
-ℹ️  [INFO] 🔐 Permissions: -rwxr-xr-x
-
-ℹ️  [INFO] 🔧 STEP 5/5: Finalizing build...
-ℹ️  [INFO] Build Summary:
-============================================
-✅ VehicleApp.cpp: Validated and compiled
-✅ Dependencies: Pre-installed (cached)
-✅ Vehicle Model: Generated from VSS
-✅ Executable: /quickbuild/build/bin/app
-📊 Size: 13.3MiB
-🕐 Completed: Wed Jun 18 03:11:46 UTC 2025
-============================================
-
-✅ [SUCCESS] 🎉 Quick build completed successfully!
-ℹ️  [INFO] 💡 Your vehicle app is ready to run!
-Completed: Wed Jun 18 10:11:47 AM +07 2025
-Exit Code: 0
-Duration: 12s
-
-✅ TEST 7 PASSED: File Mount Input
-🔧 TEST 8: Directory Mount Input
-Started: Wed Jun 18 10:11:47 AM +07 2025
-ℹ️  [INFO] Workspace: /quickbuild
-
-ℹ️  [INFO] 🚀 Velocitas C++ Quick Build Utility
-ℹ️  [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ℹ️  [INFO] 📦 Zero-setup containerized build for Velocitas vehicle apps
-
-ℹ️  [INFO] 🔧 STEP 1/5: Processing input...
-ℹ️  [INFO] Reading user VehicleApp.cpp...
-ℹ️  [INFO] Reading from mounted directory: /input/VehicleApp.cpp
-✅ [SUCCESS] VehicleApp.cpp validation passed
-✅ [SUCCESS] VehicleApp.cpp loaded successfully (454 lines)
-
-ℹ️  [INFO] 🔧 STEP 2/5: Preparing build workspace...
-ℹ️  [INFO] Preparing build workspace...
-ℹ️  [INFO] Configuring VSS specification...
-ℹ️  [INFO] Using default VSS 4.0 specification
-ℹ️  [INFO] Cleaning previous build artifacts...
-✅ [SUCCESS] Workspace prepared
-
-ℹ️  [INFO] 🔧 STEP 3/5: Vehicle signal model preparation...
-ℹ️  [INFO] Generating vehicle model from VSS...
-✅ [SUCCESS] Vehicle model generated
-
-ℹ️  [INFO] 🔧 STEP 4/5: Building C++ application...
-ℹ️  [INFO] Building C++ application...
-ℹ️  [INFO] 🔧 Configuring build environment...
-ℹ️  [INFO] 📦 Installing dependencies (if needed)...
-⚠️  [WARNING] Dependency installation had issues, continuing with build...
-ℹ️  [INFO] 🏗️  Starting compilation (Release mode for optimization)...
-ℹ️  [INFO]    This may take 60-90 seconds depending on code complexity...
-ℹ️  [INFO] 🔍 Verifying build output...
-✅ [SUCCESS] Build completed successfully!
-ℹ️  [INFO] 📍 Executable location: /quickbuild/build/bin/app
-ℹ️  [INFO] 📏 Executable size: 14M
-ℹ️  [INFO] 🔐 Permissions: -rwxr-xr-x
-
-ℹ️  [INFO] 🔧 STEP 5/5: Finalizing build...
-ℹ️  [INFO] Build Summary:
-============================================
-✅ VehicleApp.cpp: Validated and compiled
-✅ Dependencies: Pre-installed (cached)
-✅ Vehicle Model: Generated from VSS
-✅ Executable: /quickbuild/build/bin/app
-📊 Size: 13.3MiB
-🕐 Completed: Wed Jun 18 03:11:58 UTC 2025
-============================================
-
-✅ [SUCCESS] 🎉 Quick build completed successfully!
-ℹ️  [INFO] 💡 Your vehicle app is ready to run!
-Completed: Wed Jun 18 10:11:59 AM +07 2025
-Exit Code: 0
-Duration: 12s
-
-✅ TEST 8 PASSED: Directory Mount Input
-🔧 TEST 9: Granular Command - gen-model
-Started: Wed Jun 18 10:11:59 AM +07 2025
-ℹ️  [INFO] Workspace: /quickbuild
-
-ℹ️  [INFO] 🚀 Velocitas C++ Model Generation Utility
-ℹ️  [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ℹ️  [INFO] 🔧 STEP 3: Vehicle signal model preparation
-
-ℹ️  [INFO] Preparing build workspace...
-ℹ️  [INFO] Configuring VSS specification...
-ℹ️  [INFO] Using default VSS 4.0 specification
-ℹ️  [INFO] Cleaning previous build artifacts...
-✅ [SUCCESS] Workspace prepared
-
-ℹ️  [INFO] Generating vehicle model from VSS...
-✅ [SUCCESS] Vehicle model generated
-✅ [SUCCESS] Model generation completed successfully!
-Completed: Wed Jun 18 10:12:04 AM +07 2025
-Exit Code: 0
-Duration: 5s
-
-✅ TEST 9 PASSED: Granular Command - gen-model
-🔧 TEST 10: Granular Command - model (alias)
-Started: Wed Jun 18 10:12:04 AM +07 2025
-ℹ️  [INFO] Workspace: /quickbuild
-
-ℹ️  [INFO] 🚀 Velocitas C++ Model Generation Utility
-ℹ️  [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ℹ️  [INFO] 🔧 STEP 3: Vehicle signal model preparation
-
-ℹ️  [INFO] Preparing build workspace...
-ℹ️  [INFO] Configuring VSS specification...
-ℹ️  [INFO] Using default VSS 4.0 specification
-ℹ️  [INFO] Cleaning previous build artifacts...
-✅ [SUCCESS] Workspace prepared
-
-ℹ️  [INFO] Generating vehicle model from VSS...
-✅ [SUCCESS] Vehicle model generated
-✅ [SUCCESS] Model generation completed successfully!
-Completed: Wed Jun 18 10:12:10 AM +07 2025
-Exit Code: 0
-Duration: 6s
-
-✅ TEST 10 PASSED: Granular Command - model (alias)
-🔧 TEST 11: Granular Command - compile
-Started: Wed Jun 18 10:12:10 AM +07 2025
-ℹ️  [INFO] Workspace: /quickbuild
-
-ℹ️  [INFO] 🚀 Velocitas C++ Compilation Utility
-ℹ️  [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ℹ️  [INFO] 🔧 STEP 4: C++ application building
-
-ℹ️  [INFO] Reading user VehicleApp.cpp...
-ℹ️  [INFO] Reading from stdin...
-✅ [SUCCESS] VehicleApp.cpp validation passed
-✅ [SUCCESS] VehicleApp.cpp loaded successfully (454 lines)
-
-ℹ️  [INFO] Building C++ application...
-ℹ️  [INFO] 🔧 Configuring build environment...
-ℹ️  [INFO] 📦 Installing dependencies (if needed)...
-⚠️  [WARNING] Dependency installation had issues, continuing with build...
-ℹ️  [INFO] 🏗️  Starting compilation (Release mode for optimization)...
-ℹ️  [INFO]    This may take 60-90 seconds depending on code complexity...
-ℹ️  [INFO] 🔍 Verifying build output...
-✅ [SUCCESS] Build completed successfully!
-ℹ️  [INFO] 📍 Executable location: /quickbuild/build/bin/app
-ℹ️  [INFO] 📏 Executable size: 14M
-ℹ️  [INFO] 🔐 Permissions: -rwxr-xr-x
-✅ [SUCCESS] Compilation completed successfully!
-Completed: Wed Jun 18 10:12:16 AM +07 2025
-Exit Code: 0
-Duration: 6s
-
-✅ TEST 11 PASSED: Granular Command - compile
-🔧 TEST 12: Granular Command - build-cpp (alias)
-Started: Wed Jun 18 10:12:16 AM +07 2025
-ℹ️  [INFO] Workspace: /quickbuild
-
-ℹ️  [INFO] 🚀 Velocitas C++ Compilation Utility
-ℹ️  [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ℹ️  [INFO] 🔧 STEP 4: C++ application building
-
-ℹ️  [INFO] Reading user VehicleApp.cpp...
-ℹ️  [INFO] Reading from stdin...
-✅ [SUCCESS] VehicleApp.cpp validation passed
-✅ [SUCCESS] VehicleApp.cpp loaded successfully (454 lines)
-
-ℹ️  [INFO] Building C++ application...
-ℹ️  [INFO] 🔧 Configuring build environment...
-ℹ️  [INFO] 📦 Installing dependencies (if needed)...
-⚠️  [WARNING] Dependency installation had issues, continuing with build...
-ℹ️  [INFO] 🏗️  Starting compilation (Release mode for optimization)...
-ℹ️  [INFO]    This may take 60-90 seconds depending on code complexity...
-ℹ️  [INFO] 🔍 Verifying build output...
-✅ [SUCCESS] Build completed successfully!
-ℹ️  [INFO] 📍 Executable location: /quickbuild/build/bin/app
-ℹ️  [INFO] 📏 Executable size: 14M
-ℹ️  [INFO] 🔐 Permissions: -rwxr-xr-x
-✅ [SUCCESS] Compilation completed successfully!
-Completed: Wed Jun 18 10:12:23 AM +07 2025
-Exit Code: 0
-Duration: 7s
-
-✅ TEST 12 PASSED: Granular Command - build-cpp (alias)
-🔧 TEST 13: Granular Command - finalize
-Started: Wed Jun 18 10:12:23 AM +07 2025
-ℹ️  [INFO] Workspace: /quickbuild
-
-ℹ️  [INFO] 🚀 Velocitas C++ Build Finalization Utility
-ℹ️  [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ℹ️  [INFO] 🔧 STEP 5: Finalizing build
-
-ℹ️  [INFO] Build Summary:
-============================================
-✅ VehicleApp.cpp: Validated and compiled
-✅ Dependencies: Pre-installed (cached)
-✅ Vehicle Model: Generated from VSS
-✅ Executable: /quickbuild/build/bin/app
-📊 Size: 13.3MiB
-🕐 Completed: Wed Jun 18 03:12:23 UTC 2025
-============================================
-✅ [SUCCESS] Build finalization completed successfully!
-Completed: Wed Jun 18 10:12:24 AM +07 2025
-Exit Code: 0
-Duration: 1s
-
-✅ TEST 13 PASSED: Granular Command - finalize
-🔧 TEST 14: Run Command (build and run)
-Started: Wed Jun 18 10:12:24 AM +07 2025
-ℹ️  [INFO] Workspace: /quickbuild
-
-ℹ️  [INFO] 🏃 Velocitas C++ Quick Build & Run Utility
-ℹ️  [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ℹ️  [INFO] 🚀 Build your VehicleApp.cpp and run it with live output
-
-ℹ️  [INFO] 🔧 STEP 1/5: Found existing application...
-✅ [SUCCESS] ✅ Using existing executable - no changes detected!
-ℹ️  [INFO] 📏 Executable: /quickbuild/build/bin/app (14M)
-ℹ️  [INFO] 🏃 Proceeding to run the vehicle application...
-
-ℹ️  [INFO] 🔧 STEP 2/5: Checking service environment...
-ℹ️  [INFO] 🔍 Checking external service availability...
-ℹ️  [INFO]    Testing MQTT broker connection (127.0.0.1:1883)...
-⚠️  [WARNING] MQTT broker not available at 127.0.0.1:1883
-ℹ️  [INFO]    📱 Starting in simulation mode (no external services required)
-ℹ️  [INFO]    💡 App will run with simulated vehicle data
-✅ [SUCCESS] Vehicle Data Broker available at 127.0.0.1:55555
-
-ℹ️  [INFO] 🔧 STEP 3/5: Running vehicle application...
-ℹ️  [INFO] 🚀 Running vehicle application...
-ℹ️  [INFO] 🔍 Checking executable location...
-✅ [SUCCESS] Found executable: /quickbuild/build/bin/app
-ℹ️  [INFO] 📏 Executable size: 14M
-ℹ️  [INFO] 🔐 Setting executable permissions...
-ℹ️  [INFO] ⏰ Starting application with 15s timeout for demonstration...
-ℹ️  [INFO] 💡 Watch for vehicle signal processing and app behavior
-ℹ️  [INFO] 🔄 Application will automatically stop after 15s
-
-============================================
-📱 Vehicle Application Live Output:
-============================================
-[38;2;255;255;255m2025-06-18 03:12:24.452951051, INFO  : 🚀 Starting your Vehicle Application...
-[0m[38;2;255;255;255m2025-06-18 03:12:24.452982748, INFO  : 💡 Press Ctrl+C to stop the application
-[0m[38;2;255;255;255m2025-06-18 03:12:24.452987748, INFO  : Using Kuksa Databroker sdv.databroker.v1 API
-[0m[38;2;255;255;255m2025-06-18 03:12:24.453000046, INFO  : Connecting to data broker service 'vehicledatabroker' via '127.0.0.1:55555'
-[0m[38;2;255;255;255m2025-06-18 03:12:24.453507081, INFO  : 🚗 Vehicle App Template starting...
-[0m[38;2;255;255;255m2025-06-18 03:12:24.453516558, INFO  : Starting app ...
-[0m[38;2;255;255;255m2025-06-18 03:12:24.453524978, INFO  : 🚀 Vehicle App Template starting - setting up signal subscriptions
-[0m[38;2;255;255;255m2025-06-18 03:12:24.457561381, INFO  : ✅ Signal subscription completed - waiting for vehicle data...
-[0m[38;2;255;255;255m2025-06-18 03:12:24.457578861, INFO  : App is running.
-[0m[38;2;165;042;042m2025-06-18 03:12:24.458836007, DEBUG : 📡 Waiting for vehicle signal data...
-[0m============================================
-
-✅ [SUCCESS] ✅ Application completed 15s demonstration run
-
-ℹ️  [INFO] 🔧 STEP 4/5: Analyzing application behavior...
-ℹ️  [INFO] Analyzing application behavior...
-✅ [SUCCESS] Application initialization detected
-
-ℹ️  [INFO] 🔧 STEP 5/5: Generating run summary...
-ℹ️  [INFO] Run Summary:
-============================================
-🏃 Application Runtime: 15s
-📊 Log Summary:
-   - Info messages: 23
-   - Successes: 5
-   - Warnings: 1
-   - Errors: 0
-0
-🕐 Completed: Wed Jun 18 03:12:39 UTC 2025
-============================================
-✅ [SUCCESS] Quick run completed successfully!
-Completed: Wed Jun 18 10:12:39 AM +07 2025
-Exit Code: 0
-Duration: 15s
-
-✅ TEST 14 PASSED: Run Command (build and run)
-🔧 TEST 15: Rerun Command (pre-built template)
-Started: Wed Jun 18 10:12:39 AM +07 2025
-ℹ️  [INFO] Workspace: /quickbuild
-
-ℹ️  [INFO] 🏃 Velocitas C++ Quick Rerun Utility
-ℹ️  [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ℹ️  [INFO] 🚀 Running pre-built template binary
-
-✅ [SUCCESS] ✅ Found executable: /quickbuild/build/bin/app
-ℹ️  [INFO] 📏 Executable size: 14M
-
-ℹ️  [INFO] 🔧 Checking service environment...
-ℹ️  [INFO] 🔍 Checking external service availability...
-ℹ️  [INFO]    Testing MQTT broker connection (127.0.0.1:1883)...
-⚠️  [WARNING] MQTT broker not available at 127.0.0.1:1883
-ℹ️  [INFO]    📱 Starting in simulation mode (no external services required)
-ℹ️  [INFO]    💡 App will run with simulated vehicle data
-✅ [SUCCESS] Vehicle Data Broker available at 127.0.0.1:55555
-
-ℹ️  [INFO] 🔧 Running vehicle application...
-ℹ️  [INFO] 🚀 Running vehicle application...
-ℹ️  [INFO] 🔍 Checking executable location...
-✅ [SUCCESS] Found executable: /quickbuild/build/bin/app
-ℹ️  [INFO] 📏 Executable size: 14M
-ℹ️  [INFO] 🔐 Setting executable permissions...
-ℹ️  [INFO] ⏰ Starting application with 15s timeout for demonstration...
-ℹ️  [INFO] 💡 Watch for vehicle signal processing and app behavior
-ℹ️  [INFO] 🔄 Application will automatically stop after 15s
-
-============================================
-📱 Vehicle Application Live Output:
-============================================
-[38;2;255;255;255m2025-06-18 03:12:39.918309446, INFO  : 🚀 Starting your Vehicle Application...
-[0m[38;2;255;255;255m2025-06-18 03:12:39.918412993, INFO  : 💡 Press Ctrl+C to stop the application
-[0m[38;2;255;255;255m2025-06-18 03:12:39.918432859, INFO  : Using Kuksa Databroker sdv.databroker.v1 API
-[0m[38;2;255;255;255m2025-06-18 03:12:39.918473270, INFO  : Connecting to data broker service 'vehicledatabroker' via '127.0.0.1:55555'
-[0m[38;2;255;255;255m2025-06-18 03:12:39.919065275, INFO  : 🚗 Vehicle App Template starting...
-[0m[38;2;255;255;255m2025-06-18 03:12:39.919075523, INFO  : Starting app ...
-[0m[38;2;255;255;255m2025-06-18 03:12:39.919079315, INFO  : 🚀 Vehicle App Template starting - setting up signal subscriptions
-[0m[38;2;255;255;255m2025-06-18 03:12:39.923170176, INFO  : ✅ Signal subscription completed - waiting for vehicle data...
-[0m[38;2;255;255;255m2025-06-18 03:12:39.923190478, INFO  : App is running.
-[0m[38;2;165;042;042m2025-06-18 03:12:39.924392270, DEBUG : 📡 Waiting for vehicle signal data...
-[0m============================================
-
-✅ [SUCCESS] ✅ Application completed 15s demonstration run
-
-ℹ️  [INFO] 🔧 Analyzing application behavior...
-ℹ️  [INFO] Analyzing application behavior...
-✅ [SUCCESS] Application initialization detected
-
-ℹ️  [INFO] 🔧 Generating run summary...
-ℹ️  [INFO] Run Summary:
-============================================
-🏃 Application Runtime: 15s
-📊 Log Summary:
-   - Info messages: 21
-   - Successes: 5
-   - Warnings: 1
-   - Errors: 0
-0
-🕐 Completed: Wed Jun 18 03:12:54 UTC 2025
-============================================
-✅ [SUCCESS] Quick rerun completed successfully!
-Completed: Wed Jun 18 10:12:55 AM +07 2025
-Exit Code: 0
-Duration: 16s
-
-✅ TEST 15 PASSED: Rerun Command (pre-built template)
-🔧 TEST 16: Granular Workflow (sequential steps)
-Started: Wed Jun 18 10:12:55 AM +07 2025
-Step 1: Generate model...
-ℹ️  [INFO] Workspace: /quickbuild
-
-ℹ️  [INFO] 🚀 Velocitas C++ Model Generation Utility
-ℹ️  [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ℹ️  [INFO] 🔧 STEP 3: Vehicle signal model preparation
-
-ℹ️  [INFO] Preparing build workspace...
-ℹ️  [INFO] Configuring VSS specification...
-ℹ️  [INFO] Using default VSS 4.0 specification
-ℹ️  [INFO] Cleaning previous build artifacts...
-✅ [SUCCESS] Workspace prepared
-
-ℹ️  [INFO] Generating vehicle model from VSS...
-✅ [SUCCESS] Vehicle model generated
-✅ [SUCCESS] Model generation completed successfully!
-Step 2: Compile application...
-ℹ️  [INFO] Workspace: /quickbuild
-
-ℹ️  [INFO] 🚀 Velocitas C++ Compilation Utility
-ℹ️  [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ℹ️  [INFO] 🔧 STEP 4: C++ application building
-
-ℹ️  [INFO] Reading user VehicleApp.cpp...
-ℹ️  [INFO] Reading from stdin...
-✅ [SUCCESS] VehicleApp.cpp validation passed
-✅ [SUCCESS] VehicleApp.cpp loaded successfully (454 lines)
-
-ℹ️  [INFO] Building C++ application...
-ℹ️  [INFO] 🔧 Configuring build environment...
-ℹ️  [INFO] 📦 Installing dependencies (if needed)...
-⚠️  [WARNING] Dependency installation had issues, continuing with build...
-ℹ️  [INFO] 🏗️  Starting compilation (Release mode for optimization)...
-ℹ️  [INFO]    This may take 60-90 seconds depending on code complexity...
-ℹ️  [INFO] 🔍 Verifying build output...
-✅ [SUCCESS] Build completed successfully!
-ℹ️  [INFO] 📍 Executable location: /quickbuild/build/bin/app
-ℹ️  [INFO] 📏 Executable size: 14M
-ℹ️  [INFO] 🔐 Permissions: -rwxr-xr-x
-✅ [SUCCESS] Compilation completed successfully!
-Step 3: Finalize build...
-ℹ️  [INFO] Workspace: /quickbuild
-
-ℹ️  [INFO] 🚀 Velocitas C++ Build Finalization Utility
-ℹ️  [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ℹ️  [INFO] 🔧 STEP 5: Finalizing build
-
-ℹ️  [INFO] Build Summary:
-============================================
-✅ VehicleApp.cpp: Validated and compiled
-✅ Dependencies: Pre-installed (cached)
-✅ Vehicle Model: Generated from VSS
-✅ Executable: /quickbuild/build/bin/app
-📊 Size: 13.3MiB
-🕐 Completed: Wed Jun 18 03:13:07 UTC 2025
-============================================
-✅ [SUCCESS] Build finalization completed successfully!
-Completed: Wed Jun 18 10:13:07 AM +07 2025
-Exit Code: 0
-Duration: 12s
-
-✅ TEST 16 PASSED: Granular Workflow (sequential steps)
-
-📊 TEST SUMMARY
-============================================
-Total Tests: 16
-Passed: 16
-Failed: 0
-Success Rate: 100%
-Completed: Wed Jun 18 10:13:07 AM +07 2025
